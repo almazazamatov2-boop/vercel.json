@@ -16,11 +16,15 @@ let tokenExpiry = 0;
 async function getToken() {
   if (tokenCache && Date.now() < tokenExpiry) return tokenCache;
   
+  console.log('CLIENT_ID:', CLIENT_ID);
+  console.log('CLIENT_SECRET:', CLIENT_SECRET);
+  
   const res = await fetch('https://id.twitch.tv/oauth2/token', {
     method: 'POST',
     body: `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&grant_type=client_credentials`
   });
   const data = await res.json();
+  console.log('Token response:', data);
   tokenCache = data.access_token;
   tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
   return tokenCache;
