@@ -1,61 +1,33 @@
-let _token = null;
-let _expiry = 0;
+const { getTwitchUserByLogin, getStreamByLogin, getFollowersTotalByLogin } = require('../lib/core');
+const { json, badMethod } = require('./_lib/http');
 
-const CLIENT_ID = 'njwi66jx4ju5kpb25aeh4fd4i2okq5';
-const CLIENT_SECRET = 'uspju8gdepuar3e7fgv7c5q0p5xem8';
-
-async function getToken() {
-  if (_token && Date.now() < _expiry) return _token;
-  const r = await fetch('https://id.twitch.tv/oauth2/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&grant_type=client_credentials`
-  });
-  const d = await r.json();
-  _token = d.access_token;
-  _expiry = Date.now() + (d.expires_in - 300) * 1000;
-  return _token;
-}
-
-module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-
-  const { a, u } = req.query;
+module.exports = async function handler(req, res) {
+  if (req.method === 'OPTIONS') return json(res, 200, { ok: true });
+  if (badMethod(req, res, ['GET'])) return;
 
   try {
-    const token = await getToken();
-    const headers = { 'Client-ID': CLIENT_ID, 'Authorization': `Bearer ${token}` };
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const a = (url.searchParams.get('a') || '').trim();
+    const u = (url.searchParams.get('u') || '').trim().toLowerCase();
+    if (!u) return json(res, 400, { error: 'Missing u' });
 
-    // User info
-    if (a === 'u' && u) {
-      const r = await fetch(`https://api.twitch.tv/helix/users?login=${encodeURIComponent(u)}`, { headers });
-      const d = await r.json();
-      return res.json(d.data?.[0] ?? null);
+    if (a === 'u') {
+      const user = await getTwitchUserByLogin(u);
+      return json(res, user ? 200 : 404, user || { error: 'not found' });
     }
 
-    // Stream status
-    if (a === 's' && u) {
-      const r = await fetch(`https://api.twitch.tv/helix/streams?user_login=${encodeURIComponent(u)}`, { headers });
-      const d = await r.json();
-      return res.json({ live: !!(d.data?.length), stream: d.data?.[0] ?? null });
+    if (a === 's') {
+      const stream = await getStreamByLogin(u);
+      return json(res, 200, { live: Boolean(stream), stream: stream || null });
     }
 
-    // Followers count
-    if (a === 'f' && u) {
-      const ur = await fetch(`https://api.twitch.tv/helix/users?login=${encodeURIComponent(u)}`, { headers });
-      const ud = await ur.json();
-      const uid = ud.data?.[0]?.id;
-      if (!uid) return res.json({ total: 0 });
-      const fr = await fetch(`https://api.twitch.tv/helix/channels/followers?broadcaster_id=${uid}&first=1`, { headers });
-      const fd = await fr.json();
-      return res.json({ total: fd.total ?? 0 });
+    if (a === 'f') {
+      const total = await getFollowersTotalByLogin(u);
+      return json(res, 200, { total });
     }
 
-    res.status(400).json({ error: 'bad request' });
+    return json(res, 400, { error: 'Unknown action' });
   } catch (e) {
-    console.error('Twitch API error:', e);
-    res.status(500).json({ error: e.message });
+    return json(res, 500, { error: e.message });
   }
 };

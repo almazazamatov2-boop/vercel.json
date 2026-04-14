@@ -3,799 +3,775 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ParacetamolHaze — Twitch Tools</title>
+  <title>paracetamolhaze tools</title>
   <style>
     :root {
-      --bg: #0d0d17;
-      --bg2: #14142a;
-      --bg3: #1c1c38;
-      --accent: #9146ff;
-      --cyan: #00d9ff;
-      --green: #00ff88;
-      --red: #ff4545;
-      --text: #e2e2e8;
-      --muted: #7a7a9a;
-      --border: rgba(255,255,255,0.07);
-      --card: rgba(255,255,255,0.04);
+      --bg: #07080f;
+      --bg2: #101225;
+      --card: #14182b;
+      --soft: #1a2140;
+      --line: rgba(180, 198, 255, 0.16);
+      --text: #f2f5ff;
+      --muted: #a4afd4;
+      --accent: #8f56ff;
+      --accent2: #3ad8ff;
+      --good: #38d39f;
+      --bad: #ff5f7f;
+      --warn: #ffc857;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg);
-      min-height: 100vh;
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
       color: var(--text);
-      overflow-x: hidden;
+      background:
+        radial-gradient(1100px 550px at 20% -10%, rgba(143, 86, 255, 0.20), transparent 60%),
+        radial-gradient(1000px 450px at 90% 0%, rgba(58, 216, 255, 0.16), transparent 55%),
+        linear-gradient(180deg, var(--bg), #05060c);
+      min-height: 100vh;
     }
-    .container { max-width: 1060px; margin: 0 auto; padding: 24px 20px; }
-
-    /* Pages */
+    .container { max-width: 1180px; margin: 0 auto; padding: 24px 18px 42px; }
     .page { display: none; }
-    .page.active { display: block; animation: fadein .25s ease; }
-    @keyframes fadein { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+    .page.active { display: block; animation: fade .2s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-    /* Nav */
-    .topbar {
-      display: flex; align-items: center; gap: 16px;
-      margin-bottom: 28px; padding-bottom: 20px;
-      border-bottom: 1px solid var(--border);
+    .hero { text-align: center; padding: 44px 0 22px; }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: .02em;
+      background: linear-gradient(120deg, #e7dcff, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .back-btn {
-      background: var(--card); border: 1px solid var(--border);
-      color: var(--cyan); padding: 9px 18px; border-radius: 9px;
-      cursor: pointer; font-size: .88rem; transition: .2s;
-      white-space: nowrap;
+    .hero p { margin-top: 10px; color: var(--muted); font-size: 1rem; }
+
+    .tools {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
     }
-    .back-btn:hover { background: rgba(0,217,255,.1); border-color: var(--cyan); }
-    .topbar-title { flex: 1; }
-    .pg-title { font-size: 1.8rem; font-weight: 800; background: linear-gradient(135deg,var(--accent),var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .pg-sub { color: var(--muted); font-size: .88rem; margin-top: 2px; }
-
-    /* Cards */
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 18px; }
-    .card-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 14px; }
-
-    /* Inputs & buttons */
-    .row { display: flex; gap: 10px; flex-wrap: wrap; }
-    input[type=text], input[type=url] {
-      flex: 1; min-width: 180px;
-      padding: 11px 15px; background: rgba(255,255,255,.05);
-      border: 1px solid var(--border); border-radius: 10px;
-      color: var(--text); font-size: .93rem; transition: .2s;
-    }
-    input:focus { outline: none; border-color: var(--cyan); background: rgba(255,255,255,.07); }
-    input::placeholder { color: #484866; }
-    button { padding: 11px 22px; border: none; border-radius: 10px; font-size: .9rem; font-weight: 600; cursor: pointer; transition: .2s; }
-    .btn-p { background: linear-gradient(135deg,var(--accent),var(--cyan)); color: #000; }
-    .btn-p:hover { transform: translateY(-1px); box-shadow: 0 5px 20px rgba(145,70,255,.4); }
-    .btn-s { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-    .btn-s:hover { background: rgba(255,255,255,.07); }
-    .btn-d { background: rgba(255,69,69,.12); color: var(--red); border: 1px solid rgba(255,69,69,.25); }
-    .btn-sm { padding: 7px 14px; font-size: .82rem; }
-    button:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
-
-    /* Stats */
-    .stats { display: flex; gap: 36px; flex-wrap: wrap; }
-    .stat-v { font-size: 2rem; font-weight: 800; color: var(--cyan); }
-    .stat-l { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
-
-    /* Badge */
-    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: .78rem; font-weight: 600; }
-    .badge-live { background: rgba(255,69,69,.14); color: var(--red); border: 1px solid rgba(255,69,69,.28); }
-    .badge-off { background: rgba(255,255,255,.05); color: var(--muted); border: 1px solid var(--border); }
-    .badge-ok { background: rgba(0,255,136,.1); color: var(--green); border: 1px solid rgba(0,255,136,.28); }
-
-    /* ===== HOME ===== */
-    .hero { text-align: center; padding: 56px 0 44px; }
-    .hero-title { font-size: 3rem; font-weight: 900; background: linear-gradient(135deg,var(--accent),var(--cyan),var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .hero-sub { color: var(--muted); font-size: 1.05rem; margin-top: 8px; }
-    .tools { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 18px; margin-top: 44px; }
     .tool {
-      background: var(--bg3); border: 1px solid var(--border); border-radius: 20px;
-      padding: 36px 24px; text-align: center; cursor: pointer; transition: .3s; position: relative; overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      padding: 20px 16px;
+      cursor: pointer;
+      transition: .2s ease;
     }
-    .tool:hover { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 12px 40px rgba(145,70,255,.2); }
-    .tool-ico { font-size: 3rem; margin-bottom: 14px; }
-    .tool-name { font-size: 1.35rem; font-weight: 700; margin-bottom: 6px; }
-    .tool-desc { color: var(--muted); font-size: .85rem; line-height: 1.5; }
+    .tool:hover { transform: translateY(-3px); border-color: rgba(143, 86, 255, .65); box-shadow: 0 14px 35px rgba(17, 21, 43, .58); }
+    .tool .ico { font-size: 1.7rem; margin-bottom: 8px; }
+    .tool .name { font-weight: 800; font-size: 1.15rem; }
+    .tool .desc { margin-top: 6px; color: var(--muted); font-size: .9rem; line-height: 1.4; }
 
-    /* ===== ROZ ===== */
-    .chat-log {
-      height: 190px; overflow-y: auto; background: rgba(0,0,0,.35);
-      border-radius: 10px; padding: 12px; font-family: monospace; font-size: .82rem;
-      scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
     }
-    .chat-msg { padding: 2px 0; line-height: 1.5; }
-    .cu { color: var(--cyan); font-weight: 700; }
-    .ck { color: var(--green); }
-
-    .games-row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .gcard {
-      flex: 1; min-width: 110px; background: var(--bg3); border: 2px solid var(--border);
-      border-radius: 13px; padding: 18px 14px; text-align: center; cursor: pointer;
-      transition: .2s; font-weight: 600; font-size: .9rem;
+    .title { font-size: 1.5rem; font-weight: 800; margin: 0; }
+    .subtitle { margin-top: 3px; color: var(--muted); font-size: .9rem; }
+    .btn {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: .9rem;
     }
-    .gcard:hover { border-color: var(--accent); background: rgba(145,70,255,.1); }
-    .gcard.on { border-color: var(--cyan); background: rgba(0,217,255,.08); }
-    .gcard-ico { font-size: 1.7rem; margin-bottom: 7px; }
-
-    /* Slot */
-    .slot-wrap { max-width: 380px; margin: 16px auto; }
-    .slot-win {
-      height: 82px; overflow: hidden; border: 2px solid var(--cyan);
-      border-radius: 12px; background: rgba(0,0,0,.5); position: relative;
+    .btn:hover { border-color: rgba(143, 86, 255, .72); }
+    .btn.primary {
+      border: none;
+      color: #07080f;
+      background: linear-gradient(120deg, var(--accent2), #99e9ff);
     }
-    .slot-win::before,.slot-win::after {
-      content:''; position:absolute; left:0; right:0; height:22px; z-index:1; pointer-events:none;
+    .btn.purple {
+      border: none;
+      color: #fff;
+      background: linear-gradient(120deg, #7446ff, #ad6cff);
     }
-    .slot-win::before { top:0; background: linear-gradient(to bottom,rgba(13,13,23,.95),transparent); }
-    .slot-win::after { bottom:0; background: linear-gradient(to top,rgba(13,13,23,.95),transparent); }
-    .slot-reel { transition: transform 3.2s cubic-bezier(.25,.46,.45,.94); }
-    .slot-item { height: 82px; display:flex; align-items:center; justify-content:center; font-size:1.35rem; font-weight:800; color:var(--cyan); }
+    .btn.bad { color: #ffd4de; border-color: rgba(255, 95, 127, .4); background: rgba(255, 95, 127, .12); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
 
-    /* Vases */
-    .vases { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; max-width: 480px; margin: 16px auto; }
-    .vase {
-      aspect-ratio:1; background:var(--bg3); border: 2px solid var(--accent);
-      border-radius: 50%; font-size: 1.7rem; cursor:pointer; transition:.25s;
-      display:flex; align-items:center; justify-content:center;
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
     }
-    .vase:hover { transform:scale(1.1); background:rgba(145,70,255,.2); }
-    .vase.empty { border-color: #333; opacity:.35; transform:scale(.9); font-size:1rem; color:var(--muted); }
-    .vase.win { border-color:var(--green); background:rgba(0,255,136,.12); transform:scale(1.18); }
-
-    /* CS */
-    .cs-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:14px; }
-    .cs-team { border-radius:12px; padding:14px; }
-    .cs-t { background:rgba(255,68,68,.08); border:1px solid rgba(255,68,68,.25); }
-    .cs-ct { background:rgba(68,120,255,.08); border:1px solid rgba(68,120,255,.25); }
-    .cs-team h3 { font-size:.82rem; letter-spacing:.06em; text-transform:uppercase; margin-bottom:10px; }
-    .cs-t h3 { color:#ff7070; } .cs-ct h3 { color:#7099ff; }
-    .cs-pl { padding:5px 10px; border-radius:6px; font-size:.85rem; margin-bottom:5px; }
-    .cs-t .cs-pl { background:rgba(255,68,68,.1); } .cs-ct .cs-pl { background:rgba(68,120,255,.1); }
-
-    /* Winner overlay */
-    .overlay {
-      display:none; position:fixed; inset:0; background:rgba(0,0,0,.92);
-      z-index:1000; justify-content:center; align-items:center;
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    @media (max-width: 900px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
     }
-    .overlay.show { display:flex; animation:fadein .3s ease; }
-    .win-box { text-align:center; padding:60px 40px; max-width:480px; }
-    .win-trophy { font-size:5rem; margin-bottom:16px; animation:bounce .45s ease infinite alternate; }
-    @keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-12px)} }
-    .win-lbl { color:var(--muted); font-size:.85rem; text-transform:uppercase; letter-spacing:.1em; margin-bottom:10px; }
-    .win-name { font-size:2.8rem; font-weight:900; background:linear-gradient(135deg,var(--cyan),var(--green)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:28px; }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--soft);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 11px;
+      font-size: .9rem;
+    }
+    input::placeholder { color: #8c97bf; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 140px; }
+    .label { color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+    .value { font-weight: 800; font-size: 1.5rem; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 8px; border-radius: 999px; font-size: .72rem; font-weight: 700;
+      border: 1px solid var(--line);
+    }
+    .pill.live { color: #b9ffd5; border-color: rgba(56, 211, 159, .4); background: rgba(56, 211, 159, .13); }
+    .pill.off { color: #d5daef; }
 
-    /* ===== CHECK ===== */
-    .profile { display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap; }
-    .avatar { width:96px; height:96px; border-radius:50%; border:3px solid var(--accent); object-fit:cover; flex-shrink:0; }
-    .avatar-ph { width:96px; height:96px; border-radius:50%; background:var(--bg3); border:3px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:2.5rem; flex-shrink:0; }
-    .uname { font-size:1.75rem; font-weight:800; }
-    .ulogin { color:var(--muted); margin-bottom:10px; }
-    .u-stats { display:flex; gap:22px; flex-wrap:wrap; margin-top:14px; }
-    .u-stat-v { font-size:1.25rem; font-weight:700; color:var(--cyan); }
-    .u-stat-l { font-size:.72rem; text-transform:uppercase; color:var(--muted); }
-    .stream-box { background:rgba(255,69,69,.06); border:1px solid rgba(255,69,69,.2); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:.88rem; }
+    .subs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .sub-card {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 9px;
+      background: rgba(255,255,255,.02);
+    }
+    .avatar { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #252a43; }
+    .sub-name { font-weight: 700; line-height: 1.2; }
+    .sub-meta { color: var(--muted); font-size: .78rem; margin-top: 4px; }
 
-    /* ===== KINO ===== */
-    .video-wrap { position:relative; padding-bottom:56.25%; height:0; border-radius:12px; overflow:hidden; background:#000; margin-bottom:18px; }
-    .video-wrap iframe { position:absolute; top:0;left:0;width:100%;height:100%; border:none; }
-    .video-ph { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); gap:10px; }
-    .video-ph-ico { font-size:3rem; }
-    .timer-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
-    .timer-disp { font-family:monospace; font-size:1.6rem; font-weight:800; color:var(--cyan); min-width:95px; }
-    .timings { display:flex; flex-direction:column; gap:8px; }
-    .ti { display:flex; align-items:center; gap:10px; padding:10px 14px; background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:10px; transition:.2s; }
-    .ti:hover { border-color:var(--cyan); }
-    .ti-time { font-family:monospace; font-size:.95rem; color:var(--cyan); font-weight:700; min-width:72px; }
-    .ti-lbl { flex:1; font-size:.88rem; }
-    .ti-del { background:none; border:none; color:var(--red); cursor:pointer; padding:4px 8px; opacity:.6; font-size:1rem; }
-    .ti-del:hover { opacity:1; }
+    .kino-player {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #02040c;
+      height: min(58vw, 560px);
+      min-height: 320px;
+      position: relative;
+    }
+    .kino-player iframe { width: 100%; height: 100%; border: none; }
+    .empty {
+      height: 100%; display: grid; place-items: center; text-align: center; color: var(--muted); padding: 20px;
+    }
+    .timing-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow: auto; }
+    .timing {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px;
+      display: grid;
+      grid-template-columns: 90px 130px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      background: rgba(255,255,255,.02);
+    }
+    @media (max-width: 900px) {
+      .timing { grid-template-columns: 1fr; }
+    }
+    .cat { font-size: .76rem; font-weight: 700; text-transform: uppercase; }
+    .cat.a { color: #ffd8f0; }
+    .cat.b { color: #ffe1c0; }
+    .cat.c { color: #ffb5c5; }
 
-    /* Spinner & misc */
-    .spinner { width:32px; height:32px; border:3px solid rgba(255,255,255,.1); border-top-color:var(--cyan); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 14px; }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .loading { text-align:center; padding:44px; color:var(--muted); }
-    .empty-msg { text-align:center; padding:28px; color:var(--muted); font-size:.88rem; }
+    .participants {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .p-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 8px;
+      text-align: center;
+      background: rgba(255,255,255,.02);
+      transition: .2s;
+    }
+    .p-card.active {
+      border-color: rgba(58,216,255,.8);
+      background: rgba(58,216,255,.18);
+      transform: scale(1.03);
+    }
+    .p-card img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: #202741; }
+    .winner {
+      margin-top: 12px;
+      text-align: center;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 211, 159, .4);
+      background: rgba(56, 211, 159, .12);
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #c4ffe3;
+    }
+    .warn {
+      margin-top: 10px;
+      border: 1px solid rgba(255, 200, 87, .4);
+      color: #ffe9be;
+      background: rgba(255, 200, 87, .12);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: .86rem;
+    }
 
-    /* Toast */
-    .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--bg3); border:1px solid var(--border); padding:10px 22px; border-radius:10px; font-size:.88rem; z-index:2000; transition:.3s; white-space:nowrap; pointer-events:none; }
-    .toast.show { transform:translateX(-50%) translateY(0); }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-thumb { background:var(--accent); border-radius:3px; }
-    footer { text-align:center; margin-top:54px; padding:18px; color:#2a2a44; font-size:.78rem; border-top:1px solid var(--border); }
+    footer {
+      margin-top: 34px;
+      text-align: center;
+      color: #8a95bc;
+      font-size: .78rem;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
   </style>
 </head>
 <body>
-<div class="container">
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
-
-  <!-- ===== HOME ===== -->
-  <div id="home" class="page active">
-    <div class="hero">
-      <div class="hero-title">ParacetamolHaze</div>
-      <div class="hero-sub">Twitch инструменты для стримеров</div>
-    </div>
-    <div class="tools">
-      <div class="tool" onclick="go('roz')">
-        <div class="tool-ico">🎰</div>
-        <div class="tool-name">Roz</div>
-        <div class="tool-desc">Розыгрыши в Twitch чате — рулетка, вазы, КС‑команды</div>
+  <div class="container">
+    <section id="home" class="page active">
+      <div class="hero">
+        <h1>paracetamolhaze</h1>
+        <p>Twitch toolkit: check, kino, roz, overlayROLL, БИНГО</p>
       </div>
-      <div class="tool" onclick="go('check')">
-        <div class="tool-ico">🔍</div>
-        <div class="tool-name">Check</div>
-        <div class="tool-desc">Информация о канале — подписчики, просмотры, статус стрима</div>
-      </div>
-      <div class="tool" onclick="go('kino')">
-        <div class="tool-ico">🎬</div>
-        <div class="tool-name">Kino</div>
-        <div class="tool-desc">Тайминги для совместного просмотра YouTube видео</div>
-      </div>
-    </div>
-    <footer>© 2026 ParacetamolHaze</footer>
-  </div>
-
-  <!-- ===== ROZ ===== -->
-  <div id="roz" class="page">
-    <div class="topbar">
-      <button class="back-btn" onclick="go('home')">← Назад</button>
-      <div class="topbar-title">
-        <div class="pg-title">Roz</div>
-        <div class="pg-sub">Twitch Чат Розыгрыши</div>
-      </div>
-      <span class="badge badge-off" id="rozStatus">● Отключено</span>
-    </div>
-
-    <div class="card">
-      <div class="card-label">Подключение к чату</div>
-      <div class="row" style="margin-bottom:10px">
-        <input type="text" id="rozChannel" placeholder="Никнейм канала (стримера)">
-        <input type="text" id="rozKw" placeholder="Ключевое слово (+, участвую…)">
-      </div>
-      <div class="row">
-        <button class="btn-p" onclick="rozConnect()">🔌 Подключиться</button>
-        <button class="btn-s" onclick="rozDisconnect()">✕ Отключить</button>
-        <button class="btn-s" onclick="rozClear()">🗑 Очистить список</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="stats" style="margin-bottom:18px">
-        <div><div class="stat-v" id="rozPart">0</div><div class="stat-l">Участников</div></div>
-        <div><div class="stat-v" id="rozMsg">0</div><div class="stat-l">Сообщений</div></div>
-        <div><div class="stat-v" id="rozTime">0:00</div><div class="stat-l">Время</div></div>
-      </div>
-      <div class="chat-log" id="chatLog"><span style="color:#444">Ожидание подключения…</span></div>
-    </div>
-
-    <div class="card">
-      <div class="card-label">Игры</div>
-      <div class="games-row">
-        <div class="gcard" id="gcRoulette" onclick="showGame('roulette')">
-          <div class="gcard-ico">🎰</div>Рулетка
+      <div class="tools">
+        <div class="tool" onclick="go('roz')">
+          <div class="ico">🎯</div><div class="name">Roz</div>
+          <div class="desc">Розыгрыш по Twitch чату: только реальные участники, 3-7 карточек.</div>
         </div>
-        <div class="gcard" id="gcVases" onclick="showGame('vases')">
-          <div class="gcard-ico">🏺</div>Вазы
+        <div class="tool" onclick="go('check')">
+          <div class="ico">🔎</div><div class="name">Check</div>
+          <div class="desc">Просмотр подписок пользователя: карточки, фильтр, сортировка, страницы.</div>
         </div>
-        <div class="gcard" id="gcCS" onclick="showGame('cs')">
-          <div class="gcard-ico">🎮</div>КС
+        <div class="tool" onclick="go('kino')">
+          <div class="ico">🎬</div><div class="name">Kino</div>
+          <div class="desc">Фильм по Kinopoisk ID, зеркала плеера и тайминги риска.</div>
+        </div>
+        <div class="tool" onclick="go('overlayroll')">
+          <div class="ico">🧿</div><div class="name">overlayROLL</div>
+          <div class="desc">Локальный realtime state на polling/KV для оверлея (Vercel-ready).</div>
+        </div>
+        <div class="tool" onclick="go('bingo')">
+          <div class="ico">🎱</div><div class="name">БИНГО</div>
+          <div class="desc">Лобби бочонков на polling/KV вместо WebSocket/SQLite.</div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Roulette panel -->
-    <div class="card" id="gpRoulette" style="display:none">
-      <div class="card-label">Рулетка — выбирает случайного участника</div>
-      <div class="slot-wrap">
-        <div class="slot-win">
-          <div class="slot-reel" id="slotReel">
-            <div class="slot-item" style="color:var(--muted)">Нажмите «Крутить»</div>
-          </div>
+    <section id="check" class="page">
+      <div class="topbar">
+        <button class="btn" onclick="go('home')">← Назад</button>
+        <div style="flex:1">
+          <h2 class="title">Check</h2>
+          <div class="subtitle">Формат TwiCheck: подписки пользователя по нику</div>
         </div>
       </div>
-      <div style="text-align:center;margin-top:14px">
-        <button class="btn-p" id="spinBtn" onclick="spinRoulette()">🎰 Крутить</button>
-      </div>
-    </div>
 
-    <!-- Vases panel -->
-    <div class="card" id="gpVases" style="display:none">
-      <div class="card-label">Вазы — разбивай, пока не найдёшь победителя</div>
-      <div class="vases" id="vasesGrid"></div>
-      <div style="text-align:center;margin-top:12px">
-        <button class="btn-s btn-sm" onclick="initVases()">🔄 Новая игра</button>
-      </div>
-    </div>
-
-    <!-- CS panel -->
-    <div class="card" id="gpCS" style="display:none">
-      <div class="card-label">КС — разделение участников на команды</div>
-      <div class="cs-grid" id="csGrid">
-        <div class="empty-msg" style="grid-column:1/-1">Нажмите кнопку для разделения</div>
-      </div>
-      <div style="text-align:center;margin-top:14px">
-        <button class="btn-p" onclick="runCS()">⚡ Разделить на команды</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== CHECK ===== -->
-  <div id="check" class="page">
-    <div class="topbar">
-      <button class="back-btn" onclick="go('home')">← Назад</button>
-      <div class="topbar-title">
-        <div class="pg-title">Check</div>
-        <div class="pg-sub">Информация о Twitch канале</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="row">
-        <input type="text" id="chkUser" placeholder="Никнейм Twitch" onkeydown="if(event.key==='Enter')checkUser()">
-        <button class="btn-p" onclick="checkUser()">🔍 Найти</button>
-      </div>
-    </div>
-    <div id="chkResult"></div>
-  </div>
-
-  <!-- ===== KINO ===== -->
-  <div id="kino" class="page">
-    <div class="topbar">
-      <button class="back-btn" onclick="go('home')">← Назад</button>
-      <div class="topbar-title">
-        <div class="pg-title">Kino</div>
-        <div class="pg-sub">Тайминги для совместного просмотра YouTube</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-label">YouTube ссылка</div>
-      <div class="row">
-        <input type="url" id="ytUrl" placeholder="https://www.youtube.com/watch?v=…" onkeydown="if(event.key==='Enter')loadYT()">
-        <button class="btn-p" onclick="loadYT()">▶ Загрузить</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="video-wrap">
-        <div class="video-ph" id="vtPh">
-          <div class="video-ph-ico">🎬</div>
-          <div>Вставьте ссылку на YouTube видео</div>
-        </div>
-        <iframe id="ytFrame" style="display:none" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      </div>
-      <div class="timer-bar">
-        <div class="timer-disp" id="kinoTimer">00:00:00</div>
-        <input type="text" id="tiLbl" placeholder="Название тайминга…" style="flex:1;min-width:130px;">
-        <button class="btn-p btn-sm" onclick="addTiming()">+ Тайминг</button>
-        <button class="btn-s btn-sm" onclick="setManualTime()">⌨ Ввести время</button>
-        <button class="btn-s btn-sm" onclick="kinoReset()">↺</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-        <div class="card-label" style="margin:0">Тайминги</div>
+      <div class="card">
         <div class="row">
-          <button class="btn-s btn-sm" onclick="exportTimings()">📋 Скопировать</button>
-          <button class="btn-d btn-sm" onclick="clearTimings()">🗑 Очистить</button>
+          <input id="check-user" placeholder="Введите ник Twitch">
+          <button class="btn purple" onclick="runCheck(1)">Получить подписки</button>
         </div>
       </div>
-      <div class="timings" id="timingsList">
-        <div class="empty-msg">Тайминги появятся здесь</div>
+
+      <div class="grid-3">
+        <div class="card"><div class="label">Пользователь</div><div class="value" id="check-user-name">—</div></div>
+        <div class="card"><div class="label">Всего подписок</div><div class="value" id="check-total">0</div></div>
+        <div class="card"><div class="label">Сейчас в эфире</div><div class="value" id="check-live">0</div></div>
       </div>
-    </div>
+
+      <div class="card">
+        <div class="row">
+          <input id="check-filter" placeholder="Фильтр по имени..." oninput="renderCheckList()">
+          <select id="check-sort" onchange="runCheck(1)">
+            <option value="date_desc">По дате (новые)</option>
+            <option value="date_asc">По дате (старые)</option>
+            <option value="name_asc">По имени (А-Я)</option>
+            <option value="name_desc">По имени (Я-А)</option>
+            <option value="live">Сначала в эфире</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="subs-grid" id="check-list"></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" onclick="runCheck(checkState.page - 1)">← Назад</button>
+          <div class="btn" style="text-align:center">Страница <span id="check-page">1</span> / <span id="check-pages">1</span></div>
+          <button class="btn" onclick="runCheck(checkState.page + 1)">Вперед →</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="kino" class="page">
+      <div class="topbar">
+        <button class="btn" onclick="go('home')">← Назад</button>
+        <div style="flex:1">
+          <h2 class="title">Kino</h2>
+          <div class="subtitle">Kinopoisk ID/URL, кино-плеер и тайминги риска</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <input id="kino-input" placeholder="https://www.kinopoisk.ru/film/258687/ или 258687">
+          <button class="btn primary" onclick="resolveKino()">Открыть фильм</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" onclick="nextMirror()">Следующее зеркало</button>
+          <button class="btn" onclick="openCurrentMirror()">Открыть в новой вкладке</button>
+          <div class="btn" id="kino-mirror-label">Зеркало: —</div>
+        </div>
+      </div>
+
+      <div class="kino-player" id="kino-player"></div>
+      <div class="warn" id="kino-note" style="display:none"></div>
+
+      <div class="card">
+        <div class="row">
+          <input id="kino-time" placeholder="Время (например 01:23:45)">
+          <select id="kino-category">
+            <option value="obnazhonka">обнажонка</option>
+            <option value="zapretnye-slova">запретные слова</option>
+            <option value="ban-risk-scena">бан-риск сцена</option>
+          </select>
+          <input id="kino-label" placeholder="Комментарий к таймингу">
+          <button class="btn purple" onclick="addTiming()">+ Добавить</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="timing-list" id="kino-timings"></div>
+      </div>
+    </section>
+
+    <section id="roz" class="page">
+      <div class="topbar">
+        <button class="btn" onclick="go('home')">← Назад</button>
+        <div style="flex:1">
+          <h2 class="title">Roz</h2>
+          <div class="subtitle">Реальные участники из Twitch чата (без Alpha/Beta и фейков)</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <input id="roz-channel" placeholder="Канал (например paracetamolhaze)">
+          <input id="roz-keyword" placeholder="Ключевое слово (например +)">
+          <button class="btn primary" onclick="rozConnect()">Подключиться</button>
+          <button class="btn bad" onclick="rozDisconnect()">Отключить</button>
+        </div>
+        <div class="warn" id="roz-status">Не подключено</div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <button class="btn purple" id="roz-spin-btn" onclick="rozSpin()">Запустить розыгрыш</button>
+          <button class="btn" onclick="rozSync()">Синхронизировать участников в KV</button>
+          <div class="btn">Участников: <span id="roz-count">0</span></div>
+        </div>
+        <div class="participants" id="roz-cards"></div>
+        <div id="roz-winner"></div>
+      </div>
+    </section>
+
+    <section id="overlayroll" class="page">
+      <div class="topbar">
+        <button class="btn" onclick="go('home')">← Назад</button>
+        <div style="flex:1">
+          <h2 class="title">overlayROLL</h2>
+          <div class="subtitle">Локальный модуль с polling API: <code>/api/realtime/state/overlayroll/{room}</code></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <input id="ov-room" value="main" placeholder="room">
+          <input id="ov-user" placeholder="viewer">
+          <input id="ov-pick" placeholder="pick">
+          <input id="ov-roll" placeholder="roll">
+          <select id="ov-result">
+            <option value="win">win</option>
+            <option value="lose">lose</option>
+          </select>
+          <button class="btn purple" onclick="pushOverlayState()">Отправить событие</button>
+        </div>
+      </div>
+      <div class="card">
+        <pre id="ov-state" style="white-space:pre-wrap;color:#dbe6ff;margin:0"></pre>
+      </div>
+      <div class="card">
+        <strong>Исходники подключены в монорепо:</strong>
+        <div class="subtitle">modules/overlayroll</div>
+      </div>
+    </section>
+
+    <section id="bingo" class="page">
+      <div class="topbar">
+        <button class="btn" onclick="go('home')">← Назад</button>
+        <div style="flex:1">
+          <h2 class="title">БИНГО</h2>
+          <div class="subtitle">Polling-state лобби: <code>/api/realtime/state/bingo/{room}</code></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <input id="bingo-room" value="main" placeholder="room">
+          <button class="btn purple" onclick="drawBingoNumber()">Тянуть бочонок</button>
+          <button class="btn bad" onclick="resetBingo()">Сброс</button>
+        </div>
+      </div>
+      <div class="card">
+        <div id="bingo-board" class="participants"></div>
+      </div>
+      <div class="card">
+        <strong>Исходники подключены в монорепо:</strong>
+        <div class="subtitle">modules/loto-server</div>
+      </div>
+    </section>
+
+    <footer>© 2026 tg:paracetomolhaze</footer>
   </div>
-</div>
 
-<!-- Winner overlay -->
-<div class="overlay" id="overlay">
-  <div class="win-box">
-    <div class="win-trophy" id="winTrophy">🏆</div>
-    <div class="win-lbl">Победитель</div>
-    <div class="win-name" id="winName">—</div>
-    <button class="btn-s" onclick="closeWin()">Закрыть</button>
-  </div>
-</div>
-
-<script>
-// ── Navigation ──────────────────────────────────────────────
-function go(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
-}
-function toast(msg, clr) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.color = clr || '#00d9ff';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3200);
-}
-const qs = new URLSearchParams(location.search);
-if (qs.get('p')) go(qs.get('p'));
-
-// ── ROZ ─────────────────────────────────────────────────────
-let ws = null, parts = new Set(), msgs = 0, rozSec = 0, rozTI = null;
-
-function rozConnect() {
-  const ch = document.getElementById('rozChannel').value.trim().toLowerCase();
-  const kw = document.getElementById('rozKw').value.trim().toLowerCase();
-  if (!ch || !kw) { toast('Введите канал и ключевое слово', '#ff4545'); return; }
-
-  if (ws) ws.close();
-  chatLog('Подключение к #' + ch + '…', '#666');
-
-  ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-
-  ws.onopen = () => {
-    ws.send('PASS SCHMOOPIIE');
-    ws.send('NICK justinfan' + Math.floor(Math.random() * 89999 + 10000));
-    ws.send('CAP REQ :twitch.tv/tags');
-    ws.send('JOIN #' + ch);
-  };
-
-  ws.onmessage = e => {
-    const lines = e.data.split('\r\n');
-    for (const ln of lines) {
-      if (!ln) continue;
-      if (ln.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
-
-      if (ln.includes(':End of /NAMES list') || ln.includes('376')) {
-        setBadge(true);
-        startRozTimer();
-        chatLog(`✅ Подключено к <b>#${ch}</b>. Жду слово: <span class="ck">"${kw}"</span>`, '#00ff88');
-        continue;
-      }
-
-      const m = ln.match(/:([^!]+)![^@]+@[^.]+\.tmi\.twitch\.tv PRIVMSG #[^ ]+ :(.+)/);
-      if (!m) continue;
-      const user = m[1], txt = m[2].trim();
-      msgs++;
-
-      if (txt.toLowerCase() === kw || txt.toLowerCase().startsWith(kw + ' ')) {
-        const isNew = !parts.has(user);
-        parts.add(user);
-        chatLog(`<span class="cu">${user}</span>: <span class="ck">${txt}</span>${isNew ? ' <b style="color:#00ff88">+1</b>' : ''}`);
-      }
-      updStats();
+  <script>
+    function go(id) {
+      document.querySelectorAll('.page').forEach((p) => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (id === 'overlayroll') pullOverlayState();
+      if (id === 'bingo') pullBingoState();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
 
-  ws.onerror = () => { chatLog('❌ Ошибка подключения. Проверьте канал.', '#ff4545'); setBadge(false); };
-  ws.onclose = () => { setBadge(false); stopRozTimer(); };
-}
+    async function api(url, options = {}) {
+      const res = await fetch(url, options);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data;
+    }
 
-function rozDisconnect() {
-  if (ws) { ws.close(); ws = null; }
-  chatLog('Отключено.', '#666');
-  setBadge(false); stopRozTimer();
-}
+    const checkState = { user: '', page: 1, pages: 1, items: [] };
+    async function runCheck(page = 1) {
+      try {
+        const userInput = document.getElementById('check-user').value.trim().toLowerCase();
+        const user = userInput || checkState.user;
+        if (!user) return;
+        checkState.user = user;
 
-function rozClear() {
-  parts.clear(); msgs = 0; updStats();
-  toast('Список очищен');
-}
+        const sort = document.getElementById('check-sort').value;
+        const query = new URLSearchParams({ user, page: String(Math.max(1, page)), sort });
+        const data = await api(`/api/check/subscriptions?${query.toString()}`);
 
-function setBadge(on) {
-  const b = document.getElementById('rozStatus');
-  b.textContent = on ? '● Подключено' : '● Отключено';
-  b.className = on ? 'badge badge-ok' : 'badge badge-off';
-}
+        checkState.page = data.page;
+        checkState.pages = data.pages;
+        checkState.items = data.items;
 
-function chatLog(html, col) {
-  const log = document.getElementById('chatLog');
-  const d = document.createElement('div');
-  d.className = 'chat-msg';
-  if (col) d.style.color = col;
-  d.innerHTML = html;
-  log.appendChild(d);
-  while (log.children.length > 120) log.removeChild(log.firstChild);
-  log.scrollTop = log.scrollHeight;
-}
-
-function updStats() {
-  document.getElementById('rozPart').textContent = parts.size;
-  document.getElementById('rozMsg').textContent = msgs;
-}
-
-function startRozTimer() {
-  stopRozTimer();
-  rozTI = setInterval(() => {
-    rozSec++;
-    const m = Math.floor(rozSec / 60), s = rozSec % 60;
-    document.getElementById('rozTime').textContent = m + ':' + String(s).padStart(2, '0');
-  }, 1000);
-}
-
-function stopRozTimer() { if (rozTI) { clearInterval(rozTI); rozTI = null; } }
-
-// Games
-function showGame(g) {
-  ['Roulette','Vases','CS'].forEach(x => {
-    document.getElementById('gp' + x).style.display = 'none';
-    document.getElementById('gc' + x).classList.remove('on');
-  });
-  const map = { roulette:'Roulette', vases:'Vases', cs:'CS' };
-  document.getElementById('gp' + map[g]).style.display = 'block';
-  document.getElementById('gc' + map[g]).classList.add('on');
-  if (g === 'vases') initVases();
-}
-
-function getPlayers() {
-  const list = [...parts];
-  return list.length >= 2 ? list : ['Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta'];
-}
-
-// Roulette
-function spinRoulette() {
-  const players = getPlayers();
-  const btn = document.getElementById('spinBtn');
-  btn.disabled = true;
-
-  const winner = players[Math.floor(Math.random() * players.length)];
-  const items = [];
-  for (let i = 0; i < 32; i++) items.push(players[Math.floor(Math.random() * players.length)]);
-  items.push(winner);
-
-  const reel = document.getElementById('slotReel');
-  reel.style.transition = 'none';
-  reel.style.transform = 'translateY(0)';
-  reel.innerHTML = items.map(n => `<div class="slot-item">${n}</div>`).join('');
-
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    reel.style.transition = 'transform 3.2s cubic-bezier(.25,.46,.45,.94)';
-    reel.style.transform = `translateY(-${(items.length - 1) * 82}px)`;
-  }));
-
-  setTimeout(() => { showWin(winner, '🎰'); btn.disabled = false; }, 3400);
-}
-
-// Vases
-function initVases() {
-  const players = getPlayers();
-  const grid = document.getElementById('vasesGrid');
-  const cnt = Math.min(10, Math.max(5, players.length));
-  const winIdx = Math.floor(Math.random() * cnt);
-  const shuffled = [...players].sort(() => Math.random() - .5);
-
-  grid.innerHTML = '';
-  for (let i = 0; i < cnt; i++) {
-    const b = document.createElement('div');
-    b.className = 'vase';
-    b.textContent = '🏺';
-    const pl = shuffled[i % shuffled.length];
-    b.dataset.p = pl;
-    b.dataset.w = i === winIdx;
-    b.onclick = function () {
-      if (this.classList.contains('empty') || this.classList.contains('win')) return;
-      if (this.dataset.w === 'true') {
-        this.classList.add('win'); this.textContent = '🏆';
-        setTimeout(() => showWin(this.dataset.p, '⚱️'), 250);
-      } else {
-        this.classList.add('empty'); this.textContent = '💨';
+        document.getElementById('check-user-name').textContent = data.user?.displayName || user;
+        document.getElementById('check-total').textContent = String(data.totals?.totalSubs || 0);
+        document.getElementById('check-live').textContent = String(data.totals?.liveCount || 0);
+        document.getElementById('check-page').textContent = String(checkState.page);
+        document.getElementById('check-pages').textContent = String(checkState.pages);
+        renderCheckList();
+      } catch (e) {
+        document.getElementById('check-list').innerHTML = `<div class="warn">${e.message}</div>`;
       }
+    }
+
+    function renderCheckList() {
+      const q = document.getElementById('check-filter').value.trim().toLowerCase();
+      const items = q
+        ? checkState.items.filter((x) => x.displayName.toLowerCase().includes(q) || x.login.includes(q))
+        : checkState.items;
+
+      const html = items.map((item) => {
+        const date = item.subscribedAt ? new Date(item.subscribedAt).toLocaleDateString('ru-RU') : 'дата неизвестна';
+        return `
+          <div class="sub-card">
+            <img class="avatar" src="${item.avatar || ''}" alt="${item.displayName}" onerror="this.style.visibility='hidden'">
+            <div>
+              <div class="sub-name">${item.displayName || item.login}</div>
+              <div class="sub-meta">@${item.login || 'unknown'} · ${date}</div>
+              <div style="margin-top:6px">${item.isLive ? '<span class=\"pill live\">● в эфире</span>' : '<span class=\"pill off\">○ offline</span>'}</div>
+            </div>
+          </div>`;
+      }).join('');
+      document.getElementById('check-list').innerHTML = html || '<div class="warn">Подписок не найдено.</div>';
+    }
+
+    const kinoState = { id: '', mirrors: [], current: 0 };
+    async function resolveKino() {
+      try {
+        const input = document.getElementById('kino-input').value.trim();
+        const data = await api(`/api/kino/resolve?id=${encodeURIComponent(input)}`);
+        kinoState.id = data.movieMeta.id;
+        kinoState.mirrors = data.mirrors || [];
+        kinoState.current = 0;
+        renderKinoMirror();
+        loadTimings();
+      } catch (e) {
+        document.getElementById('kino-player').innerHTML = `<div class="empty">${e.message}</div>`;
+      }
+    }
+
+    function renderKinoMirror() {
+      const note = document.getElementById('kino-note');
+      note.style.display = 'none';
+      if (!kinoState.mirrors.length) {
+        document.getElementById('kino-player').innerHTML = '<div class="empty">Нет доступных зеркал.</div>';
+        document.getElementById('kino-mirror-label').textContent = 'Зеркало: —';
+        return;
+      }
+      const m = kinoState.mirrors[kinoState.current];
+      document.getElementById('kino-mirror-label').textContent = `Зеркало: ${m.label}`;
+      document.getElementById('kino-player').innerHTML = `<iframe src="${m.embedUrl}" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+      note.style.display = 'block';
+      note.textContent = 'Если плеер не открылся, переключите зеркало или откройте в новой вкладке.';
+    }
+
+    function nextMirror() {
+      if (!kinoState.mirrors.length) return;
+      kinoState.current = (kinoState.current + 1) % kinoState.mirrors.length;
+      renderKinoMirror();
+    }
+
+    function openCurrentMirror() {
+      if (!kinoState.mirrors.length) return;
+      const m = kinoState.mirrors[kinoState.current];
+      window.open(m.openUrl, '_blank', 'noopener,noreferrer');
+    }
+
+    async function loadTimings() {
+      if (!kinoState.id) return;
+      const data = await api(`/api/kino/timings?id=${encodeURIComponent(kinoState.id)}`);
+      const list = data.timings || [];
+      const html = list.map((t) => {
+        const cls = t.category === 'obnazhonka' ? 'a' : t.category === 'zapretnye-slova' ? 'b' : 'c';
+        return `
+          <div class="timing">
+            <div><strong>${t.time}</strong></div>
+            <div class="cat ${cls}">${t.category}</div>
+            <div>${t.label}</div>
+            <button class="btn bad" onclick="removeTiming('${t.id}')">Удалить</button>
+          </div>`;
+      }).join('');
+      document.getElementById('kino-timings').innerHTML = html || '<div class="warn">Таймингов пока нет.</div>';
+    }
+
+    async function addTiming() {
+      if (!kinoState.id) return;
+      const time = document.getElementById('kino-time').value.trim();
+      const category = document.getElementById('kino-category').value;
+      const label = document.getElementById('kino-label').value.trim();
+      if (!time || !label) return;
+      await api(`/api/kino/timings?id=${encodeURIComponent(kinoState.id)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ time, category, label })
+      });
+      document.getElementById('kino-time').value = '';
+      document.getElementById('kino-label').value = '';
+      loadTimings();
+    }
+
+    async function removeTiming(timingId) {
+      if (!kinoState.id) return;
+      await api(`/api/kino/timings?id=${encodeURIComponent(kinoState.id)}&timingId=${encodeURIComponent(timingId)}`, { method: 'DELETE' });
+      loadTimings();
+    }
+
+    const rozState = {
+      ws: null,
+      participants: new Map(),
+      channel: '',
+      keyword: ''
     };
-    grid.appendChild(b);
-  }
-}
 
-// CS
-function runCS() {
-  const players = [...getPlayers()].sort(() => Math.random() - .5);
-  const half = Math.ceil(players.length / 2);
-  const t = players.slice(0, half), ct = players.slice(half);
-  document.getElementById('csGrid').innerHTML = `
-    <div class="cs-team cs-t">
-      <h3>🔴 TERRORISTS (${t.length})</h3>
-      ${t.map(p => `<div class="cs-pl">${p}</div>`).join('')}
-    </div>
-    <div class="cs-team cs-ct">
-      <h3>🔵 COUNTER-TERRORISTS (${ct.length})</h3>
-      ${ct.map(p => `<div class="cs-pl">${p}</div>`).join('')}
-    </div>`;
-}
-
-function showWin(name, ico = '🏆') {
-  document.getElementById('winTrophy').textContent = ico;
-  document.getElementById('winName').textContent = name;
-  document.getElementById('overlay').classList.add('show');
-}
-function closeWin() { document.getElementById('overlay').classList.remove('show'); }
-
-// ── CHECK ────────────────────────────────────────────────────
-async function checkUser() {
-  const u = document.getElementById('chkUser').value.trim();
-  if (!u) { toast('Введите никнейм', '#ff4545'); return; }
-
-  const res = document.getElementById('chkResult');
-  res.innerHTML = '<div class="loading"><div class="spinner"></div>Загрузка…</div>';
-
-  try {
-    const [uRes, sRes] = await Promise.all([
-      fetch(`/api/twitch?a=u&u=${encodeURIComponent(u)}`),
-      fetch(`/api/twitch?a=s&u=${encodeURIComponent(u)}`)
-    ]);
-    const user = await uRes.json();
-    const stream = await sRes.json();
-
-    if (!user || !user.id) {
-      res.innerHTML = `<div class="card" style="text-align:center;padding:40px;color:var(--muted)">
-        <div style="font-size:2.5rem;margin-bottom:10px">❓</div>
-        Канал <b>${u}</b> не найден
-      </div>`;
-      return;
+    function setRozStatus(text) {
+      document.getElementById('roz-status').textContent = text;
     }
 
-    let followers = '—';
-    try {
-      const fRes = await fetch(`/api/twitch?a=f&u=${encodeURIComponent(u)}`);
-      const fd = await fRes.json();
-      followers = (fd.total ?? 0).toLocaleString('ru');
-    } catch (_) {}
-
-    const date = user.created_at ? new Date(user.created_at).toLocaleDateString('ru', { year:'numeric', month:'long', day:'numeric' }) : '—';
-    const live = stream?.live;
-    const host = location.hostname;
-
-    res.innerHTML = `
-      <div class="card">
-        <div class="profile">
-          ${user.profile_image_url
-            ? `<img class="avatar" src="${user.profile_image_url}" alt="">`
-            : `<div class="avatar-ph">👤</div>`}
-          <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
-              <div class="uname">${user.display_name}</div>
-              <span class="badge ${live ? 'badge-live' : 'badge-off'}">${live ? '🔴 LIVE' : '○ Offline'}</span>
-            </div>
-            <div class="ulogin">@${user.login}</div>
-            ${live && stream.stream ? `
-              <div class="stream-box">
-                <b>${stream.stream.title || 'Без названия'}</b>
-                ${stream.stream.game_name ? ` — <span style="color:var(--muted)">${stream.stream.game_name}</span>` : ''}
-                <span style="color:var(--muted);margin-left:8px;font-size:.8rem">👁 ${(stream.stream.viewer_count||0).toLocaleString('ru')}</span>
-              </div>` : ''}
-            <div class="u-stats">
-              <div><div class="u-stat-v">${followers}</div><div class="u-stat-l">Подписчики</div></div>
-              <div><div class="u-stat-v">${(user.view_count||0).toLocaleString('ru')}</div><div class="u-stat-l">Просмотры</div></div>
-              <div><div class="u-stat-v" style="font-size:.95rem">${date}</div><div class="u-stat-l">Дата регистрации</div></div>
-            </div>
-          </div>
+    function renderRozCards(activeLogin = '') {
+      const people = [...rozState.participants.values()];
+      document.getElementById('roz-count').textContent = String(people.length);
+      const show = people.slice(0, 7);
+      const html = show.map((p) => `
+        <div class="p-card ${activeLogin === p.login ? 'active' : ''}">
+          <img src="${p.avatar || ''}" onerror="this.style.visibility='hidden'">
+          <div style="margin-top:6px;font-weight:700">${p.displayName || p.login}</div>
+          <div style="font-size:.75rem;color:#9ca8cf">@${p.login}</div>
         </div>
-      </div>
-      ${live ? `
-      <div class="card">
-        <div class="card-label">Прямой эфир</div>
-        <div class="video-wrap">
-          <iframe src="https://player.twitch.tv/?channel=${user.login}&parent=${host}" allowfullscreen></iframe>
-        </div>
-      </div>` : ''}
-    `;
-  } catch (e) {
-    res.innerHTML = `<div class="card" style="text-align:center;padding:32px;color:var(--red)">Ошибка: ${e.message}</div>`;
-  }
-}
+      `).join('');
+      document.getElementById('roz-cards').innerHTML = html || '<div class="warn">Участников пока нет.</div>';
+    }
 
-// ── KINO ─────────────────────────────────────────────────────
-let ytReady = false, ytPlayer = null, timings = [], kinoSec = 0, kinoTI = null;
+    function rozConnect() {
+      const channel = document.getElementById('roz-channel').value.trim().toLowerCase();
+      const keyword = document.getElementById('roz-keyword').value.trim().toLowerCase();
+      if (!channel || !keyword) return;
+      rozState.channel = channel;
+      rozState.keyword = keyword;
+      document.getElementById('roz-winner').innerHTML = '';
 
-// Load YouTube IFrame API
-(function () {
-  const s = document.createElement('script');
-  s.src = 'https://www.youtube.com/iframe_api';
-  document.head.appendChild(s);
-})();
+      if (rozState.ws) {
+        try { rozState.ws.close(); } catch (_) {}
+      }
+      const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+      rozState.ws = ws;
+      setRozStatus(`Подключение к #${channel}...`);
 
-window.onYouTubeIframeAPIReady = () => { ytReady = true; };
+      ws.onopen = () => {
+        ws.send('PASS SCHMOOPIIE');
+        ws.send('NICK justinfan' + Math.floor(Math.random() * 90000 + 10000));
+        ws.send('JOIN #' + channel);
+      };
 
-// Auto-sync timer with YT player
-setInterval(() => {
-  if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
-    try {
-      const s = Math.floor(ytPlayer.getCurrentTime());
-      if (s !== kinoSec) { kinoSec = s; updKinoTimer(); }
-    } catch (_) {}
-  }
-}, 500);
+      ws.onmessage = (e) => {
+        const lines = e.data.split('\r\n');
+        lines.forEach((line) => {
+          if (!line) return;
+          if (line.startsWith('PING')) {
+            ws.send('PONG :tmi.twitch.tv');
+            return;
+          }
+          if (line.includes(':End of /NAMES list') || line.includes(' 376 ')) {
+            setRozStatus(`Подключено к #${channel}. Ключевое слово: "${keyword}"`);
+            return;
+          }
+          const m = line.match(/:([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)$/);
+          if (!m) return;
+          const login = m[1].toLowerCase();
+          const text = m[2].trim().toLowerCase();
+          if (text === keyword || text.startsWith(keyword + ' ')) {
+            if (!rozState.participants.has(login)) {
+              rozState.participants.set(login, {
+                login,
+                displayName: m[1],
+                avatar: `https://unavatar.io/twitch/${encodeURIComponent(login)}`,
+                joinedAt: new Date().toISOString()
+              });
+              renderRozCards();
+            }
+          }
+        });
+      };
+      ws.onclose = () => setRozStatus('Отключено.');
+      ws.onerror = () => setRozStatus('Ошибка подключения к чату.');
+    }
 
-function extractYTId(url) {
-  const p = [
-    /[?&]v=([^&#]+)/,
-    /youtu\.be\/([^?&#]+)/,
-    /youtube\.com\/embed\/([^?&#]+)/,
-    /youtube\.com\/shorts\/([^?&#]+)/
-  ];
-  for (const r of p) { const m = url.match(r); if (m) return m[1]; }
-  return null;
-}
+    function rozDisconnect() {
+      if (rozState.ws) {
+        try { rozState.ws.close(); } catch (_) {}
+        rozState.ws = null;
+      }
+      setRozStatus('Отключено.');
+    }
 
-function loadYT() {
-  const url = document.getElementById('ytUrl').value.trim();
-  const vid = extractYTId(url);
-  if (!vid) { toast('Неверная YouTube ссылка', '#ff4545'); return; }
+    async function rozSync() {
+      if (!rozState.channel) return;
+      await api(`/api/roz/participants?channel=${encodeURIComponent(rozState.channel)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participants: [...rozState.participants.values()] })
+      });
+      setRozStatus('Участники синхронизированы в KV.');
+    }
 
-  document.getElementById('vtPh').style.display = 'none';
-  const fr = document.getElementById('ytFrame');
-  fr.style.display = 'block';
+    async function rozSpin() {
+      const players = [...rozState.participants.values()];
+      if (players.length < 3) {
+        document.getElementById('roz-winner').innerHTML = '<div class="warn">Недостаточно участников: нужно минимум 3 реальных человека.</div>';
+        return;
+      }
 
-  if (ytReady && !ytPlayer) {
-    ytPlayer = new YT.Player('ytFrame', {
-      videoId: vid,
-      playerVars: { playsinline: 1 },
-      events: { onReady: () => toast('Видео загружено! Нажимай + Тайминг во время просмотра.') }
-    });
-  } else if (ytPlayer) {
-    ytPlayer.loadVideoById(vid);
-    toast('Новое видео загружено!');
-  } else {
-    // Fallback iframe
-    fr.src = `https://www.youtube.com/embed/${vid}?enablejsapi=1&origin=${location.origin}`;
-    toast('Видео загружено!');
-  }
-}
+      const show = players.slice(0, 7);
+      let ticks = 0;
+      const maxTicks = 16;
+      const spinBtn = document.getElementById('roz-spin-btn');
+      spinBtn.disabled = true;
 
-function fmtTime(sec) {
-  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-}
-function updKinoTimer() { document.getElementById('kinoTimer').textContent = fmtTime(kinoSec); }
+      const interval = setInterval(() => {
+        const current = show[Math.floor(Math.random() * show.length)];
+        renderRozCards(current.login);
+        ticks++;
+        if (ticks >= maxTicks) {
+          clearInterval(interval);
+          const winner = show[Math.floor(Math.random() * show.length)];
+          renderRozCards(winner.login);
+          document.getElementById('roz-winner').innerHTML = `<div class="winner">Победитель: ${winner.displayName} (@${winner.login})</div>`;
+          spinBtn.disabled = false;
+        }
+      }, 140);
+    }
 
-function addTiming() {
-  // Try to sync from YT
-  if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
-    try { kinoSec = Math.floor(ytPlayer.getCurrentTime()); updKinoTimer(); } catch (_) {}
-  }
-  const lbl = document.getElementById('tiLbl').value.trim() || `Тайминг ${timings.length + 1}`;
-  timings.push({ sec: kinoSec, time: fmtTime(kinoSec), lbl });
-  timings.sort((a, b) => a.sec - b.sec);
-  document.getElementById('tiLbl').value = '';
-  renderTimings();
-  toast(`Добавлено: ${fmtTime(kinoSec)} — ${lbl}`);
-}
+    async function getRealtime(moduleName, room) {
+      return api(`/api/realtime/state/${encodeURIComponent(moduleName)}/${encodeURIComponent(room)}`);
+    }
 
-function setManualTime() {
-  const inp = prompt('Введите время (формат ЧЧ:ММ:СС или ММ:СС):');
-  if (!inp) return;
-  const parts = inp.trim().split(':').map(Number);
-  let sec = 0;
-  if (parts.length === 3) sec = parts[0]*3600 + parts[1]*60 + parts[2];
-  else if (parts.length === 2) sec = parts[0]*60 + parts[1];
-  if (isNaN(sec)) { toast('Неверный формат', '#ff4545'); return; }
-  kinoSec = sec;
-  updKinoTimer();
-  if (ytPlayer && typeof ytPlayer.seekTo === 'function') ytPlayer.seekTo(sec, true);
-}
+    async function postRealtime(moduleName, room, state) {
+      return api(`/api/realtime/state/${encodeURIComponent(moduleName)}/${encodeURIComponent(room)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state })
+      });
+    }
 
-function kinoReset() { kinoSec = 0; updKinoTimer(); }
+    async function pullOverlayState() {
+      try {
+        const room = document.getElementById('ov-room').value.trim() || 'main';
+        const out = await getRealtime('overlayroll', room);
+        document.getElementById('ov-state').textContent = JSON.stringify(out.state || {}, null, 2);
+      } catch (e) {
+        document.getElementById('ov-state').textContent = e.message;
+      }
+    }
 
-function renderTimings() {
-  const el = document.getElementById('timingsList');
-  if (!timings.length) { el.innerHTML = '<div class="empty-msg">Тайминги появятся здесь</div>'; return; }
-  el.innerHTML = timings.map((t, i) => `
-    <div class="ti">
-      <div class="ti-time" title="Перейти к этому моменту" style="cursor:pointer" onclick="seekTo(${t.sec})">${t.time}</div>
-      <div class="ti-lbl">${t.lbl}</div>
-      <button class="ti-del" onclick="delTiming(${i})">✕</button>
-    </div>`).join('');
-}
+    async function pushOverlayState() {
+      const room = document.getElementById('ov-room').value.trim() || 'main';
+      const user = document.getElementById('ov-user').value.trim() || 'viewer';
+      const pick = Number(document.getElementById('ov-pick').value || 0);
+      const roll = Number(document.getElementById('ov-roll').value || 0);
+      const result = document.getElementById('ov-result').value;
+      await postRealtime('overlayroll', room, { user, pick, roll, result });
+      pullOverlayState();
+    }
 
-function seekTo(sec) {
-  kinoSec = sec; updKinoTimer();
-  if (ytPlayer && typeof ytPlayer.seekTo === 'function') ytPlayer.seekTo(sec, true);
-}
+    async function pullBingoState() {
+      const room = document.getElementById('bingo-room').value.trim() || 'main';
+      const out = await getRealtime('bingo', room);
+      const drawn = Array.isArray(out.state?.drawn) ? out.state.drawn : [];
+      const board = drawn.map((n) => `<div class="p-card"><strong>${n}</strong></div>`).join('');
+      document.getElementById('bingo-board').innerHTML = board || '<div class="warn">Бочонки еще не вытягивались.</div>';
+    }
 
-function delTiming(i) { timings.splice(i, 1); renderTimings(); }
-function clearTimings() { timings = []; renderTimings(); toast('Тайминги удалены'); }
+    async function drawBingoNumber() {
+      const room = document.getElementById('bingo-room').value.trim() || 'main';
+      const out = await getRealtime('bingo', room);
+      const drawn = Array.isArray(out.state?.drawn) ? out.state.drawn : [];
+      const pool = [];
+      for (let n = 1; n <= 90; n++) if (!drawn.includes(n)) pool.push(n);
+      if (!pool.length) return;
+      const next = pool[Math.floor(Math.random() * pool.length)];
+      await postRealtime('bingo', room, { drawn: [...drawn, next] });
+      pullBingoState();
+    }
 
-function exportTimings() {
-  if (!timings.length) { toast('Нет таймингов', '#ff4545'); return; }
-  const txt = timings.map(t => `${t.time} — ${t.lbl}`).join('\n');
-  navigator.clipboard.writeText(txt)
-    .then(() => toast('Тайминги скопированы в буфер!'))
-    .catch(() => prompt('Скопируйте тайминги:', txt));
-}
-</script>
+    async function resetBingo() {
+      const room = document.getElementById('bingo-room').value.trim() || 'main';
+      await postRealtime('bingo', room, { drawn: [] });
+      pullBingoState();
+    }
+
+    setInterval(() => {
+      const overlayVisible = document.getElementById('overlayroll').classList.contains('active');
+      const bingoVisible = document.getElementById('bingo').classList.contains('active');
+      if (overlayVisible) pullOverlayState();
+      if (bingoVisible) pullBingoState();
+    }, 2000);
+  </script>
 </body>
 </html>
