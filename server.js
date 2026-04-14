@@ -8,6 +8,8 @@ const CLIENT_SECRET = 'pyah3tkzpdk8bd3ta4d8v2ynygt9j5';
 const SC_CLIENT_ID = 'B48zwWMdEXabNmvW';
 const SC_TOKEN = '$2y$10$1oDc6YqpQ2dOdh10tdmLhOZX56f99.u9rD.1gCKf2TqabJPUPeWKO';
 
+// Updated Twitch API credentials - redeploy trigger
+
 let tokenCache = null;
 let tokenExpiry = 0;
 
