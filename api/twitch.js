@@ -1,56 +1,61 @@
-export const config = {
-  runtime: 'edge',
-  api: {
-    bodyParser: false,
-  }
-};
+let _token = null;
+let _expiry = 0;
 
 const CLIENT_ID = 'njwi66jx4ju5kpb25aeh4fd4i2okq5';
 const CLIENT_SECRET = 'uspju8gdepuar3e7fgv7c5q0p5xem8';
 
-let token = '';
-
 async function getToken() {
-  if (token) return token;
-  const res = await fetch('https://id.twitch.tv/oauth2/token?' + new URLSearchParams({
-    client_id: CLIENT_ID,
-    client_secret: CLIENT_SECRET,
-    grant_type: 'client_credentials'
-  }), { method: 'POST' });
-  const d = await res.json();
-  token = d.access_token;
-  return token;
+  if (_token && Date.now() < _expiry) return _token;
+  const r = await fetch('https://id.twitch.tv/oauth2/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&grant_type=client_credentials`
+  });
+  const d = await r.json();
+  _token = d.access_token;
+  _expiry = Date.now() + (d.expires_in - 300) * 1000;
+  return _token;
 }
 
-export default async function(req) {
-  const url = new URL(req.url);
-  const action = url.searchParams.get('a');
-  const u = url.searchParams.get('u');
-  
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const { a, u } = req.query;
+
   try {
-    const tok = await getToken();
-    
-    let data;
-    if (action === 'u') {
-      const res = await fetch('https://api.twitch.tv/helix/users?login=' + u, {
-        headers: { 'Client-ID': CLIENT_ID, 'Authorization': 'Bearer ' + tok }
-      });
-      data = await res.json();
-      return new Response(JSON.stringify(data.data?.[0] || null), {
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
-      });
+    const token = await getToken();
+    const headers = { 'Client-ID': CLIENT_ID, 'Authorization': `Bearer ${token}` };
+
+    // User info
+    if (a === 'u' && u) {
+      const r = await fetch(`https://api.twitch.tv/helix/users?login=${encodeURIComponent(u)}`, { headers });
+      const d = await r.json();
+      return res.json(d.data?.[0] ?? null);
     }
-    if (action === 's') {
-      const res = await fetch('https://api.twitch.tv/helix/streams?user_login=' + u, {
-        headers: { 'Client-ID': CLIENT_ID, 'Authorization': 'Bearer ' + tok }
-      });
-      data = await res.json();
-      return new Response(JSON.stringify({ live: !!data.data?.length }), {
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
-      });
+
+    // Stream status
+    if (a === 's' && u) {
+      const r = await fetch(`https://api.twitch.tv/helix/streams?user_login=${encodeURIComponent(u)}`, { headers });
+      const d = await r.json();
+      return res.json({ live: !!(d.data?.length), stream: d.data?.[0] ?? null });
     }
-    return new Response('{"e":"bad"}', { status: 400 });
-  } catch(e) {
-    return new Response('{"e":"' + e.message + '"}', { status: 500 });
+
+    // Followers count
+    if (a === 'f' && u) {
+      const ur = await fetch(`https://api.twitch.tv/helix/users?login=${encodeURIComponent(u)}`, { headers });
+      const ud = await ur.json();
+      const uid = ud.data?.[0]?.id;
+      if (!uid) return res.json({ total: 0 });
+      const fr = await fetch(`https://api.twitch.tv/helix/channels/followers?broadcaster_id=${uid}&first=1`, { headers });
+      const fd = await fr.json();
+      return res.json({ total: fd.total ?? 0 });
+    }
+
+    res.status(400).json({ error: 'bad request' });
+  } catch (e) {
+    console.error('Twitch API error:', e);
+    res.status(500).json({ error: e.message });
   }
-}
+};
