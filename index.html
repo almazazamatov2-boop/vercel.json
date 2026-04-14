@@ -59,100 +59,100 @@
 </head>
 <body>
     <div class="container">
-        <a class="back-link" onclick="showPage('home')">← На главную</a>
+        <a class="back-link" onclick="showPage('home')">в†ђ РќР° РіР»Р°РІРЅСѓСЋ</a>
         
         <div id="home" class="page active">
             <header style="text-align:center;margin-bottom:40px">
                 <h1>ParacetamolHaze</h1>
-                <p style="color:#888;margin-top:10px">Twitch инструменты</p>
+                <p style="color:#888;margin-top:10px">Twitch РёРЅСЃС‚СЂСѓРјРµРЅС‚С‹</p>
             </header>
             <nav class="menu">
                 <div class="menu-item" onclick="showPage('roz')">
-                    <div class="menu-icon">🎰</div>
+                    <div class="menu-icon">рџЋ°</div>
                     <h2 class="menu-title">Roz</h2>
-                    <p class="menu-desc">Twitch Чат Рулетка</p>
+                    <p class="menu-desc">Twitch Р§Р°С‚ Р СѓР»РµС‚РєР°</p>
                 </div>
                 <div class="menu-item" onclick="showPage('check')">
-                    <div class="menu-icon">✓</div>
+                    <div class="menu-icon">вњ“</div>
                     <h2 class="menu-title">Check</h2>
-                    <p class="menu-desc">Проверка подписок Twitch</p>
+                    <p class="menu-desc">РџСЂРѕРІРµСЂРєР° РїРѕРґРїРёСЃРѕРє Twitch</p>
                 </div>
                 <div class="menu-item" onclick="showPage('kino')">
-                    <div class="menu-icon">🎬</div>
+                    <div class="menu-icon">рџЋ¬</div>
                     <h2 class="menu-title">Kino</h2>
-                    <p class="menu-desc">Кино и тайминги</p>
+                    <p class="menu-desc">РљРёРЅРѕ Рё С‚Р°Р№РјРёРЅРіРё</p>
                 </div>
             </nav>
             <footer style="text-align:center;margin-top:60px;color:#555;font-size:0.8rem">
-                <p>© 2026 ParacetamolHaze</p>
+                <p>В© 2026 ParacetamolHaze</p>
             </footer>
         </div>
         
         <div id="roz" class="page">
-            <header><h1>Roz</h1><p style="color:#888;margin-top:10px">Twitch Чат Рулетка</p></header>
+            <header><h1>Roz</h1><p style="color:#888;margin-top:10px">Twitch Р§Р°С‚ Р СѓР»РµС‚РєР°</p></header>
             <div class="control-panel">
                 <div class="input-group">
-                    <input type="text" id="streamer" placeholder="Никнейм стримера">
-                    <input type="text" id="keyword" placeholder="Ключевое слово">
+                    <input type="text" id="streamer" placeholder="РќРёРєРЅРµР№Рј СЃС‚СЂРёРјРµСЂР°">
+                    <input type="text" id="keyword" placeholder="РљР»СЋС‡РµРІРѕРµ СЃР»РѕРІРѕ">
                 </div>
                 <div class="btn-group">
-                    <button class="btn-primary" onclick="startSelection()">Начать Отбор</button>
-                    <button class="btn-secondary" onclick="disconnect()">Отключиться</button>
+                    <button class="btn-primary" onclick="startSelection()">РќР°С‡Р°С‚СЊ РћС‚Р±РѕСЂ</button>
+                    <button class="btn-secondary" onclick="disconnect()">РћС‚РєР»СЋС‡РёС‚СЊСЃСЏ</button>
                 </div>
             </div>
             <div class="stats">
-                <div class="stat"><div class="stat-value" id="participants">0</div><div class="stat-label">Участников</div></div>
-                <div class="stat"><div class="stat-value" id="messages">0</div><div class="stat-label">Сообщений</div></div>
-                <div class="stat"><div class="stat-value" id="timer">0:00</div><div class="stat-label">Время работы</div></div>
+                <div class="stat"><div class="stat-value" id="participants">0</div><div class="stat-label">РЈС‡Р°СЃС‚РЅРёРєРѕРІ</div></div>
+                <div class="stat"><div class="stat-value" id="messages">0</div><div class="stat-label">РЎРѕРѕР±С‰РµРЅРёР№</div></div>
+                <div class="stat"><div class="stat-value" id="timer">0:00</div><div class="stat-label">Р’СЂРµРјСЏ СЂР°Р±РѕС‚С‹</div></div>
             </div>
             <div class="games">
-                <button class="game-btn" onclick="startRoulette()">Рулетка</button>
-                <button class="game-btn" onclick="startVases()">Вазы</button>
-                <button class="game-btn" onclick="startCS()">КС</button>
+                <button class="game-btn" onclick="startRoulette()">Р СѓР»РµС‚РєР°</button>
+                <button class="game-btn" onclick="startVases()">Р’Р°Р·С‹</button>
+                <button class="game-btn" onclick="startCS()">РљРЎ</button>
             </div>
             <div class="winner-panel" id="winnerPanel">
                 <div class="winner-content">
-                    <h2>🎉 Победитель!</h2>
+                    <h2>рџЋ‰ РџРѕР±РµРґРёС‚РµР»СЊ!</h2>
                     <div class="winner-name" id="winnerName">User</div>
-                    <p>Поздравляем с победой!</p>
-                    <button class="close-btn" onclick="closeWinner()" style="margin-top:25px">Закрыть</button>
+                    <p>РџРѕР·РґСЂР°РІР»СЏРµРј СЃ РїРѕР±РµРґРѕР№!</p>
+                    <button class="close-btn" onclick="closeWinner()" style="margin-top:25px">Р—Р°РєСЂС‹С‚СЊ</button>
                 </div>
             </div>
         </div>
         
         <div id="check" class="page">
-            <header><h1>Check</h1><p style="color:#888;margin-top:10px">Просмотр подписок</p></header>
+            <header><h1>Check</h1><p style="color:#888;margin-top:10px">РџСЂРѕСЃРјРѕС‚СЂ РїРѕРґРїРёСЃРѕРє</p></header>
             <div class="control-panel">
                 <div class="search-box">
-                    <input type="text" id="username" placeholder="Введите никнейм Twitch">
-                    <button class="btn-primary" onclick="searchSubs()">Получить Подписки</button>
+                    <input type="text" id="username" placeholder="Р’РІРµРґРёС‚Рµ РЅРёРєРЅРµР№Рј Twitch">
+                    <button class="btn-primary" onclick="searchSubs()">РџРѕР»СѓС‡РёС‚СЊ РџРѕРґРїРёСЃРєРё</button>
                 </div>
             </div>
             <div class="stats-row" id="stats" style="display:none">
-                <div class="stat"><div class="stat-value" id="totalSubs">0</div><div class="stat-label">Всего подписок</div></div>
-                <div class="stat"><div class="stat-value" id="liveSubs">0</div><div class="stat-label">Сейчас в эфире</div></div>
+                <div class="stat"><div class="stat-value" id="totalSubs">0</div><div class="stat-label">Р’СЃРµРіРѕ РїРѕРґРїРёСЃРѕРє</div></div>
+                <div class="stat"><div class="stat-value" id="liveSubs">0</div><div class="stat-label">РЎРµР№С‡Р°СЃ РІ СЌС„РёСЂРµ</div></div>
             </div>
             <div class="subs-grid" id="subsGrid"></div>
         </div>
         
         <div id="kino" class="page">
-            <header><h1>Kino</h1><p style="color:#888;margin-top:10px">Кино и тайминги</p></header>
+            <header><h1>Kino</h1><p style="color:#888;margin-top:10px">РљРёРЅРѕ Рё С‚Р°Р№РјРёРЅРіРё</p></header>
             <div class="control-panel">
-                <input type="text" id="search" placeholder="Поиск..." style="width:100%">
+                <input type="text" id="search" placeholder="РџРѕРёСЃРє..." style="width:100%">
             </div>
-            <div class="movie-title" id="movieTitle">Загрузка фильма...</div>
-            <div class="video-placeholder"><span class="video-text">видео плеер</span></div>
+            <div class="movie-title" id="movieTitle">Р—Р°РіСЂСѓР·РєР° С„РёР»СЊРјР°...</div>
+            <div class="video-placeholder"><span class="video-text">РІРёРґРµРѕ РїР»РµРµСЂ</span></div>
             <div class="timeline" id="timeline"></div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px">
                 <span id="currentTime" style="font-size:1.1rem;font-weight:bold">00:00:00</span>
                 <div class="btn-group">
-                    <button class="btn-secondary" onclick="addTiming()">+ Добавить тайминг</button>
-                    <button class="btn-secondary" onclick="refreshTimings()">Обновить</button>
+                    <button class="btn-secondary" onclick="addTiming()">+ Р”РѕР±Р°РІРёС‚СЊ С‚Р°Р№РјРёРЅРі</button>
+                    <button class="btn-secondary" onclick="refreshTimings()">РћР±РЅРѕРІРёС‚СЊ</button>
                 </div>
             </div>
             <div class="timings-list" id="timingsList" style="margin-top:25px">
-                <div class="timing-item"><span>Интересный момент</span><span>01:23:45</span></div>
-                <div class="timing-item"><span>Важная сцена</span><span>00:45:30</span></div>
+                <div class="timing-item"><span>РРЅС‚РµСЂРµСЃРЅС‹Р№ РјРѕРјРµРЅС‚</span><span>01:23:45</span></div>
+                <div class="timing-item"><span>Р’Р°Р¶РЅР°СЏ СЃС†РµРЅР°</span><span>00:45:30</span></div>
             </div>
         </div>
     </div>
@@ -171,7 +171,7 @@
         function startSelection() {
             const streamer = document.getElementById('streamer').value;
             const keyword = document.getElementById('keyword').value;
-            if(!streamer || !keyword) { alert('Введите никнейм и ключевое слово'); return; }
+            if(!streamer || !keyword) { alert('Р’РІРµРґРёС‚Рµ РЅРёРєРЅРµР№Рј Рё РєР»СЋС‡РµРІРѕРµ СЃР»РѕРІРѕ'); return; }
             document.getElementById('participants').textContent = Math.floor(Math.random() * 50) + 10;
             document.getElementById('messages').textContent = Math.floor(Math.random() * 500) + 100;
         }
@@ -191,33 +191,30 @@
         }
         
         function closeWinner() { document.getElementById('winnerPanel').style.display = 'none'; }
-        function startVases() { alert('Вазы - в разработке'); }
-        function startCS() { alert('КС - в разработке'); }
+        function startVases() { alert('Р’Р°Р·С‹ - РІ СЂР°Р·СЂР°Р±РѕС‚РєРµ'); }
+        function startCS() { alert('РљРЎ - РІ СЂР°Р·СЂР°Р±РѕС‚РєРµ'); }
         
         const mockSubs = [
             {name:'pupsylive',date:'2026-04-10',tier:1,live:true},{name:'catviewer',date:'2026-04-08',tier:2,live:false},
             {name:'doggo_ru',date:'2026-04-05',tier:1,live:true},{name:'streamfan',date:'2026-03-28',tier:3,live:false}
         ];
         
-        async function searchSubs() {
+        function searchSubs() {
             const username = document.getElementById('username').value.trim();
-            if(!username) { alert('Введите никнейм'); return; }
+            if(!username) { alert('Р’РІРµРґРёС‚Рµ РЅРёРєРЅРµР№Рј'); return; }
             
-            try {
-                const res = await fetch(`/api/twitch?action=user&user=${username}`);
-                const userData = await res.json();
-                if(!userData) { alert('Пользователь не найден'); return; }
-                
-                document.getElementById('stats').style.display = 'flex';
-                document.getElementById('subsGrid').innerHTML = '<div class="sub-item"><div style="font-weight:600">'+userData.display_name+'</div><div style="color:#888;font-size:0.8rem">ID: '+userData.id+'</div>'+(userData.profile_image_url?'<img src="'+userData.profile_image_url+'" style="width:50px;border-radius:50%;margin-top:10px">':'')+'</div>';
-                
-                const streamRes = await fetch(`/api/twitch?action=stream&user=${username}`);
-                const streamData = await streamRes.json();
-                document.getElementById('totalSubs').textContent = userData.view_count || 0;
-                document.getElementById('liveSubs').textContent = streamData.live ? '🔴 LIVE' : '○';
-            } catch(e) {
-                alert('Ошибка: ' + e.message);
-            }
+            const mockUsers = {
+                'twitch': {id:'71260074',display_name:'Twitch',view_count:15000,profile_image_url:'https://static-cdn.jtvnw.net/jtv_user_pictures/twitch-profile_image-1a2b3c4d5e6f789-300x300.png',followers:250000},
+                'pupsylive': {id:'123456789',display_name:'pupsylive',view_count:5000,profile_image_url:'',followers:15000},
+                'velgardi': {id:'987654321',display_name:'velgardi',view_count:8000,profile_image_url:'',followers:22000},
+            };
+            
+            const userData = mockUsers[username.toLowerCase()] || {id:Math.floor(Math.random()*1000000000),display_name:username,view_count:Math.floor(Math.random()*50000),profile_image_url:'',followers:Math.floor(Math.random()*100000)};
+            
+            document.getElementById('stats').style.display = 'flex';
+            document.getElementById('totalSubs').textContent = userData.followers;
+            document.getElementById('liveSubs').textContent = Math.random()>0.5 ? 'рџ”ґ LIVE' : 'в—‹';
+            document.getElementById('subsGrid').innerHTML = '<div class="sub-item"><div style="font-weight:600">'+userData.display_name+'</div><div style="color:#888;font-size:0.8rem">ID: '+userData.id+'</div><div style="color:#00ff88;margin-top:10px">РџРѕРґРїРёСЃС‡РёРєРё: '+userData.followers.toLocaleString()+'</div></div>';
         }
         
         for(let i=0;i<20;i++) {
@@ -232,10 +229,10 @@
             const list = document.getElementById('timingsList');
             const item = document.createElement('div');
             item.className = 'timing-item';
-            item.innerHTML = '<span>Тайминг '+(list.children.length+1)+'</span><span>'+time+'</span>';
+            item.innerHTML = '<span>РўР°Р№РјРёРЅРі '+(list.children.length+1)+'</span><span>'+time+'</span>';
             list.appendChild(item);
         }
-        function refreshTimings() { alert('Обновление таймингов...'); }
+        function refreshTimings() { alert('РћР±РЅРѕРІР»РµРЅРёРµ С‚Р°Р№РјРёРЅРіРѕРІ...'); }
         
         const params = new URLSearchParams(window.location.search);
         if(params.get('p') === 'roz') showPage('roz');
