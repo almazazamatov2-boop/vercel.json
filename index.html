@@ -5,111 +5,232 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ParacetamolHaze</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            min-height: 100vh;
-            color: #fff;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 60px;
-        }
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #00d9ff, #00ff88);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .subtitle {
-            color: #888;
-            font-size: 1.2rem;
-        }
-        .menu {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        .menu-item {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            text-decoration: none;
-            color: #fff;
-            display: block;
-        }
-        .menu-item:hover {
-            transform: translateY(-5px);
-            background: rgba(255,255,255,0.1);
-            border-color: #00d9ff;
-            box-shadow: 0 10px 40px rgba(0,217,255,0.2);
-        }
-        .menu-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-        .menu-title {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
-        .menu-desc {
-            color: #888;
-            font-size: 0.9rem;
-        }
-        footer {
-            text-align: center;
-            margin-top: 80px;
-            color: #555;
-            font-size: 0.8rem;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); min-height: 100vh; color: #fff; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 { font-size: 2.5rem; background: linear-gradient(90deg, #00d9ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 40px 0; }
+        .menu-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .menu-item:hover { transform: translateY(-5px); border-color: #00d9ff; }
+        .menu-icon { font-size: 2.5rem; margin-bottom: 15px; }
+        .menu-title { font-size: 1.3rem; margin-bottom: 8px; }
+        .menu-desc { color: #888; font-size: 0.85rem; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .back-link { display: inline-block; color: #00d9ff; text-decoration: none; margin-bottom: 20px; cursor: pointer; }
+        
+        /* Roz styles */
+        .control-panel { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 25px; margin-bottom: 25px; }
+        .input-group { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+        input { flex: 1; min-width: 180px; padding: 12px 18px; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; background: rgba(255,255,255,0.05); color: #fff; }
+        input::placeholder { color: #666; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        button { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-size: 0.95rem; }
+        .btn-primary { background: linear-gradient(90deg, #00d9ff, #00ff88); color: #000; font-weight: 600; }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+        .stats { display: flex; justify-content: center; gap: 40px; margin: 25px 0; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 1.8rem; color: #00d9ff; }
+        .stat-label { color: #888; font-size: 0.85rem; }
+        .games { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+        .game-btn { padding: 15px 30px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; cursor: pointer; }
+        
+        /* Check styles */
+        .search-box { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; }
+        .stats-row { display: flex; justify-content: center; gap: 50px; margin: 25px 0; }
+        .subs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .sub-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; text-align: center; }
+        
+        /* Kino styles */
+        .movie-title { font-size: 1.4rem; margin-bottom: 20px; text-align: center; }
+        .video-placeholder { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+        .video-text { color: #666; }
+        .timeline { display: flex; gap: 4px; height: 35px; background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; }
+        .timeline-marker { flex: 1; background: rgba(255,255,255,0.1); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; font-size: 0.65rem; color: #666; cursor: pointer; }
+        .timeline-marker:hover { background: rgba(0,217,255,0.3); }
+        .timings-list { display: flex; flex-direction: column; gap: 10px; }
+        .timing-item { display: flex; justify-content: space-between; padding: 10px 15px; background: rgba(255,255,255,0.05); border-radius: 8px; }
+        
+        .winner-panel { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100; }
+        .winner-content { text-align: center; padding: 40px; }
+        .winner-name { font-size: 2.5rem; color: #00d9ff; margin: 20px 0; }
+        .close-btn { padding: 12px 35px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: #fff; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>ParacetamolHaze</h1>
-            <p class="subtitle"> Twitch инструменты</p>
-        </header>
+        <a class="back-link" onclick="showPage('home')">в†ђ РќР° РіР»Р°РІРЅСѓСЋ</a>
         
-        <nav class="menu">
-            <a href="roz.html" class="menu-item">
-                <div class="menu-icon">🎰</div>
-                <h2 class="menu-title">Roz</h2>
-                <p class="menu-desc">Twitch Чат Рулетка</p>
-            </a>
-            <a href="check.html" class="menu-item">
-                <div class="menu-icon">✓</div>
-                <h2 class="menu-title">Check</h2>
-                <p class="menu-desc">Проверка подписок Twitch</p>
-            </a>
-            <a href="kino.html" class="menu-item">
-                <div class="menu-icon">🎬</div>
-                <h2 class="menu-title">Kino</h2>
-                <p class="menu-desc">Кино и тайминги</p>
-            </a>
-        </nav>
+        <div id="home" class="page active">
+            <header style="text-align:center;margin-bottom:40px">
+                <h1>ParacetamolHaze</h1>
+                <p style="color:#888;margin-top:10px">Twitch РёРЅСЃС‚СЂСѓРјРµРЅС‚С‹</p>
+            </header>
+            <nav class="menu">
+                <div class="menu-item" onclick="showPage('roz')">
+                    <div class="menu-icon">рџЋ°</div>
+                    <h2 class="menu-title">Roz</h2>
+                    <p class="menu-desc">Twitch Р§Р°С‚ Р СѓР»РµС‚РєР°</p>
+                </div>
+                <div class="menu-item" onclick="showPage('check')">
+                    <div class="menu-icon">вњ“</div>
+                    <h2 class="menu-title">Check</h2>
+                    <p class="menu-desc">РџСЂРѕРІРµСЂРєР° РїРѕРґРїРёСЃРѕРє Twitch</p>
+                </div>
+                <div class="menu-item" onclick="showPage('kino')">
+                    <div class="menu-icon">рџЋ¬</div>
+                    <h2 class="menu-title">Kino</h2>
+                    <p class="menu-desc">РљРёРЅРѕ Рё С‚Р°Р№РјРёРЅРіРё</p>
+                </div>
+            </nav>
+            <footer style="text-align:center;margin-top:60px;color:#555;font-size:0.8rem">
+                <p>В© 2026 ParacetamolHaze</p>
+            </footer>
+        </div>
         
-        <footer>
-            <p>© 2026 ParacetamolHaze</p>
-        </footer>
+        <div id="roz" class="page">
+            <header><h1>Roz</h1><p style="color:#888;margin-top:10px">Twitch Р§Р°С‚ Р СѓР»РµС‚РєР°</p></header>
+            <div class="control-panel">
+                <div class="input-group">
+                    <input type="text" id="streamer" placeholder="РќРёРєРЅРµР№Рј СЃС‚СЂРёРјРµСЂР°">
+                    <input type="text" id="keyword" placeholder="РљР»СЋС‡РµРІРѕРµ СЃР»РѕРІРѕ">
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="startSelection()">РќР°С‡Р°С‚СЊ РћС‚Р±РѕСЂ</button>
+                    <button class="btn-secondary" onclick="disconnect()">РћС‚РєР»СЋС‡РёС‚СЊСЃСЏ</button>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat"><div class="stat-value" id="participants">0</div><div class="stat-label">РЈС‡Р°СЃС‚РЅРёРєРѕРІ</div></div>
+                <div class="stat"><div class="stat-value" id="messages">0</div><div class="stat-label">РЎРѕРѕР±С‰РµРЅРёР№</div></div>
+                <div class="stat"><div class="stat-value" id="timer">0:00</div><div class="stat-label">Р’СЂРµРјСЏ СЂР°Р±РѕС‚С‹</div></div>
+            </div>
+            <div class="games">
+                <button class="game-btn" onclick="startRoulette()">Р СѓР»РµС‚РєР°</button>
+                <button class="game-btn" onclick="startVases()">Р’Р°Р·С‹</button>
+                <button class="game-btn" onclick="startCS()">РљРЎ</button>
+            </div>
+            <div class="winner-panel" id="winnerPanel">
+                <div class="winner-content">
+                    <h2>рџЋ‰ РџРѕР±РµРґРёС‚РµР»СЊ!</h2>
+                    <div class="winner-name" id="winnerName">User</div>
+                    <p>РџРѕР·РґСЂР°РІР»СЏРµРј СЃ РїРѕР±РµРґРѕР№!</p>
+                    <button class="close-btn" onclick="closeWinner()" style="margin-top:25px">Р—Р°РєСЂС‹С‚СЊ</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="check" class="page">
+            <header><h1>Check</h1><p style="color:#888;margin-top:10px">РџСЂРѕСЃРјРѕС‚СЂ РїРѕРґРїРёСЃРѕРє</p></header>
+            <div class="control-panel">
+                <div class="search-box">
+                    <input type="text" id="username" placeholder="Р’РІРµРґРёС‚Рµ РЅРёРєРЅРµР№Рј Twitch">
+                    <button class="btn-primary" onclick="searchSubs()">РџРѕР»СѓС‡РёС‚СЊ РџРѕРґРїРёСЃРєРё</button>
+                </div>
+            </div>
+            <div class="stats-row" id="stats" style="display:none">
+                <div class="stat"><div class="stat-value" id="totalSubs">0</div><div class="stat-label">Р’СЃРµРіРѕ РїРѕРґРїРёСЃРѕРє</div></div>
+                <div class="stat"><div class="stat-value" id="liveSubs">0</div><div class="stat-label">РЎРµР№С‡Р°СЃ РІ СЌС„РёСЂРµ</div></div>
+            </div>
+            <div class="subs-grid" id="subsGrid"></div>
+        </div>
+        
+        <div id="kino" class="page">
+            <header><h1>Kino</h1><p style="color:#888;margin-top:10px">РљРёРЅРѕ Рё С‚Р°Р№РјРёРЅРіРё</p></header>
+            <div class="control-panel">
+                <input type="text" id="search" placeholder="РџРѕРёСЃРє..." style="width:100%">
+            </div>
+            <div class="movie-title" id="movieTitle">Р—Р°РіСЂСѓР·РєР° С„РёР»СЊРјР°...</div>
+            <div class="video-placeholder"><span class="video-text">РІРёРґРµРѕ РїР»РµРµСЂ</span></div>
+            <div class="timeline" id="timeline"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px">
+                <span id="currentTime" style="font-size:1.1rem;font-weight:bold">00:00:00</span>
+                <div class="btn-group">
+                    <button class="btn-secondary" onclick="addTiming()">+ Р”РѕР±Р°РІРёС‚СЊ С‚Р°Р№РјРёРЅРі</button>
+                    <button class="btn-secondary" onclick="refreshTimings()">РћР±РЅРѕРІРёС‚СЊ</button>
+                </div>
+            </div>
+            <div class="timings-list" id="timingsList" style="margin-top:25px">
+                <div class="timing-item"><span>РРЅС‚РµСЂРµСЃРЅС‹Р№ РјРѕРјРµРЅС‚</span><span>01:23:45</span></div>
+                <div class="timing-item"><span>Р’Р°Р¶РЅР°СЏ СЃС†РµРЅР°</span><span>00:45:30</span></div>
+            </div>
+        </div>
     </div>
+    
+    <script>
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(page).classList.add('active');
+        }
+        
+        let timer = 0, timerInterval = setInterval(() => {
+            timer++;
+            document.getElementById('timer').textContent = Math.floor(timer/60) + ':' + String(timer%60).padStart(2,'0');
+        }, 1000);
+        
+        function startSelection() {
+            const streamer = document.getElementById('streamer').value;
+            const keyword = document.getElementById('keyword').value;
+            if(!streamer || !keyword) { alert('Р’РІРµРґРёС‚Рµ РЅРёРєРЅРµР№Рј Рё РєР»СЋС‡РµРІРѕРµ СЃР»РѕРІРѕ'); return; }
+            document.getElementById('participants').textContent = Math.floor(Math.random() * 50) + 10;
+            document.getElementById('messages').textContent = Math.floor(Math.random() * 500) + 100;
+        }
+        
+        function disconnect() {
+            document.getElementById('streamer').value = '';
+            document.getElementById('keyword').value = '';
+            document.getElementById('participants').textContent = '0';
+            document.getElementById('messages').textContent = '0';
+            timer = 0;
+        }
+        
+        function startRoulette() {
+            const names = ['User1','User2','User3','User4','User5'];
+            document.getElementById('winnerName').textContent = names[Math.floor(Math.random() * names.length)];
+            document.getElementById('winnerPanel').style.display = 'flex';
+        }
+        
+        function closeWinner() { document.getElementById('winnerPanel').style.display = 'none'; }
+        function startVases() { alert('Р’Р°Р·С‹ - РІ СЂР°Р·СЂР°Р±РѕС‚РєРµ'); }
+        function startCS() { alert('РљРЎ - РІ СЂР°Р·СЂР°Р±РѕС‚РєРµ'); }
+        
+        const mockSubs = [
+            {name:'pupsylive',date:'2026-04-10',tier:1,live:true},{name:'catviewer',date:'2026-04-08',tier:2,live:false},
+            {name:'doggo_ru',date:'2026-04-05',tier:1,live:true},{name:'streamfan',date:'2026-03-28',tier:3,live:false}
+        ];
+        
+        function searchSubs() {
+            const username = document.getElementById('username').value.trim();
+            if(!username) { alert('Р’РІРµРґРёС‚Рµ РЅРёРєРЅРµР№Рј'); return; }
+            document.getElementById('stats').style.display = 'flex';
+            document.getElementById('totalSubs').textContent = mockSubs.length;
+            document.getElementById('liveSubs').textContent = mockSubs.filter(s=>s.live).length;
+            document.getElementById('subsGrid').innerHTML = mockSubs.map(s => 
+                '<div class="sub-item"><div style="font-weight:600">'+s.name+'</div><div style="color:#888;font-size:0.8rem">'+s.date+'</div><span style="display:inline-block;padding:3px 10px;background:#9146ff;border-radius:5px;font-size:0.7rem;margin-top:8px">Tier '+s.tier+'</span></div>'
+            ).join('');
+        }
+        
+        for(let i=0;i<20;i++) {
+            const marker = document.createElement('div');
+            marker.className = 'timeline-marker';
+            marker.textContent = i*5+'m';
+            document.getElementById('timeline').appendChild(marker);
+        }
+        let currentSeconds = 0;
+        function addTiming() {
+            const time = document.getElementById('currentTime').textContent;
+            const list = document.getElementById('timingsList');
+            const item = document.createElement('div');
+            item.className = 'timing-item';
+            item.innerHTML = '<span>РўР°Р№РјРёРЅРі '+(list.children.length+1)+'</span><span>'+time+'</span>';
+            list.appendChild(item);
+        }
+        function refreshTimings() { alert('РћР±РЅРѕРІР»РµРЅРёРµ С‚Р°Р№РјРёРЅРіРѕРІ...'); }
+        
+        const params = new URLSearchParams(window.location.search);
+        if(params.get('p') === 'roz') showPage('roz');
+        if(params.get('p') === 'check') showPage('check');
+        if(params.get('p') === 'kino') showPage('kino');
+    </script>
 </body>
 </html>
