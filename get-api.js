@@ -7,10 +7,13 @@ export default async function (req) {
   const action = url.searchParams.get('a')
   const user = url.searchParams.get('u')
 
-  const CLIENT_ID = 'njwi66jx4ju5kpb25aeh4fd4i2okq5'
-  const CLIENT_SECRET = 'uspju8gdepuar3e7fgv7c5q0p5xem8'
+  const CLIENT_ID = process.env.TWITCH_CLIENT_ID
+  const CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET
 
   async function getToken() {
+    if (!CLIENT_ID || !CLIENT_SECRET) {
+      throw new Error('Missing TWITCH_CLIENT_ID / TWITCH_CLIENT_SECRET')
+    }
     const res = await fetch('https://id.twitch.tv/oauth2/token', {
       method: 'POST',
       body: `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&grant_type=client_credentials`

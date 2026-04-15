@@ -1,7 +1,11 @@
 module.exports = (req, res) => {
   const { a, u } = req.query
-  const CLIENT_ID = 'njwi66jx4ju5kpb25aeh4fd4i2okq5'
-  const CLIENT_SECRET = 'uspju8gdepuar3e7fgv7c5q0p5xem8'
+  const CLIENT_ID = process.env.TWITCH_CLIENT_ID
+  const CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET
+
+  if (!CLIENT_ID || !CLIENT_SECRET) {
+    return res.json({ error: 'Missing TWITCH_CLIENT_ID / TWITCH_CLIENT_SECRET' })
+  }
   
   fetch('https://id.twitch.tv/oauth2/token', {
     method: 'POST',
