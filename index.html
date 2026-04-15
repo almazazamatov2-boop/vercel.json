@@ -203,134 +203,6 @@
       transform: scale(1.03);
     }
     .p-card img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: #202741; }
-
-    .roz-layout {
-      display: grid;
-      grid-template-columns: 340px 1fr 300px;
-      gap: 14px;
-      align-items: stretch;
-    }
-    .roz-panel {
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px;
-      min-height: 520px;
-    }
-    .roz-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      font-size: 1.05rem;
-      font-weight: 800;
-      margin-bottom: 10px;
-    }
-    .roz-counter {
-      font-size: .8rem;
-      font-weight: 700;
-      border-radius: 999px;
-      padding: 2px 8px;
-      background: rgba(143,86,255,.25);
-      border: 1px solid rgba(143,86,255,.45);
-      color: #d7c5ff;
-    }
-    .roz-input {
-      margin-bottom: 10px;
-    }
-    .roz-help {
-      margin-top: 8px;
-      border: 1px solid rgba(180,198,255,.2);
-      background: rgba(255,255,255,.03);
-      border-radius: 10px;
-      padding: 10px;
-      font-size: .82rem;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-    .roz-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .roz-stat {
-      text-align: center;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 8px 4px;
-      background: rgba(255,255,255,.02);
-    }
-    .roz-stat-v { font-size: 1.6rem; font-weight: 800; }
-    .roz-stat-l { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-    .roz-buttons { margin-top: 10px; display: grid; gap: 8px; }
-    .roz-chat-box, .roz-users-box {
-      min-height: 430px;
-      max-height: 430px;
-      overflow: auto;
-      border: 1px solid rgba(180,198,255,.15);
-      border-radius: 12px;
-      background: rgba(0,0,0,.26);
-      padding: 10px;
-    }
-    .roz-msg {
-      border-bottom: 1px dashed rgba(180,198,255,.16);
-      padding: 8px 4px;
-      font-size: .88rem;
-      color: #d3dcff;
-    }
-    .roz-msg:last-child { border-bottom: none; }
-    .roz-msg b { color: #f5edff; }
-    .roz-empty {
-      color: #6e79a6;
-      text-align: center;
-      font-size: .92rem;
-      padding-top: 110px;
-      line-height: 1.5;
-    }
-    .roz-user-item {
-      display: grid;
-      grid-template-columns: 38px 1fr;
-      gap: 8px;
-      align-items: center;
-      border: 1px solid rgba(180,198,255,.16);
-      border-radius: 10px;
-      background: rgba(255,255,255,.02);
-      padding: 7px;
-      margin-bottom: 8px;
-      transition: .2s;
-    }
-    .roz-user-item.active {
-      border-color: rgba(153, 233, 255, .8);
-      background: rgba(58,216,255,.15);
-      transform: translateX(2px);
-    }
-    .roz-user-item img {
-      width: 38px;
-      height: 38px;
-      border-radius: 9px;
-      object-fit: cover;
-      background: #1f2542;
-    }
-    .roz-user-item .nm { font-weight: 700; font-size: .9rem; line-height: 1.15; }
-    .roz-user-item .lg { color: #91a0cf; font-size: .76rem; }
-    .roz-winner-inline {
-      margin-top: 10px;
-      border-radius: 10px;
-      border: 1px solid rgba(56, 211, 159, .4);
-      background: rgba(56, 211, 159, .12);
-      color: #ceffe9;
-      padding: 10px;
-      font-size: .92rem;
-      font-weight: 700;
-      text-align: center;
-    }
-    @media (max-width: 1100px) {
-      .roz-layout { grid-template-columns: 1fr; }
-      .roz-panel { min-height: 0; }
-      .roz-chat-box, .roz-users-box { min-height: 270px; max-height: 270px; }
-      .roz-empty { padding-top: 70px; }
-    }
     .winner {
       margin-top: 12px;
       text-align: center;
@@ -367,63 +239,63 @@
     <section id="home" class="page active">
       <div class="hero">
         <h1>paracetamolhaze</h1>
-        <p>Twitch toolkit: check, kino, roz, overlayROLL, Р вЂР ВР СњР вЂњР С›</p>
+        <p>Twitch toolkit: check, kino, roz, overlayROLL, БИНГО</p>
       </div>
       <div class="tools">
         <div class="tool" onclick="go('roz')">
-          <div class="ico">СЂСџР‹Р‡</div><div class="name">Roz</div>
-          <div class="desc">Р В Р С•Р В·РЎвЂ№Р С–РЎР‚РЎвЂ№РЎв‚¬ Р С—Р С• Twitch РЎвЂЎР В°РЎвЂљРЎС“: РЎвЂљР С•Р В»РЎРЉР С”Р С• РЎР‚Р ВµР В°Р В»РЎРЉР Р…РЎвЂ№Р Вµ РЎС“РЎвЂЎР В°РЎРѓРЎвЂљР Р…Р С‘Р С”Р С‘, 3-7 Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР ВµР С”.</div>
+          <div class="ico">🎯</div><div class="name">Roz</div>
+          <div class="desc">Розыгрыш по Twitch чату: только реальные участники, 3-7 карточек.</div>
         </div>
         <div class="tool" onclick="go('check')">
-          <div class="ico">СЂСџвЂќР‹</div><div class="name">Check</div>
-          <div class="desc">Р СџРЎР‚Р С•РЎРѓР СР С•РЎвЂљРЎР‚ Р С—Р С•Р Т‘Р С—Р С‘РЎРѓР С•Р С” Р С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°РЎвЂљР ВµР В»РЎРЏ: Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р С‘, РЎвЂћР С‘Р В»РЎРЉРЎвЂљРЎР‚, РЎРѓР С•РЎР‚РЎвЂљР С‘РЎР‚Р С•Р Р†Р С”Р В°, РЎРѓРЎвЂљРЎР‚Р В°Р Р…Р С‘РЎвЂ РЎвЂ№.</div>
+          <div class="ico">🔎</div><div class="name">Check</div>
+          <div class="desc">Просмотр подписок пользователя: карточки, фильтр, сортировка, страницы.</div>
         </div>
         <div class="tool" onclick="go('kino')">
-          <div class="ico">СЂСџР‹В¬</div><div class="name">Kino</div>
-          <div class="desc">Р В¤Р С‘Р В»РЎРЉР С Р С—Р С• Kinopoisk ID, Р В·Р ВµРЎР‚Р С”Р В°Р В»Р В° Р С—Р В»Р ВµР ВµРЎР‚Р В° Р С‘ РЎвЂљР В°Р в„–Р СР С‘Р Р…Р С–Р С‘ РЎР‚Р С‘РЎРѓР С”Р В°.</div>
+          <div class="ico">🎬</div><div class="name">Kino</div>
+          <div class="desc">Фильм по Kinopoisk ID, зеркала плеера и тайминги риска.</div>
         </div>
         <div class="tool" onclick="go('overlayroll')">
-          <div class="ico">СЂСџВ§С—</div><div class="name">overlayROLL</div>
-          <div class="desc">Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…РЎвЂ№Р в„– realtime state Р Р…Р В° polling/KV Р Т‘Р В»РЎРЏ Р С•Р Р†Р ВµРЎР‚Р В»Р ВµРЎРЏ (Vercel-ready).</div>
+          <div class="ico">🧿</div><div class="name">overlayROLL</div>
+          <div class="desc">Локальный realtime state на polling/KV для оверлея (Vercel-ready).</div>
         </div>
         <div class="tool" onclick="go('bingo')">
-          <div class="ico">СЂСџР‹В±</div><div class="name">Р вЂР ВР СњР вЂњР С›</div>
-          <div class="desc">Р вЂєР С•Р В±Р В±Р С‘ Р В±Р С•РЎвЂЎР С•Р Р…Р С”Р С•Р Р† Р Р…Р В° polling/KV Р Р†Р СР ВµРЎРѓРЎвЂљР С• WebSocket/SQLite.</div>
+          <div class="ico">🎱</div><div class="name">БИНГО</div>
+          <div class="desc">Лобби бочонков на polling/KV вместо WebSocket/SQLite.</div>
         </div>
       </div>
     </section>
 
     <section id="check" class="page">
       <div class="topbar">
-        <button class="btn" onclick="go('home')">РІвЂ С’ Р СњР В°Р В·Р В°Р Т‘</button>
+        <button class="btn" onclick="go('home')">← Назад</button>
         <div style="flex:1">
           <h2 class="title">Check</h2>
-          <div class="subtitle">Р В¤Р С•РЎР‚Р СР В°РЎвЂљ TwiCheck: Р С—Р С•Р Т‘Р С—Р С‘РЎРѓР С”Р С‘ Р С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°РЎвЂљР ВµР В»РЎРЏ Р С—Р С• Р Р…Р С‘Р С”РЎС“</div>
+          <div class="subtitle">Формат TwiCheck: подписки пользователя по нику</div>
         </div>
       </div>
 
       <div class="card">
         <div class="row">
-          <input id="check-user" placeholder="Р вЂ™Р Р†Р ВµР Т‘Р С‘РЎвЂљР Вµ Р Р…Р С‘Р С” Twitch">
-          <button class="btn purple" onclick="runCheck(1)">Р СџР С•Р В»РЎС“РЎвЂЎР С‘РЎвЂљРЎРЉ Р С—Р С•Р Т‘Р С—Р С‘РЎРѓР С”Р С‘</button>
+          <input id="check-user" placeholder="Введите ник Twitch">
+          <button class="btn purple" onclick="runCheck(1)">Получить подписки</button>
         </div>
       </div>
 
       <div class="grid-3">
-        <div class="card"><div class="label">Р СџР С•Р В»РЎРЉР В·Р С•Р Р†Р В°РЎвЂљР ВµР В»РЎРЉ</div><div class="value" id="check-user-name">РІР‚вЂќ</div></div>
-        <div class="card"><div class="label">Р вЂ™РЎРѓР ВµР С–Р С• Р С—Р С•Р Т‘Р С—Р С‘РЎРѓР С•Р С”</div><div class="value" id="check-total">0</div></div>
-        <div class="card"><div class="label">Р РЋР ВµР в„–РЎвЂЎР В°РЎРѓ Р Р† РЎРЊРЎвЂћР С‘РЎР‚Р Вµ</div><div class="value" id="check-live">0</div></div>
+        <div class="card"><div class="label">Пользователь</div><div class="value" id="check-user-name">—</div></div>
+        <div class="card"><div class="label">Всего подписок</div><div class="value" id="check-total">0</div></div>
+        <div class="card"><div class="label">Сейчас в эфире</div><div class="value" id="check-live">0</div></div>
       </div>
 
       <div class="card">
         <div class="row">
-          <input id="check-filter" placeholder="Р В¤Р С‘Р В»РЎРЉРЎвЂљРЎР‚ Р С—Р С• Р С‘Р СР ВµР Р…Р С‘..." oninput="renderCheckList()">
+          <input id="check-filter" placeholder="Фильтр по имени..." oninput="renderCheckList()">
           <select id="check-sort" onchange="runCheck(1)">
-            <option value="date_desc">Р СџР С• Р Т‘Р В°РЎвЂљР Вµ (Р Р…Р С•Р Р†РЎвЂ№Р Вµ)</option>
-            <option value="date_asc">Р СџР С• Р Т‘Р В°РЎвЂљР Вµ (РЎРѓРЎвЂљР В°РЎР‚РЎвЂ№Р Вµ)</option>
-            <option value="name_asc">Р СџР С• Р С‘Р СР ВµР Р…Р С‘ (Р С’-Р Р‡)</option>
-            <option value="name_desc">Р СџР С• Р С‘Р СР ВµР Р…Р С‘ (Р Р‡-Р С’)</option>
-            <option value="live">Р РЋР Р…Р В°РЎвЂЎР В°Р В»Р В° Р Р† РЎРЊРЎвЂћР С‘РЎР‚Р Вµ</option>
+            <option value="date_desc">По дате (новые)</option>
+            <option value="date_asc">По дате (старые)</option>
+            <option value="name_asc">По имени (А-Я)</option>
+            <option value="name_desc">По имени (Я-А)</option>
+            <option value="live">Сначала в эфире</option>
           </select>
         </div>
       </div>
@@ -431,31 +303,31 @@
       <div class="card">
         <div class="subs-grid" id="check-list"></div>
         <div class="row" style="margin-top:10px">
-          <button class="btn" onclick="runCheck(checkState.page - 1)">РІвЂ С’ Р СњР В°Р В·Р В°Р Т‘</button>
-          <div class="btn" style="text-align:center">Р РЋРЎвЂљРЎР‚Р В°Р Р…Р С‘РЎвЂ Р В° <span id="check-page">1</span> / <span id="check-pages">1</span></div>
-          <button class="btn" onclick="runCheck(checkState.page + 1)">Р вЂ™Р С—Р ВµРЎР‚Р ВµР Т‘ РІвЂ вЂ™</button>
+          <button class="btn" onclick="runCheck(checkState.page - 1)">← Назад</button>
+          <div class="btn" style="text-align:center">Страница <span id="check-page">1</span> / <span id="check-pages">1</span></div>
+          <button class="btn" onclick="runCheck(checkState.page + 1)">Вперед →</button>
         </div>
       </div>
     </section>
 
     <section id="kino" class="page">
       <div class="topbar">
-        <button class="btn" onclick="go('home')">РІвЂ С’ Р СњР В°Р В·Р В°Р Т‘</button>
+        <button class="btn" onclick="go('home')">← Назад</button>
         <div style="flex:1">
           <h2 class="title">Kino</h2>
-          <div class="subtitle">Kinopoisk ID/URL, Р С”Р С‘Р Р…Р С•-Р С—Р В»Р ВµР ВµРЎР‚ Р С‘ РЎвЂљР В°Р в„–Р СР С‘Р Р…Р С–Р С‘ РЎР‚Р С‘РЎРѓР С”Р В°</div>
+          <div class="subtitle">Kinopoisk ID/URL, кино-плеер и тайминги риска</div>
         </div>
       </div>
 
       <div class="card">
         <div class="row">
-          <input id="kino-input" placeholder="https://www.kinopoisk.ru/film/258687/ Р С‘Р В»Р С‘ 258687">
-          <button class="btn primary" onclick="resolveKino()">Р С›РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ РЎвЂћР С‘Р В»РЎРЉР С</button>
+          <input id="kino-input" placeholder="https://www.kinopoisk.ru/film/258687/ или 258687">
+          <button class="btn primary" onclick="resolveKino()">Открыть фильм</button>
         </div>
         <div class="row" style="margin-top:8px">
-          <button class="btn" onclick="nextMirror()">Р РЋР В»Р ВµР Т‘РЎС“РЎР‹РЎвЂ°Р ВµР Вµ Р В·Р ВµРЎР‚Р С”Р В°Р В»Р С•</button>
-          <button class="btn" onclick="openCurrentMirror()">Р С›РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ Р Р† Р Р…Р С•Р Р†Р С•Р в„– Р Р†Р С”Р В»Р В°Р Т‘Р С”Р Вµ</button>
-          <div class="btn" id="kino-mirror-label">Р вЂ”Р ВµРЎР‚Р С”Р В°Р В»Р С•: РІР‚вЂќ</div>
+          <button class="btn" onclick="nextMirror()">Следующее зеркало</button>
+          <button class="btn" onclick="openCurrentMirror()">Открыть в новой вкладке</button>
+          <div class="btn" id="kino-mirror-label">Зеркало: —</div>
         </div>
       </div>
 
@@ -464,14 +336,14 @@
 
       <div class="card">
         <div class="row">
-          <input id="kino-time" placeholder="Р вЂ™РЎР‚Р ВµР СРЎРЏ (Р Р…Р В°Р С—РЎР‚Р С‘Р СР ВµРЎР‚ 01:23:45)">
+          <input id="kino-time" placeholder="Время (например 01:23:45)">
           <select id="kino-category">
-            <option value="obnazhonka">Р С•Р В±Р Р…Р В°Р В¶Р С•Р Р…Р С”Р В°</option>
-            <option value="zapretnye-slova">Р В·Р В°Р С—РЎР‚Р ВµРЎвЂљР Р…РЎвЂ№Р Вµ РЎРѓР В»Р С•Р Р†Р В°</option>
-            <option value="ban-risk-scena">Р В±Р В°Р Р…-РЎР‚Р С‘РЎРѓР С” РЎРѓРЎвЂ Р ВµР Р…Р В°</option>
+            <option value="obnazhonka">обнажонка</option>
+            <option value="zapretnye-slova">запретные слова</option>
+            <option value="ban-risk-scena">бан-риск сцена</option>
           </select>
-          <input id="kino-label" placeholder="Р С™Р С•Р СР СР ВµР Р…РЎвЂљР В°РЎР‚Р С‘Р в„– Р С” РЎвЂљР В°Р в„–Р СР С‘Р Р…Р С–РЎС“">
-          <button class="btn purple" onclick="addTiming()">+ Р вЂќР С•Р В±Р В°Р Р†Р С‘РЎвЂљРЎРЉ</button>
+          <input id="kino-label" placeholder="Комментарий к таймингу">
+          <button class="btn purple" onclick="addTiming()">+ Добавить</button>
         </div>
       </div>
 
@@ -482,70 +354,40 @@
 
     <section id="roz" class="page">
       <div class="topbar">
-        <button class="btn" onclick="go('home')">в†ђ РќР°Р·Р°Рґ</button>
+        <button class="btn" onclick="go('home')">← Назад</button>
         <div style="flex:1">
           <h2 class="title">Roz</h2>
-          <div class="subtitle">Р”РёР·Р°Р№РЅ РІ СЃС‚РёР»Рµ velroll: СѓРїСЂР°РІР»РµРЅРёРµ, С‡Р°С‚ РїРѕР±РµРґРёС‚РµР»СЏ Рё СЃРїРёСЃРѕРє СѓС‡Р°СЃС‚РЅРёРєРѕРІ</div>
+          <div class="subtitle">Реальные участники из Twitch чата (без Alpha/Beta и фейков)</div>
         </div>
       </div>
 
-      <div class="roz-layout">
-        <div class="roz-panel">
-          <div class="roz-title">вљ™ РЈРїСЂР°РІР»РµРЅРёРµ СЂРѕР·С‹РіСЂС‹С€РµРј</div>
-          <div class="label">РќРёРєРЅРµР№Рј СЃС‚СЂРёРјРµСЂР°</div>
-          <div class="roz-input">
-            <input id="roz-channel" placeholder="paracetamolhaze">
-          </div>
-          <div class="label">РљР»СЋС‡РµРІРѕРµ СЃР»РѕРІРѕ РґР»СЏ СѓС‡Р°СЃС‚РёСЏ</div>
-          <div class="roz-input">
-            <input id="roz-keyword" placeholder="+">
-          </div>
-          <button class="btn purple" onclick="rozConnect()" style="width:100%">РќР°С‡Р°С‚СЊ РѕС‚Р±РѕСЂ</button>
-          <div class="roz-help" id="roz-status">Р’РІРµРґРёС‚Рµ РЅРёРєРЅРµР№Рј СЃС‚СЂРёРјРµСЂР° Рё РєР»СЋС‡РµРІРѕРµ СЃР»РѕРІРѕ, Р·Р°С‚РµРј РЅР°Р¶РјРёС‚Рµ В«РќР°С‡Р°С‚СЊ РѕС‚Р±РѕСЂВ».</div>
-
-          <div class="roz-stats">
-            <div class="roz-stat">
-              <div class="roz-stat-v" id="roz-count">0</div>
-              <div class="roz-stat-l">РЈС‡Р°СЃС‚РЅРёРєРѕРІ</div>
-            </div>
-            <div class="roz-stat">
-              <div class="roz-stat-v" id="roz-msg-count">0</div>
-              <div class="roz-stat-l">РЎРѕРѕР±С‰РµРЅРёР№</div>
-            </div>
-            <div class="roz-stat">
-              <div class="roz-stat-v" id="roz-time">0:00</div>
-              <div class="roz-stat-l">Р’СЂРµРјСЏ</div>
-            </div>
-          </div>
-
-          <div class="roz-buttons">
-            <button class="btn primary" id="roz-spin-btn" onclick="rozSpin()">РќР°С‡Р°С‚СЊ СЂРѕР·С‹РіСЂС‹С€</button>
-            <button class="btn" onclick="rozSync()">РЎРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°С‚СЊ СѓС‡Р°СЃС‚РЅРёРєРѕРІ</button>
-            <button class="btn bad" onclick="rozDisconnect()">РћС‚РєР»СЋС‡РёС‚СЊСЃСЏ</button>
-          </div>
-          <div id="roz-winner"></div>
+      <div class="card">
+        <div class="row">
+          <input id="roz-channel" placeholder="Канал (например paracetamolhaze)">
+          <input id="roz-keyword" placeholder="Ключевое слово (например +)">
+          <button class="btn primary" onclick="rozConnect()">Подключиться</button>
+          <button class="btn bad" onclick="rozDisconnect()">Отключить</button>
         </div>
+        <div class="warn" id="roz-status">Не подключено</div>
+      </div>
 
-        <div class="roz-panel">
-          <div class="roz-title">рџ‘‘ Р§Р°С‚ РїРѕР±РµРґРёС‚РµР»СЏ</div>
-          <div class="roz-chat-box" id="roz-chat"></div>
+      <div class="card">
+        <div class="row">
+          <button class="btn purple" id="roz-spin-btn" onclick="rozSpin()">Запустить розыгрыш</button>
+          <button class="btn" onclick="rozSync()">Синхронизировать участников в KV</button>
+          <div class="btn">Участников: <span id="roz-count">0</span></div>
         </div>
-
-        <div class="roz-panel">
-          <div class="roz-title">
-            в° РЈС‡Р°СЃС‚РЅРёРєРё СЂРѕР·С‹РіСЂС‹С€Р°
-            <span class="roz-counter" id="roz-count-pill">0</span>
-          </div>
-          <div class="roz-users-box" id="roz-cards"></div>
-        </div>
+        <div class="participants" id="roz-cards"></div>
+        <div id="roz-winner"></div>
       </div>
     </section>
+
     <section id="overlayroll" class="page">
       <div class="topbar">
-        <button class="btn" onclick="go('home')">РІвЂ С’ Р СњР В°Р В·Р В°Р Т‘</button>
+        <button class="btn" onclick="go('home')">← Назад</button>
         <div style="flex:1">
           <h2 class="title">overlayROLL</h2>
-          <div class="subtitle">Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…РЎвЂ№Р в„– Р СР С•Р Т‘РЎС“Р В»РЎРЉ РЎРѓ polling API: <code>/api/realtime/state/overlayroll/{room}</code></div>
+          <div class="subtitle">Локальный модуль с polling API: <code>/api/realtime/state/overlayroll/{room}</code></div>
         </div>
       </div>
       <div class="card">
@@ -558,43 +400,43 @@
             <option value="win">win</option>
             <option value="lose">lose</option>
           </select>
-          <button class="btn purple" onclick="pushOverlayState()">Р С›РЎвЂљР С—РЎР‚Р В°Р Р†Р С‘РЎвЂљРЎРЉ РЎРѓР С•Р В±РЎвЂ№РЎвЂљР С‘Р Вµ</button>
+          <button class="btn purple" onclick="pushOverlayState()">Отправить событие</button>
         </div>
       </div>
       <div class="card">
         <pre id="ov-state" style="white-space:pre-wrap;color:#dbe6ff;margin:0"></pre>
       </div>
       <div class="card">
-        <strong>Р ВРЎРѓРЎвЂ¦Р С•Р Т‘Р Р…Р С‘Р С”Р С‘ Р С—Р С•Р Т‘Р С”Р В»РЎР‹РЎвЂЎР ВµР Р…РЎвЂ№ Р Р† Р СР С•Р Р…Р С•РЎР‚Р ВµР С—Р С•:</strong>
+        <strong>Исходники подключены в монорепо:</strong>
         <div class="subtitle">modules/overlayroll</div>
       </div>
     </section>
 
     <section id="bingo" class="page">
       <div class="topbar">
-        <button class="btn" onclick="go('home')">РІвЂ С’ Р СњР В°Р В·Р В°Р Т‘</button>
+        <button class="btn" onclick="go('home')">← Назад</button>
         <div style="flex:1">
-          <h2 class="title">Р вЂР ВР СњР вЂњР С›</h2>
-          <div class="subtitle">Polling-state Р В»Р С•Р В±Р В±Р С‘: <code>/api/realtime/state/bingo/{room}</code></div>
+          <h2 class="title">БИНГО</h2>
+          <div class="subtitle">Polling-state лобби: <code>/api/realtime/state/bingo/{room}</code></div>
         </div>
       </div>
       <div class="card">
         <div class="row">
           <input id="bingo-room" value="main" placeholder="room">
-          <button class="btn purple" onclick="drawBingoNumber()">Р СћРЎРЏР Р…РЎС“РЎвЂљРЎРЉ Р В±Р С•РЎвЂЎР С•Р Р…Р С•Р С”</button>
-          <button class="btn bad" onclick="resetBingo()">Р РЋР В±РЎР‚Р С•РЎРѓ</button>
+          <button class="btn purple" onclick="drawBingoNumber()">Тянуть бочонок</button>
+          <button class="btn bad" onclick="resetBingo()">Сброс</button>
         </div>
       </div>
       <div class="card">
         <div id="bingo-board" class="participants"></div>
       </div>
       <div class="card">
-        <strong>Р ВРЎРѓРЎвЂ¦Р С•Р Т‘Р Р…Р С‘Р С”Р С‘ Р С—Р С•Р Т‘Р С”Р В»РЎР‹РЎвЂЎР ВµР Р…РЎвЂ№ Р Р† Р СР С•Р Р…Р С•РЎР‚Р ВµР С—Р С•:</strong>
+        <strong>Исходники подключены в монорепо:</strong>
         <div class="subtitle">modules/loto-server</div>
       </div>
     </section>
 
-    <footer>Р’В© 2026 tg:paracetomolhaze</footer>
+    <footer>© 2026 tg:paracetomolhaze</footer>
   </div>
 
   <script>
@@ -647,18 +489,18 @@
         : checkState.items;
 
       const html = items.map((item) => {
-        const date = item.subscribedAt ? new Date(item.subscribedAt).toLocaleDateString('ru-RU') : 'Р Т‘Р В°РЎвЂљР В° Р Р…Р ВµР С‘Р В·Р Р†Р ВµРЎРѓРЎвЂљР Р…Р В°';
+        const date = item.subscribedAt ? new Date(item.subscribedAt).toLocaleDateString('ru-RU') : 'дата неизвестна';
         return `
           <div class="sub-card">
             <img class="avatar" src="${item.avatar || ''}" alt="${item.displayName}" onerror="this.style.visibility='hidden'">
             <div>
               <div class="sub-name">${item.displayName || item.login}</div>
-              <div class="sub-meta">@${item.login || 'unknown'} Р’В· ${date}</div>
-              <div style="margin-top:6px">${item.isLive ? '<span class=\"pill live\">РІвЂ”РЏ Р Р† РЎРЊРЎвЂћР С‘РЎР‚Р Вµ</span>' : '<span class=\"pill off\">РІвЂ”вЂ№ offline</span>'}</div>
+              <div class="sub-meta">@${item.login || 'unknown'} · ${date}</div>
+              <div style="margin-top:6px">${item.isLive ? '<span class=\"pill live\">● в эфире</span>' : '<span class=\"pill off\">○ offline</span>'}</div>
             </div>
           </div>`;
       }).join('');
-      document.getElementById('check-list').innerHTML = html || '<div class="warn">Р СџР С•Р Т‘Р С—Р С‘РЎРѓР С•Р С” Р Р…Р Вµ Р Р…Р В°Р в„–Р Т‘Р ВµР Р…Р С•.</div>';
+      document.getElementById('check-list').innerHTML = html || '<div class="warn">Подписок не найдено.</div>';
     }
 
     const kinoState = { id: '', mirrors: [], current: 0 };
@@ -680,15 +522,15 @@
       const note = document.getElementById('kino-note');
       note.style.display = 'none';
       if (!kinoState.mirrors.length) {
-        document.getElementById('kino-player').innerHTML = '<div class="empty">Р СњР ВµРЎвЂљ Р Т‘Р С•РЎРѓРЎвЂљРЎС“Р С—Р Р…РЎвЂ№РЎвЂ¦ Р В·Р ВµРЎР‚Р С”Р В°Р В».</div>';
-        document.getElementById('kino-mirror-label').textContent = 'Р вЂ”Р ВµРЎР‚Р С”Р В°Р В»Р С•: РІР‚вЂќ';
+        document.getElementById('kino-player').innerHTML = '<div class="empty">Нет доступных зеркал.</div>';
+        document.getElementById('kino-mirror-label').textContent = 'Зеркало: —';
         return;
       }
       const m = kinoState.mirrors[kinoState.current];
-      document.getElementById('kino-mirror-label').textContent = `Р вЂ”Р ВµРЎР‚Р С”Р В°Р В»Р С•: ${m.label}`;
+      document.getElementById('kino-mirror-label').textContent = `Зеркало: ${m.label}`;
       document.getElementById('kino-player').innerHTML = `<iframe src="${m.embedUrl}" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
       note.style.display = 'block';
-      note.textContent = 'Р вЂўРЎРѓР В»Р С‘ Р С—Р В»Р ВµР ВµРЎР‚ Р Р…Р Вµ Р С•РЎвЂљР С”РЎР‚РЎвЂ№Р В»РЎРѓРЎРЏ, Р С—Р ВµРЎР‚Р ВµР С”Р В»РЎР‹РЎвЂЎР С‘РЎвЂљР Вµ Р В·Р ВµРЎР‚Р С”Р В°Р В»Р С• Р С‘Р В»Р С‘ Р С•РЎвЂљР С”РЎР‚Р С•Р в„–РЎвЂљР Вµ Р Р† Р Р…Р С•Р Р†Р С•Р в„– Р Р†Р С”Р В»Р В°Р Т‘Р С”Р Вµ.';
+      note.textContent = 'Если плеер не открылся, переключите зеркало или откройте в новой вкладке.';
     }
 
     function nextMirror() {
@@ -714,10 +556,10 @@
             <div><strong>${t.time}</strong></div>
             <div class="cat ${cls}">${t.category}</div>
             <div>${t.label}</div>
-            <button class="btn bad" onclick="removeTiming('${t.id}')">Р Р€Р Т‘Р В°Р В»Р С‘РЎвЂљРЎРЉ</button>
+            <button class="btn bad" onclick="removeTiming('${t.id}')">Удалить</button>
           </div>`;
       }).join('');
-      document.getElementById('kino-timings').innerHTML = html || '<div class="warn">Р СћР В°Р в„–Р СР С‘Р Р…Р С–Р С•Р Р† Р С—Р С•Р С”Р В° Р Р…Р ВµРЎвЂљ.</div>';
+      document.getElementById('kino-timings').innerHTML = html || '<div class="warn">Таймингов пока нет.</div>';
     }
 
     async function addTiming() {
@@ -746,102 +588,38 @@
       ws: null,
       participants: new Map(),
       channel: '',
-      keyword: '',
-      messages: [],
-      msgCount: 0,
-      sec: 0,
-      timer: null
+      keyword: ''
     };
 
     function setRozStatus(text) {
-      const el = document.getElementById('roz-status');
-      if (el) el.textContent = text;
+      document.getElementById('roz-status').textContent = text;
     }
 
     function renderRozCards(activeLogin = '') {
       const people = [...rozState.participants.values()];
-      const count = people.length;
-      const countEl = document.getElementById('roz-count');
-      const pillEl = document.getElementById('roz-count-pill');
-      if (countEl) countEl.textContent = String(count);
-      if (pillEl) pillEl.textContent = String(count);
-
-      const html = people.map((p) => `
-        <div class="roz-user-item ${activeLogin === p.login ? 'active' : ''}">
-          <img src="${p.avatar || ''}" alt="${p.displayName || p.login}" onerror="this.style.visibility='hidden'">
-          <div>
-            <div class="nm">${p.displayName || p.login}</div>
-            <div class="lg">@${p.login}</div>
-          </div>
+      document.getElementById('roz-count').textContent = String(people.length);
+      const show = people.slice(0, 7);
+      const html = show.map((p) => `
+        <div class="p-card ${activeLogin === p.login ? 'active' : ''}">
+          <img src="${p.avatar || ''}" onerror="this.style.visibility='hidden'">
+          <div style="margin-top:6px;font-weight:700">${p.displayName || p.login}</div>
+          <div style="font-size:.75rem;color:#9ca8cf">@${p.login}</div>
         </div>
       `).join('');
-
-      document.getElementById('roz-cards').innerHTML = html || '<div class="roz-empty">Участники появятся здесь после<br>ключевого слова в чате.</div>';
-      const spinBtn = document.getElementById('roz-spin-btn');
-      if (spinBtn) spinBtn.disabled = count < 3;
-    }
-
-    function renderRozChat() {
-      const box = document.getElementById('roz-chat');
-      if (!box) return;
-      if (!rozState.messages.length) {
-        box.innerHTML = '<div class="roz-empty">Сообщения появятся здесь</div>';
-        return;
-      }
-      box.innerHTML = rozState.messages.map((m) => `<div class="roz-msg"><b>${m.user}</b>: ${m.text}</div>`).join('');
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function updateRozStats() {
-      const msgEl = document.getElementById('roz-msg-count');
-      if (msgEl) msgEl.textContent = String(rozState.msgCount);
-      const timeEl = document.getElementById('roz-time');
-      if (timeEl) {
-        const m = Math.floor(rozState.sec / 60);
-        const s = rozState.sec % 60;
-        timeEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
-      }
-    }
-
-    function stopRozTimer() {
-      if (rozState.timer) {
-        clearInterval(rozState.timer);
-        rozState.timer = null;
-      }
-    }
-
-    function startRozTimer() {
-      stopRozTimer();
-      rozState.sec = 0;
-      updateRozStats();
-      rozState.timer = setInterval(() => {
-        rozState.sec++;
-        updateRozStats();
-      }, 1000);
+      document.getElementById('roz-cards').innerHTML = html || '<div class="warn">Участников пока нет.</div>';
     }
 
     function rozConnect() {
       const channel = document.getElementById('roz-channel').value.trim().toLowerCase();
       const keyword = document.getElementById('roz-keyword').value.trim().toLowerCase();
-      if (!channel || !keyword) {
-        setRozStatus('Введите канал и ключевое слово.');
-        return;
-      }
-
+      if (!channel || !keyword) return;
       rozState.channel = channel;
       rozState.keyword = keyword;
-      rozState.participants.clear();
-      rozState.messages = [];
-      rozState.msgCount = 0;
       document.getElementById('roz-winner').innerHTML = '';
-      renderRozCards();
-      renderRozChat();
-      updateRozStats();
 
       if (rozState.ws) {
         try { rozState.ws.close(); } catch (_) {}
       }
-
       const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
       rozState.ws = ws;
       setRozStatus(`Подключение к #${channel}...`);
@@ -862,19 +640,12 @@
           }
           if (line.includes(':End of /NAMES list') || line.includes(' 376 ')) {
             setRozStatus(`Подключено к #${channel}. Ключевое слово: "${keyword}"`);
-            startRozTimer();
             return;
           }
-
           const m = line.match(/:([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)$/);
           if (!m) return;
           const login = m[1].toLowerCase();
-          const textRaw = m[2].trim();
-          const text = textRaw.toLowerCase();
-
-          rozState.msgCount++;
-          updateRozStats();
-
+          const text = m[2].trim().toLowerCase();
           if (text === keyword || text.startsWith(keyword + ' ')) {
             if (!rozState.participants.has(login)) {
               rozState.participants.set(login, {
@@ -885,21 +656,11 @@
               });
               renderRozCards();
             }
-            rozState.messages.push({ user: m[1], text: textRaw });
-            if (rozState.messages.length > 70) rozState.messages.shift();
-            renderRozChat();
           }
         });
       };
-
-      ws.onclose = () => {
-        stopRozTimer();
-        setRozStatus('Отключено.');
-      };
-      ws.onerror = () => {
-        stopRozTimer();
-        setRozStatus('Ошибка подключения к чату.');
-      };
+      ws.onclose = () => setRozStatus('Отключено.');
+      ws.onerror = () => setRozStatus('Ошибка подключения к чату.');
     }
 
     function rozDisconnect() {
@@ -907,7 +668,6 @@
         try { rozState.ws.close(); } catch (_) {}
         rozState.ws = null;
       }
-      stopRozTimer();
       setRozStatus('Отключено.');
     }
 
@@ -918,7 +678,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ participants: [...rozState.participants.values()] })
       });
-      setRozStatus('Участники синхронизированы.');
+      setRozStatus('Участники синхронизированы в KV.');
     }
 
     async function rozSpin() {
@@ -928,28 +688,26 @@
         return;
       }
 
-      const candidate = [...players].sort(() => Math.random() - 0.5).slice(0, Math.min(7, players.length));
+      const show = players.slice(0, 7);
       let ticks = 0;
-      const maxTicks = 18;
+      const maxTicks = 16;
       const spinBtn = document.getElementById('roz-spin-btn');
       spinBtn.disabled = true;
 
       const interval = setInterval(() => {
-        const current = candidate[Math.floor(Math.random() * candidate.length)];
+        const current = show[Math.floor(Math.random() * show.length)];
         renderRozCards(current.login);
         ticks++;
         if (ticks >= maxTicks) {
           clearInterval(interval);
-          const winner = candidate[Math.floor(Math.random() * candidate.length)];
+          const winner = show[Math.floor(Math.random() * show.length)];
           renderRozCards(winner.login);
-          document.getElementById('roz-winner').innerHTML = `<div class="roz-winner-inline">Победитель: ${winner.displayName} (@${winner.login})</div>`;
-          rozState.messages.push({ user: 'SYSTEM', text: `Победитель — ${winner.displayName} (@${winner.login})` });
-          if (rozState.messages.length > 70) rozState.messages.shift();
-          renderRozChat();
+          document.getElementById('roz-winner').innerHTML = `<div class="winner">Победитель: ${winner.displayName} (@${winner.login})</div>`;
           spinBtn.disabled = false;
         }
       }, 140);
     }
+
     async function getRealtime(moduleName, room) {
       return api(`/api/realtime/state/${encodeURIComponent(moduleName)}/${encodeURIComponent(room)}`);
     }
@@ -987,7 +745,7 @@
       const out = await getRealtime('bingo', room);
       const drawn = Array.isArray(out.state?.drawn) ? out.state.drawn : [];
       const board = drawn.map((n) => `<div class="p-card"><strong>${n}</strong></div>`).join('');
-      document.getElementById('bingo-board').innerHTML = board || '<div class="warn">Р вЂР С•РЎвЂЎР С•Р Р…Р С”Р С‘ Р ВµРЎвЂ°Р Вµ Р Р…Р Вµ Р Р†РЎвЂ№РЎвЂљРЎРЏР С–Р С‘Р Р†Р В°Р В»Р С‘РЎРѓРЎРЉ.</div>';
+      document.getElementById('bingo-board').innerHTML = board || '<div class="warn">Бочонки еще не вытягивались.</div>';
     }
 
     async function drawBingoNumber() {
