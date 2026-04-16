@@ -5,44 +5,32 @@ import { useEffect, useRef, useCallback } from 'react'
 const PROJECTS = [
   {
     title: 'РОЗ',
-    desc: 'Розыгрыши в чате',
+    desc: 'Розыгрыши в чате твича',
     href: '/roz',
     color: '#ff4500',
   },
   {
     title: 'КИНО',
-    desc: 'Онлайн просмотр фильмов',
+    desc: 'Онлайн просмотр фильмов и таймингов',
     href: '/kino.html',
     color: '#ff4500',
   },
   {
     title: 'ЧЕК',
-    desc: 'Проверка подписок',
+    desc: 'Просмотр подписок пользователя twitch',
     href: '/check.html',
     color: '#ff4500',
   },
   {
-    title: 'БИНГО',
-    desc: 'Бинго в чате стрима',
+    title: 'ЛОТОМАЛЬ',
+    desc: '',
     href: '#',
     color: '#ff4500',
   },
   {
     title: 'РОЛЛ',
-    desc: 'Рулетка розыгрышей',
+    desc: 'оверлей рулетка с балами twitch',
     href: '/roz-old.html',
-    color: '#ff4500',
-  },
-  {
-    title: 'ФЕЙСВАП',
-    desc: 'Замена лица LIVE',
-    href: '#',
-    color: '#ff4500',
-  },
-  {
-    title: 'ПАСТА',
-    desc: 'Генерация паст',
-    href: '#',
     color: '#ff4500',
   },
 ]
@@ -115,7 +103,7 @@ export default function Home() {
         {/* Subtitle */}
         <span className="paracetamol-subtitle">
           <span className="paracetamol-twitch-label">TWITCH:</span>
-          <span className="paracetamol-twitch-name">PARACETAMOLHAZE</span>
+          <span className="paracetamol-twitch-name">TXT_ABLOKO</span>
         </span>
 
         {/* Main Word */}
@@ -141,7 +129,7 @@ export default function Home() {
                 onMouseLeave={handleCardMouseLeave}
               >
                 <div className="paracetamol-project-title">{project.title}</div>
-                <div className="paracetamol-project-desc">{project.desc}</div>
+                {project.desc && <div className="paracetamol-project-desc">{project.desc}</div>}
               </a>
             ))}
           </div>
