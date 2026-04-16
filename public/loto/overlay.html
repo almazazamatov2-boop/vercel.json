@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лото — Оверлей</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: transparent;
+            font-family: 'Arial Black', 'Arial', sans-serif;
+            overflow: hidden;
+            width: 1920px;
+            height: 1080px;
+        }
+
+        .panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(145deg, rgba(18,18,36,0.96) 0%, rgba(10,10,22,0.96) 100%);
+            border: 3px solid #FFD700;
+            border-radius: 22px;
+            padding: 14px 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,215,0,0.15);
+        }
+
+        .last-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .last-label {
+            color: #FFD700;
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255,215,0,0.6);
+            white-space: nowrap;
+        }
+
+        .last-barrel {
+            width: 88px;
+            height: 88px;
+            background: linear-gradient(145deg, #FFD700 0%, #DAA520 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000;
+            font-size: 46px;
+            flex-shrink: 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.6), inset 0 3px 6px rgba(255,255,255,0.35);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%,100% { transform:scale(1); box-shadow:0 6px 20px rgba(0,0,0,0.6),inset 0 3px 6px rgba(255,255,255,0.35),0 0 0 rgba(255,215,0,0.5); }
+            50%     { transform:scale(1.06); box-shadow:0 6px 20px rgba(0,0,0,0.6),inset 0 3px 6px rgba(255,255,255,0.35),0 0 28px rgba(255,215,0,0.75); }
+        }
+
+        .last-barrel.new-barrel {
+            animation: dropIn 0.7s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes dropIn {
+            0%  { transform:scale(0) rotate(-180deg); opacity:0; }
+            60% { transform:scale(1.25) rotate(12deg); }
+            100%{ transform:scale(1) rotate(0deg); opacity:1; }
+        }
+
+        .counter-text {
+            color: rgba(255,215,0,0.7);
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            margin-top: 4px;
+        }
+        .counter-text b { color:#FFD700; font-size:15px; }
+
+        .divider {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg,transparent,rgba(255,215,0,0.4),transparent);
+        }
+
+        .barrels-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 44px);
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .barrel {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(145deg, #FFD700 0%, #DAA520 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000;
+            font-size: 17px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 2px 3px rgba(255,255,255,0.3);
+            animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        .barrel.old { animation: none; }
+
+        .barrel.new-pop {
+            animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1), glowPop 1s ease-out;
+        }
+
+        @keyframes popIn {
+            0%  { transform:scale(0); opacity:0; }
+            60% { transform:scale(1.2); }
+            100%{ transform:scale(1); opacity:1; }
+        }
+
+        @keyframes glowPop {
+            0%  { box-shadow:0 3px 8px rgba(0,0,0,0.5),inset 0 2px 3px rgba(255,255,255,0.3),0 0 30px rgba(255,215,0,1); }
+            100%{ box-shadow:0 3px 8px rgba(0,0,0,0.5),inset 0 2px 3px rgba(255,255,255,0.3); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="panel" id="panel" style="display:none;">
+
+    <div class="last-row">
+        <div style="text-align:center;">
+            <div class="last-label">ВЫПАЛ</div>
+            <div class="counter-text" id="counterText">0 из 90</div>
+        </div>
+        <div class="last-barrel" id="lastBarrel">—</div>
+    </div>
+
+    <div class="divider" id="divider" style="display:none;"></div>
+
+    <div class="barrels-grid" id="barrelsGrid"></div>
+
+</div>
+
+<script>
+    let drawnOrder = [];
+    let lastNumber = null;
+
+    async function updateDisplay() {
+        try {
+            const res = await fetch('/api/drawn', { cache: 'no-store' });
+            const data = await res.json();
+            const newOrder = (data.drawn || []).map(Number);
+
+            const prevSet = new Set(drawnOrder);
+            const newNumbers = newOrder.filter(n => !prevSet.has(n));
+            drawnOrder = newOrder;
+
+            const panel = document.getElementById('panel');
+            if (drawnOrder.length === 0) { panel.style.display = 'none'; return; }
+            panel.style.display = 'flex';
+
+            // Последний выпавший
+            const currentLast = drawnOrder[drawnOrder.length - 1];
+            const lastEl = document.getElementById('lastBarrel');
+            if (currentLast !== lastNumber) {
+                lastNumber = currentLast;
+                lastEl.textContent = currentLast;
+                lastEl.classList.remove('new-barrel');
+                void lastEl.offsetWidth;
+                lastEl.classList.add('new-barrel');
+                setTimeout(() => lastEl.classList.remove('new-barrel'), 700);
+            }
+            document.getElementById('counterText').textContent = drawnOrder.length + ' из 90';
+
+            // Предыдущие (все кроме последнего)
+            const prev = drawnOrder.slice(0, -1);
+            const grid = document.getElementById('barrelsGrid');
+            const divider = document.getElementById('divider');
+
+            if (prev.length === 0) {
+                grid.innerHTML = '';
+                divider.style.display = 'none';
+                return;
+            }
+            divider.style.display = 'block';
+
+            if (grid.children.length !== prev.length) {
+                grid.innerHTML = '';
+                prev.forEach(num => {
+                    const b = document.createElement('div');
+                    b.className = newNumbers.includes(num) ? 'barrel new-pop' : 'barrel old';
+                    b.textContent = num;
+                    grid.appendChild(b);
+                });
+            }
+
+        } catch(e) {}
+    }
+
+    setInterval(updateDisplay, 500);
+    updateDisplay();
+</script>
+</body>
+</html>
