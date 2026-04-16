@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, Star, Calendar, Clock, Film, X, ExternalLink, Play, Timer, Info, User, RefreshCw, Plus, ArrowLeft } from 'lucide-react'
+import { Search, Star, Calendar, Clock, Film, X, ExternalLink, Play, Timer, Info, User, RefreshCw, Plus, ArrowLeft, Trash2, Edit2, Lock, Check } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -62,6 +62,45 @@ export default function KinoPage() {
   const [newTimingTime, setNewTimingTime] = useState('')
   const [newTimingDesc, setNewTimingDesc] = useState('')
   const [isSubmittingTiming, setIsSubmittingTiming] = useState(false)
+
+  const [adminKey, setAdminKey] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const key = localStorage.getItem('kinoAdminKey')
+    if (key) setAdminKey(key)
+  }, [])
+
+  const handlePromptAdmin = () => {
+    const key = window.prompt('Введите админ-пароль:')
+    if (key !== null) {
+      setAdminKey(key)
+      localStorage.setItem('kinoAdminKey', key)
+    }
+  }
+
+  const handleDeleteTiming = async (id: string) => {
+    if (!window.confirm('Точно удалить этот тайминг?')) return
+    try {
+      const res = await fetch('/api/kino/timings', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, adminKey })
+      })
+      if (res.ok) {
+        if (selectedFilm) fetchTimings(selectedFilm.kinopoiskId.toString())
+      } else alert('Ошибка. Неверный пароль?')
+    } catch(e) {
+      console.error(e)
+    }
+  }
+
+  const startEditing = (t: Timing) => {
+    setEditingId(t.id)
+    setNewTimingAuthor(t.author)
+    setNewTimingTime(t.timeStr)
+    setNewTimingDesc(t.description)
+  }
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -138,27 +177,42 @@ export default function KinoPage() {
     }
   }, [])
 
-  // Add new Timing
+  // Add or Update Timing
   const handleAddTiming = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedFilm || !newTimingAuthor.trim() || !newTimingTime.trim() || !newTimingDesc.trim()) return
 
     setIsSubmittingTiming(true)
     try {
-      const res = await fetch('/api/kino/timings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filmId: selectedFilm.kinopoiskId.toString(),
-          author: newTimingAuthor,
-          timeStr: newTimingTime,
-          description: newTimingDesc,
+      let res;
+      if (editingId) {
+        res = await fetch('/api/kino/timings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: editingId, adminKey, timeStr: newTimingTime, description: newTimingDesc, author: newTimingAuthor
+          })
         })
-      })
+      } else {
+        res = await fetch('/api/kino/timings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filmId: selectedFilm.kinopoiskId.toString(),
+            author: newTimingAuthor,
+            timeStr: newTimingTime,
+            description: newTimingDesc,
+          })
+        })
+      }
+      
       if (res.ok) {
+        setEditingId(null)
         setNewTimingTime('')
         setNewTimingDesc('')
         await fetchTimings(selectedFilm.kinopoiskId.toString())
+      } else if (editingId) {
+        alert('Ошибка. Неверный пароль?')
       }
     } catch (e) {
       console.error(e)
@@ -417,7 +471,12 @@ export default function KinoPage() {
                   <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
                     <Timer className="w-5 h-5 text-yellow-500" />
                   </div>
-                  <h2 className="text-xl font-bold text-white tracking-tight">Пользовательские тайминги</h2>
+                  <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                    Пользовательские тайминги
+                    <button onClick={handlePromptAdmin} className="opacity-30 hover:opacity-100 transition-opacity p-1" title="Ввести пароль (для админа)">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </button>
+                  </h2>
                 </div>
                 <button
                   onClick={() => fetchTimings(selectedFilm.kinopoiskId.toString())}
@@ -430,57 +489,8 @@ export default function KinoPage() {
                 </button>
               </div>
 
-              {/* Add form */}
-              <form onSubmit={handleAddTiming} className="mb-8 p-6 rounded-xl border border-white/5 relative overflow-hidden group" style={{ background: '#161616' }}>
-                <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-yellow-500" />
-                  Добавить свой тайминг
-                </h3>
-                <div className="flex flex-col lg:flex-row gap-4">
-                  <input
-                    type="text"
-                    required
-                    maxLength={30}
-                    placeholder="Ваш никнейм"
-                    value={newTimingAuthor}
-                    onChange={e => setNewTimingAuthor(e.target.value)}
-                    className="flex-1 lg:w-48 px-4 py-3 rounded-lg border border-white/10 outline-none text-sm text-white placeholder:text-gray-600 focus:border-yellow-500/50 focus:bg-white/5 transition-all"
-                    style={{ background: '#0a0a0a' }}
-                  />
-                  <input
-                    type="text"
-                    required
-                    maxLength={10}
-                    placeholder="Время (напр. 01:23:45)"
-                    value={newTimingTime}
-                    onChange={e => setNewTimingTime(e.target.value)}
-                    className="w-full lg:w-48 px-4 py-3 rounded-lg border border-white/10 outline-none text-sm text-yellow-500 placeholder:text-gray-600 focus:border-yellow-500/50 focus:bg-white/5 transition-all font-mono"
-                    style={{ background: '#0a0a0a' }}
-                  />
-                  <input
-                    type="text"
-                    required
-                    maxLength={150}
-                    placeholder="Что произошло? (напр. обнаженка / скример)"
-                    value={newTimingDesc}
-                    onChange={e => setNewTimingDesc(e.target.value)}
-                    className="flex-[2] px-4 py-3 rounded-lg border border-white/10 outline-none text-sm text-white placeholder:text-gray-600 focus:border-yellow-500/50 focus:bg-white/5 transition-all"
-                    style={{ background: '#0a0a0a' }}
-                  />
-                  <button
-                    type="submit"
-                    disabled={isSubmittingTiming}
-                    className="px-6 py-3 rounded-lg font-semibold text-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 shrink-0 flex justify-center items-center gap-2"
-                    style={{ background: '#e6a800' }}
-                  >
-                    {isSubmittingTiming ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Отправить'}
-                  </button>
-                </div>
-              </form>
-
               {/* Timings List */}
-              <div className="space-y-4">
+              <div className="space-y-4 mb-8">
                 {timingsLoading && timings.length === 0 ? (
                   <div className="py-12 text-center text-gray-500 text-sm animate-pulse">Загрузка таймингов...</div>
                 ) : timings.length === 0 ? (
@@ -513,9 +523,21 @@ export default function KinoPage() {
                           </span>
                         </div>
                         {!t.isSystem && (
-                          <span className="text-gray-600 text-xs sm:ml-auto">
-                            {new Date(t.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                          </span>
+                          <div className="flex items-center sm:ml-auto gap-3">
+                            <span className="text-gray-600 text-xs">
+                              {new Date(t.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            {adminKey && (
+                              <div className="flex items-center gap-1">
+                                <button onClick={() => startEditing(t)} className="p-1.5 text-gray-500 hover:text-yellow-500 hover:bg-yellow-500/10 rounded-md transition-colors">
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button onClick={() => handleDeleteTiming(t.id)} className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                       
@@ -531,6 +553,61 @@ export default function KinoPage() {
                   ))
                 )}
               </div>
+
+              {/* Add/Edit form */}
+              <form onSubmit={handleAddTiming} className="p-6 rounded-xl border border-white/5 relative overflow-hidden group" style={{ background: '#161616' }}>
+                <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Plus className="w-4 h-4 text-yellow-500" />
+                    {editingId ? 'Редактировать тайминг' : 'Добавить свой тайминг'}
+                  </div>
+                  {editingId && (
+                    <button type="button" onClick={() => { setEditingId(null); setNewTimingTime(''); setNewTimingDesc('') }} className="text-xs text-gray-500 hover:text-white transition-colors">
+                      отменить <X className="w-3 h-3 inline" />
+                    </button>
+                  )}
+                </h3>
+                <div className="flex flex-col lg:flex-row gap-4">
+                  <input
+                    type="text"
+                    required
+                    maxLength={30}
+                    placeholder="Ваш никнейм"
+                    value={newTimingAuthor}
+                    onChange={e => setNewTimingAuthor(e.target.value)}
+                    className="flex-1 lg:w-48 px-4 py-3 rounded-lg border border-white/10 outline-none text-sm text-white placeholder:text-gray-600 focus:border-yellow-500/50 focus:bg-white/5 transition-all"
+                    style={{ background: '#0a0a0a' }}
+                  />
+                  <input
+                    type="time"
+                    step="1"
+                    required
+                    value={newTimingTime}
+                    onChange={e => setNewTimingTime(e.target.value)}
+                    className="w-full lg:w-40 px-4 py-3 rounded-lg border border-white/10 outline-none text-sm text-yellow-500 placeholder:text-gray-600 focus:border-yellow-500/50 focus:bg-white/5 transition-all font-mono"
+                    style={{ background: '#0a0a0a', colorScheme: 'dark' }}
+                  />
+                  <input
+                    type="text"
+                    required
+                    maxLength={150}
+                    placeholder="Что произойдет? (напр. обнаженка / скример)"
+                    value={newTimingDesc}
+                    onChange={e => setNewTimingDesc(e.target.value)}
+                    className="flex-[2] px-4 py-3 rounded-lg border border-white/10 outline-none text-sm text-white placeholder:text-gray-600 focus:border-yellow-500/50 focus:bg-white/5 transition-all"
+                    style={{ background: '#0a0a0a' }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmittingTiming}
+                    className="px-6 py-3 rounded-lg font-semibold text-black text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 shrink-0 flex justify-center items-center gap-2"
+                    style={{ background: editingId ? '#34d399' : '#e6a800' }}
+                  >
+                    {isSubmittingTiming ? <RefreshCw className="w-4 h-4 animate-spin" /> : (editingId ? 'Сохранить' : 'Отправить')}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

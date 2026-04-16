@@ -131,3 +131,55 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { id, adminKey } = body
+
+    if (adminKey !== (process.env.ADMIN_KEY || 'almaz')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+
+    const timings = await readTimings()
+    const newTimings = timings.filter(t => t.id !== id)
+    await writeTimings(newTimings)
+
+    return NextResponse.json({ success: true })
+  } catch (e) {
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { id, adminKey, timeStr, description, author } = body
+
+    if (adminKey !== (process.env.ADMIN_KEY || 'almaz')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+    if (!id || !timeStr || !description || !author) {
+      return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+    }
+
+    const timings = await readTimings()
+    const timingIndex = timings.findIndex(t => t.id === id)
+    if (timingIndex === -1) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    timings[timingIndex] = {
+      ...timings[timingIndex],
+      timeStr: String(timeStr).trim(),
+      description: String(description).trim(),
+      author: String(author).trim()
+    }
+    await writeTimings(timings)
+
+    return NextResponse.json(timings[timingIndex])
+  } catch (e) {
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
+}
