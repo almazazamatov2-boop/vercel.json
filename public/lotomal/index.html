@@ -1118,7 +1118,9 @@
             isAdmin = (msg.lobby.admin_id === userId);
             
             if (msg.lobby.status === 'playing' && !gameScreenShown) {
-               handleWsMessage({ type: 'game_started' });
+               gameScreenShown = true;
+               showScreen('gameScreen');
+               updateGameDisplay(); // Показываем кнопки админа в игре
             }
             updateLobbyDisplay();
           }
@@ -1594,6 +1596,23 @@
       leaveLobby();
     }
 
+    function updateGameDisplay() {
+      // Кнопки для админа в игре
+      if (isAdmin) {
+          if (!document.getElementById('creatorButtonsGame')) {
+              const div = document.createElement('div');
+              div.id = 'creatorButtonsGame';
+              div.style.cssText = 'display:flex; gap:10px; margin-bottom:15px;';
+              div.innerHTML = `
+                  <button class="btn-secondary" style="flex:1; font-size:12px; padding:8px;" onclick="window.open('/admin.html?lobbyId='+currentLobbyId, '_blank')">🛡️ Админ</button>
+                  <button class="btn-secondary" style="flex:1; font-size:12px; padding:8px;" onclick="window.open('/overlay.html?lobbyId='+currentLobbyId, '_blank')">🎥 Оверлей</button>
+              `;
+              const gameHeader = document.querySelector('#gameScreen .screen-header');
+              if (gameHeader) gameHeader.after(div);
+          }
+      }
+    }
+
     function updateLobbyDisplay() {
       if (!currentLobby) return;
       document.getElementById('currentLobbyCode').textContent = currentLobby.code;
@@ -1627,8 +1646,8 @@
             div.id = 'creatorButtons';
             div.style.cssText = 'display:flex; gap:10px; margin-top:10px;';
             div.innerHTML = `
-                <button class="btn-secondary" style="flex:1" onclick="window.open('./admin.html?lobbyId='+currentLobbyId, '_blank')">🛡️ Админ.панель</button>
-                <button class="btn-secondary" style="flex:1" onclick="window.open('./overlay.html?lobbyId='+currentLobbyId, '_blank')">🎥 Оверлей</button>
+                <button class="btn-secondary" style="flex:1" onclick="window.open('/lotomal/admin.html?lobbyId='+currentLobbyId, '_blank')">🛡️ Админ.панель</button>
+                <button class="btn-secondary" style="flex:1" onclick="window.open('/lotomal/overlay.html?lobbyId='+currentLobbyId, '_blank')">🎥 Оверлей</button>
             `;
             adminControls.appendChild(div);
         }

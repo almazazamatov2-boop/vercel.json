@@ -108,10 +108,6 @@ export async function POST(req: NextRequest) {
 
         await redis.hset(`loto:lobby:${lobbyId}`, { status: 'playing', started_at: Math.floor(Date.now() / 1000).toString() });
         
-        // In a real game we would generate cards here and store them in Redis
-        // For now, the client will generate its own card when it sees status='playing'
-        // or we can implement a sync point.
-        
         return NextResponse.json({ type: 'game_started' });
       }
 
@@ -180,8 +176,19 @@ export async function GET(req: NextRequest) {
         const lobbyId = searchParams.get('lobbyId');
         if (!lobbyId) return NextResponse.json({ error: 'Missing lobbyId' }, { status: 400 });
 
-        const [lobby, playerIds, playerStatuses, drawn, chat] = await Promise.all([
-          redis.hgetall(`loto:lobby:${lobbyId}`),
+        const lobby: any = await redis.hgetall(`loto:lobby:${lobbyId}`);
+        if (!lobby || Object.keys(lobby).length === 0) return NextResponse.json({ error: 'Lobby not found' }, { status: 404 });
+
+        // Cleanup check (20 minutes inactivity)
+        const lastSeen = Number(lobby.last_seen || lobby.created_at || 0);
+        if (Date.now() / 1000 - lastSeen > 20 * 60) {
+           await redis.srem('loto:active_lobbies', lobbyId);
+           await redis.del(`loto:lobby:${lobbyId}`);
+           return NextResponse.json({ error: 'Lobby expired' }, { status: 410 });
+        }
+        await redis.hset(`loto:lobby:${lobbyId}`, { last_seen: Math.floor(Date.now() / 1000).toString() });
+
+        const [playerIds, playerStatuses, drawn, chat] = await Promise.all([
           redis.smembers(`loto:lobby_players:${lobbyId}`),
           redis.hgetall(`loto:player_status:${lobbyId}`),
           redis.lrange(`loto:drawn:${lobbyId}`, 0, -1),
@@ -197,7 +204,7 @@ export async function GET(req: NextRequest) {
             avatar: profile?.avatar || '👤',
             status: playerStatuses?.[pid] || 'waiting',
             games_played: profile?.games_played || 0,
-            isAdmin: pid === (lobby as any)?.admin_id
+            isAdmin: pid === lobby.admin_id
           };
         }));
 
