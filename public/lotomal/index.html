@@ -1586,7 +1586,23 @@
       sendWS({ type: 'join_lobby', code, password });
     }
 
-    function leaveLobby() {
+    
+    function clearGameSession() {
+      currentLobbyId = null;
+      isAdmin = false;
+      gameScreenShown = false;
+      cardNumbers = [];
+      markedCells.clear();
+      drawnNumbers.clear();
+      drawnOrder = [];
+      sessionStorage.removeItem('currentLobbyId');
+      sessionStorage.removeItem('isAdmin');
+      sessionStorage.removeItem('cardNumbers');
+      sessionStorage.removeItem('markedCells');
+      console.log('Game session cleared');
+    }
+
+    function leaveLobby() { if (currentLobbyId) sendWS({ type: "leave_lobby" }); clearGameSession();
       currentLobbyId = null;
       sendWS({ type: 'leave_lobby' });
       currentLobby = null;
