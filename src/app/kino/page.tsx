@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, Star, Calendar, Clock, Globe, Film, X, ExternalLink, Play, Timer, Info, ArrowLeft } from 'lucide-react'
+import { Search, Star, Calendar, Clock, Film, X, ExternalLink, Play, Timer, Info } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface FilmSuggestion {
   filmId: number
@@ -33,47 +34,15 @@ interface FilmDetail {
   type: string
 }
 
-function PlayerModal({ film, onClose }: { film: FilmDetail; onClose: () => void }) {
-  const playerUrl = `https://fbsite.fun/${film.kinopoiskId}/`
-
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: '#000' }}>
-      <div className="flex items-center justify-between px-4 py-2 shrink-0" style={{ background: '#111' }}>
-        <div className="flex items-center gap-2">
-          <Play className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-          <span className="text-sm font-semibold text-white">{film.nameRu || film.nameOriginal}</span>
-        </div>
-        <button
-          onClick={onClose}
-          className="flex items-center gap-1.5 text-gray-400 hover:text-white text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-white/10"
-        >
-          <X className="w-3.5 h-3.5" />
-          закрыть
-        </button>
-      </div>
-      <div className="flex-1 relative overflow-hidden">
-        <iframe
-          src={playerUrl}
-          className="absolute inset-0 w-full h-full"
-          allowFullScreen
-          referrerPolicy="no-referrer"
-          allow="autoplay; fullscreen; picture-in-picture"
-          style={{ border: 'none', display: 'block' }}
-          title={film.nameRu || 'Player'}
-        />
-      </div>
-    </div>
-  )
-}
 
 export default function KinoPage() {
+  const router = useRouter()
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<FilmSuggestion[]>([])
   const [selectedFilm, setSelectedFilm] = useState<FilmDetail | null>(null)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [loading, setLoading] = useState(false)
   const [filmLoading, setFilmLoading] = useState(false)
-  const [playerOpen, setPlayerOpen] = useState(false)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -133,10 +102,6 @@ export default function KinoPage() {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
-
-  if (playerOpen && selectedFilm) {
-    return <PlayerModal film={selectedFilm} onClose={() => setPlayerOpen(false)} />
-  }
 
   const formatLength = (mins: number | null) => {
     if (!mins) return null
@@ -346,7 +311,11 @@ export default function KinoPage() {
                     </a>
                   )}
                   <button
-                    onClick={() => setPlayerOpen(true)}
+                    onClick={() => {
+                      if (!selectedFilm) return
+                      const title = encodeURIComponent(selectedFilm.nameRu || selectedFilm.nameOriginal || '')
+                      router.push(`/kino/player/${selectedFilm.kinopoiskId}?title=${title}`)
+                    }}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white text-sm transition-all hover:scale-105 active:scale-95"
                     style={{ background: '#8b2fc9' }}
                   >
