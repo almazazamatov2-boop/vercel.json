@@ -1,6 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
+import FloatingNicknames from '@/components/floating-nicknames'
+
+const DEFAULT_NICKS = [
+  'ShadowKiller', 'NightWolf', 'CyberPhoenix', 'DarkViper',
+  'StormBreaker', 'IronGhost', 'NeonBlade', 'ThunderAce',
+  'Paracetamol', 'TXT_ABLOKO', 'VelGardi', 'Haze'
+];
 
 const PROJECTS = [
   {
@@ -116,6 +123,8 @@ export default function Home() {
 
   return (
     <main className="paracetamol-body">
+      <FloatingNicknames nicknames={DEFAULT_NICKS} />
+      
       <div className="paracetamol-container" ref={containerRef}>
         {/* Subtitle */}
         <span className="paracetamol-subtitle">

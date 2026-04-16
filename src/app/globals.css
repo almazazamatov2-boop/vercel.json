@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: 'Waffle Soft';
+  src: url('/fonts/waffle-soft.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -98,7 +106,7 @@
 }
 
 .paracetamol-body {
-  background-color: #111111;
+  background-color: #000000;
   color: white;
   margin: 0;
   padding: 0;
@@ -109,27 +117,6 @@
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
-}
-
-.paracetamol-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image:
-    linear-gradient(to top right, rgba(0,0,0,0.5), transparent 60%),
-    linear-gradient(to bottom left, rgba(0,0,0,0.5), transparent 60%),
-    url('/logo-bg.png');
-  background-size: cover, cover, cover;
-  background-position: center, center, center;
-  background-repeat: no-repeat, no-repeat, no-repeat;
-  background-blend-mode: multiply, multiply, normal;
-  z-index: 0;
-  animation: subtleMove 60s linear infinite;
-  pointer-events: none;
-  opacity: 0.35;
 }
 
 .paracetamol-container {
