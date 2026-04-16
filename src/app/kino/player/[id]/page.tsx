@@ -10,66 +10,71 @@ export default function PlayerPage() {
   const id = params?.id as string
   const title = searchParams?.get('title') ?? ''
 
-  // Use our server-side proxy that spoof Referer as velcam.ru → fbsite.fun allows it
-  const proxyUrl = `/api/kino/proxy/${id}`
+  // kinopoisk.vip embeds correctly from any domain & shows the Kinobox player
+  const src = `https://kinopoisk.vip/film/${id}/`
 
   return (
     <div
       className="fixed inset-0 flex flex-col"
-      style={{ background: '#0a0a0a', fontFamily: 'Inter, sans-serif' }}
+      style={{ background: '#000', fontFamily: 'Inter, sans-serif' }}
     >
-      {/* Header */}
+      {/* Slim header */}
       <div
-        className="flex items-center justify-between px-4 py-2 shrink-0"
-        style={{ background: '#111', borderBottom: '1px solid #222' }}
+        className="flex items-center justify-between px-4 shrink-0"
+        style={{ background: '#111', height: 36, borderBottom: '1px solid #222' }}
       >
         <div className="flex items-center gap-2">
-          <Play className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-          <span className="text-sm font-semibold text-white truncate max-w-xs">
+          <Play className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+          <span className="text-xs font-semibold text-white truncate max-w-xs">
             {decodeURIComponent(title) || 'Просмотр'}
           </span>
         </div>
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-gray-400 hover:text-white text-xs px-3 py-1.5 rounded-lg transition-all"
-          style={{ background: '#222' }}
+          className="flex items-center gap-1 text-gray-500 hover:text-white text-xs px-2 py-1 rounded transition-all hover:bg-white/10"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-3 h-3" />
           закрыть
         </button>
       </div>
 
-      {/* Iframe via proxy — hides top ~200px ad banner with overflow trick */}
+      {/*
+        The kinopoisk.vip page has a ~190px ad banner at the top.
+        We clip it by:
+          1. The outer wrapper clips overflow
+          2. The iframe is pushed up by 190px so the player area aligns to top
+          3. Iframe height = 100% + 190px to compensate
+      */}
       <div
         className="flex-1 relative"
-        style={{ overflow: 'hidden' }}
+        style={{ overflow: 'hidden', background: '#000' }}
       >
-        {/* Shift iframe up to hide the top ad banner (~190px) */}
         <iframe
-          src={proxyUrl}
+          src={src}
+          allowFullScreen
+          allow="autoplay; fullscreen; picture-in-picture"
           style={{
             position: 'absolute',
-            top: '-190px',
+            top: -190,
             left: 0,
             width: '100%',
             height: 'calc(100% + 190px)',
             border: 'none',
-            display: 'block',
           }}
-          allowFullScreen
-          allow="autoplay; fullscreen; picture-in-picture"
           title={decodeURIComponent(title) || 'Player'}
         />
-        {/* Block bottom-left Telegram ad popup with transparent overlay */}
+
+        {/* Cover the Telegram ad popup in bottom-left corner */}
         <div
           style={{
             position: 'absolute',
             bottom: 0,
             left: 0,
-            width: 120,
-            height: 100,
-            zIndex: 10,
-            background: '#0a0a0a',
+            width: 130,
+            height: 110,
+            background: '#000',
+            zIndex: 20,
+            pointerEvents: 'none',
           }}
         />
       </div>
