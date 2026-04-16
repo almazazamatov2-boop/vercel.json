@@ -1051,7 +1051,7 @@
 
     // ====== POLLING & API ======
     let pollInterval = null;
-    let wsReady = false; const chatMessages = new Set();
+    let wsReady = false; const chatMessagesList = []; const chatMessagesIds = new Set();
 
     function initWS() {
       wsReady = true; const savedId = sessionStorage.getItem("currentLobbyId"); if(savedId) { currentLobbyId = savedId; isAdmin = (sessionStorage.getItem("isAdmin") === "true"); }
@@ -1317,7 +1317,7 @@
       if (screenId === 'adminPanelScreen' && !isSuperAdmin) { alert('❌ Нет доступа'); return; }
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
-      currentScreen = screenId;
+      currentScreen = screenId; renderChatMessages();
       if (screenId === 'lobbiesScreen') refreshLobbyList();
       if (screenId === 'profileScreen') { loadProfile(); initMarkPicker(); }
     }
@@ -2112,29 +2112,49 @@
     }
 
     // ====== ЧАТ (через WebSocket) ======
-    function appendChatMessage(msg) { console.log("New msg:", msg); if (!msg.id || chatMessages.has(msg.id)) return; chatMessages.add(msg.id); if (!msg.id || chatMessages.has(msg.id)) return; chatMessages.add(msg.id);
-      const boxId = currentScreen === 'gameScreen' ? 'chatBoxGame' : 'chatBoxLobby';
+        function appendChatMessage(msg) {
+      if (!msg.id || chatMessagesIds.has(msg.id)) return;
+      chatMessagesIds.add(msg.id);
+      chatMessagesList.push(msg);
+      renderChatMessages();
+    }
+
+    function renderChatMessages() {
+      const boxId = (currentScreen === 'gameScreen' || gameScreenShown) ? 'chatBoxGame' : 'chatBoxLobby';
       const box = document.getElementById(boxId);
       if (!box) return;
-      const atBottom = (box.scrollTop + box.clientHeight + 40) >= box.scrollHeight;
-      const el = document.createElement('div');
-      el.className = 'chat-msg';
-      const dt = new Date(msg.timestamp || Date.now());
-      const hh = String(dt.getHours()).padStart(2,'0');
-      const mm = String(dt.getMinutes()).padStart(2,'0');
-      el.innerHTML = `
-        <div class="chat-meta">
-          <span class="chat-nick" style="cursor:pointer;color:#FFD700;" data-uid="${escapeHtml(String(msg.userId || ''))}" data-nick="${escapeHtml(msg.nickname || 'Игрок')}" data-av="${escapeHtml(msg.avatar || '👤')}">${escapeHtml(msg.nickname || 'Игрок')}</span>
-          <span>${hh}:${mm}</span>
-        </div>
-        <div class="chat-text">${escapeHtml(msg.text || '')}</div>
-      `;
-      el.querySelector('.chat-nick').addEventListener('click', (e) => {
-        showPlayerProfile({ id: e.target.dataset.uid, nickname: e.target.dataset.nick, avatar: e.target.dataset.av });
+      
+      // Чтобы не перерисовывать все каждый раз, будем просто добавлять недостающие в активное окно
+      const existingIds = new Set([...box.querySelectorAll('.chat-msg .chat-nick')].map(el => el.dataset.uid_msg));
+      
+      chatMessagesList.forEach(msg => {
+        if (existingIds.has(msg.id)) return;
+        
+        const atBottom = (box.scrollTop + box.clientHeight + 40) >= box.scrollHeight;
+        const el = document.createElement('div');
+        el.className = 'chat-msg';
+        const dt = new Date(msg.timestamp || Date.now());
+        const hh = String(dt.getHours()).padStart(2,'0');
+        const mm = String(dt.getMinutes()).padStart(2,'0');
+        el.innerHTML = `
+          <div class="chat-meta">
+            <span class="chat-nick" style="cursor:pointer;color:#FFD700;" 
+              data-uid_msg="${msg.id}"
+              data-uid="${escapeHtml(String(msg.userId || ''))}" 
+              data-nick="${escapeHtml(msg.nickname || 'Игрок')}" 
+              data-av="${escapeHtml(msg.avatar || '👤')}">${escapeHtml(msg.nickname || 'Игрок')}</span>
+            <span>${hh}:${mm}</span>
+          </div>
+          <div class="chat-text">${escapeHtml(msg.text || '')}</div>
+        `;
+        el.querySelector('.chat-nick').addEventListener('click', (e) => {
+          showPlayerProfile({ id: e.target.dataset.uid, nickname: e.target.dataset.nick, avatar: e.target.dataset.av });
+        });
+        box.appendChild(el);
+        if (atBottom) box.scrollTop = box.scrollHeight;
       });
-      box.appendChild(el);
-      if (atBottom) box.scrollTop = box.scrollHeight;
     }
+
 
     function sendChat(where) {
       if (!currentLobbyId) { alert('Сначала зайди в лобби'); return; }

@@ -165,6 +165,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ type: 'chat_sent', message: msg });
       }
 
+      case 'mark_cell': {
+        const { userId, lobbyId, count } = data;
+        await redis.hset(`loto:player_progress:${lobbyId}`, { [userId]: count });
+        return NextResponse.json({ type: 'progress_updated' });
+      }
+
       default:
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
@@ -198,11 +204,12 @@ export async function GET(req: NextRequest) {
         }
         await redis.hset(`loto:lobby:${lobbyId}`, { last_seen: Math.floor(Date.now() / 1000).toString() });
 
-        const [playerIds, playerStatuses, drawn, chat] = await Promise.all([
+        const [playerIds, playerStatuses, drawn, chat, playerProgress] = await Promise.all([
           redis.smembers(`loto:lobby_players:${lobbyId}`),
           redis.hgetall(`loto:player_status:${lobbyId}`),
           redis.lrange(`loto:drawn:${lobbyId}`, 0, -1),
           redis.lrange(`loto:chat:${lobbyId}`, 0, -1),
+          redis.hgetall(`loto:player_progress:${lobbyId}`),
         ]);
 
         // Get profiles for all players
@@ -214,6 +221,7 @@ export async function GET(req: NextRequest) {
             avatar: profile?.avatar || '👤',
             status: playerStatuses?.[pid] || 'waiting',
             games_played: profile?.games_played || 0,
+            progress: playerProgress?.[pid] || 0,
             isAdmin: pid === lobby.admin_id
           };
         }));
