@@ -548,39 +548,40 @@ export default function KinoPage() {
           <div className="w-full max-w-4xl mt-6">
             <div className="p-6 md:p-8 rounded-2xl border border-white/10 shadow-lg" style={{ background: '#111' }}>
               <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-                  <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
-                    <Timer className="w-5 h-5 text-yellow-500" />
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+                      <Timer className="w-5 h-5 text-yellow-500" />
+                    </div>
+                    <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                      Пользовательские тайминги
+                      <button onClick={handlePromptAdmin} className="opacity-30 hover:opacity-100 transition-opacity p-1" title="Ввести пароль (для админа)">
+                        <Lock className="w-4 h-4 text-gray-400" />
+                      </button>
+                    </h2>
                   </div>
-                  <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                    Пользовательские тайминги
-                    <button onClick={handlePromptAdmin} className="opacity-30 hover:opacity-100 transition-opacity p-1" title="Ввести пароль (для админа)">
-                      <Lock className="w-4 h-4 text-gray-400" />
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                      onClick={() => {
+                        const url = `${window.location.origin}/kino/overlay/${selectedFilm.kinopoiskId}`
+                        navigator.clipboard.writeText(url)
+                        alert('Ссылка для OBS скопирована!')
+                      }}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-medium border border-white/5 hover:bg-white/5 transition-all text-gray-400 bg-[#161616]"
+                      title="Для добавления в OBS (Browser Source) с прозрачным фоном"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Ссылка для OBS
                     </button>
-                  </h2>
-                </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/kino/overlay/${selectedFilm.kinopoiskId}`
-                      navigator.clipboard.writeText(url)
-                      alert('Ссылка для OBS скопирована!')
-                    }}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-medium border border-white/5 hover:bg-white/5 transition-all text-gray-400 bg-[#161616]"
-                    title="Для добавления в OBS (Browser Source) с прозрачным фоном"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    Ссылка для OBS
-                  </button>
-                  <button
-                    onClick={() => fetchTimings(selectedFilm.kinopoiskId.toString())}
-                    disabled={timingsLoading}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-white/10 hover:bg-white/10 transition-all text-gray-300 disabled:opacity-50"
-                    style={{ background: '#1a1a1a' }}
-                  >
-                    <RefreshCw className={`w-4 h-4 ${timingsLoading ? 'animate-spin' : ''}`} />
-                    обновить
-                  </button>
-                </div>
+                    <button
+                      onClick={() => fetchTimings(selectedFilm.kinopoiskId.toString())}
+                      disabled={timingsLoading}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-white/10 hover:bg-white/10 transition-all text-gray-300 disabled:opacity-50"
+                      style={{ background: '#1a1a1a' }}
+                    >
+                      <RefreshCw className={`w-4 h-4 ${timingsLoading ? 'animate-spin' : ''}`} />
+                      обновить
+                    </button>
+                  </div>
               </div>
 
               {/* Timings List */}
