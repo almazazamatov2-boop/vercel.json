@@ -137,17 +137,21 @@ export async function POST(req: NextRequest) {
 
         await redis.rpush(`loto:drawn:${lobbyId}`, number);
         const drawn = await redis.lrange(`loto:drawn:${lobbyId}`, 0, -1);
-        return NextResponse.json({ type: 'number_drawn', number, drawn });
+        return NextResponse.json({ type: 'number_drawn', number, all: drawn.map(Number), drawn: drawn.map(Number) });
       }
 
       case 'undo_number': {
-        const { userId, lobbyId } = data;
+        const { userId, lobbyId, number } = data;
         const lobby: any = await redis.hgetall(`loto:lobby:${lobbyId}`);
         if (lobby.admin_id !== userId) return NextResponse.json({ type: 'error', message: 'Только админ может отменять' });
 
-        await redis.rpop(`loto:drawn:${lobbyId}`);
+        if (number) {
+          await redis.lrem(`loto:drawn:${lobbyId}`, 1, number);
+        } else {
+          await redis.rpop(`loto:drawn:${lobbyId}`);
+        }
         const drawn = await redis.lrange(`loto:drawn:${lobbyId}`, 0, -1);
-        return NextResponse.json({ type: 'state_update', drawn: drawn.map(Number) });
+        return NextResponse.json({ type: 'state_update', all: drawn.map(Number), drawn: drawn.map(Number) });
       }
 
       case 'reset_numbers': {
@@ -156,7 +160,7 @@ export async function POST(req: NextRequest) {
         if (lobby.admin_id !== userId) return NextResponse.json({ type: 'error', message: 'Только админ может сбросить' });
 
         await redis.del(`loto:drawn:${lobbyId}`);
-        return NextResponse.json({ type: 'state_update', drawn: [] });
+        return NextResponse.json({ type: 'state_update', all: [], drawn: [] });
       }
 
       case 'chat_message': {

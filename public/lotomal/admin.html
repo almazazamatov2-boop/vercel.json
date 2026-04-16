@@ -484,9 +484,10 @@
                     body: JSON.stringify({ action: 'undo_number', lobbyId, userId, number: num })
                 });
                 const data = await res.json();
-                if (data.drawn) {
-                    drawnOrder = data.drawn;
-                    drawnNumbers = new Set(data.drawn);
+                const barrels = data.all || data.drawn;
+                if (barrels) {
+                    drawnOrder = barrels.map(Number);
+                    drawnNumbers = new Set(drawnOrder);
                     updateDisplay();
                 }
             } catch(e) { await loadFromServer(); }

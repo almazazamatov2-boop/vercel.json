@@ -1119,7 +1119,9 @@
     }
 
     function handleWsMessage(msg) {
-      switch (msg.type) {
+      if (!msg || !msg.type) return;
+      try {
+        switch (msg.type) {
         case 'auth_success':
           setConnStatus('connected', 'Онлайн');
           if (msg.user) {
@@ -1155,11 +1157,12 @@
             updateLobbyDisplay(); updateGameDisplay();
           }
 
-          if (msg.drawn) {
-            const newCount = msg.drawn.length;
+          const barrels = msg.all || msg.drawn;
+          if (barrels) {
+            const newCount = barrels.length;
             const oldCount = drawnNumbers.size;
-            drawnNumbers = new Set(msg.drawn.map(Number));
-            drawnOrder = msg.drawn.map(Number);
+            drawnNumbers = new Set(barrels.map(Number));
+            drawnOrder = barrels.map(Number);
             updateDrawnNumbersDisplay();
             if (newCount > oldCount) {
               playSound('barrel');
@@ -1283,6 +1286,9 @@
           alert('❌ ' + msg.message);
           break;
       }
+    } catch(err) {
+      console.error('handleWsMessage Error:', err, 'Msg:', msg);
+    }
     }
 
     // ====== СПИСОК ЛОББИ (REST /api/lobbies) ======
