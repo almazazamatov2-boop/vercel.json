@@ -64,11 +64,11 @@ export default function PlayerPage() {
           title={decodeURIComponent(title) || 'Player'}
         />
 
-        {/* Cover the Telegram ad popup in bottom-left corner */}
+        {/* Cover the Telegram ad popup in bottom-left corner and leave space for player controls */}
         <div
           style={{
             position: 'absolute',
-            bottom: 0,
+            bottom: 65, // raised above the player controls bar to not block the play button
             left: 0,
             width: 150,
             height: 160,
