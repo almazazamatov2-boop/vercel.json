@@ -22,7 +22,6 @@ import {
   ArrowDown,
   Sparkles
 } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -106,7 +105,8 @@ export default function Home() {
   const [vasePlayers, setVasePlayers] = useState<Participant[]>([])
 
   const [spinOffset, setSpinOffset] = useState(0)
-  const spinList = participants.length > 0 ? Array(30).fill(participants).flat() : []
+  const spinList = participants.length > 0 ? Array(40).fill(participants).flat() : []
+  const wheelRef = useRef<HTMLDivElement>(null)
   const chatRef = useRef<HTMLDivElement>(null)
   const userColorsRef = useRef<Map<string, string>>(new Map())
   const participantsSet = useRef<Set<string>>(new Set())
@@ -252,28 +252,52 @@ export default function Home() {
   /* ─── Roulette ─── */
   const handleStartRoulette = () => {
     if (participants.length < 2) return
-    setRouletteOpen(true)
-    setSpinOffset(0)
+    // Reset wheel position instantly (no transition)
+    if (wheelRef.current) {
+      wheelRef.current.style.transition = 'none'
+      wheelRef.current.style.transform = 'translateX(calc(50% - 64px))'
+    }
     setSpinWinner(null)
     setIsSpinning(false)
+    setRouletteOpen(true)
   }
 
   const handleSpinRoulette = () => {
+    if (!wheelRef.current || participants.length < 2) return
     setIsSpinning(true)
-    const loops = 5
-    const targetIdx = participants.length * loops + winnerIdx
-    setSpinOffset(-(targetIdx * 128))
 
-    setTimeout(() => {
-      setSpinWinner(w)
-      setWinner(w)
-      setIsSpinning(false)
-    }, 5100)
+    const winnerIdx = Math.floor(Math.random() * participants.length)
+    const w = participants[winnerIdx]
+    // Use 15 full loops before landing on winner
+    const loops = 15
+    const targetIdx = participants.length * loops + winnerIdx
+    const offsetPx = -(targetIdx * 128)
+
+    // Force browser to acknowledge the reset position first, then animate
+    wheelRef.current.style.transition = 'none'
+    wheelRef.current.style.transform = 'translateX(calc(50% - 64px))'
+
+    // Use double rAF so browser paints the reset before starting animation
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (wheelRef.current) {
+          wheelRef.current.style.transition = 'transform 5.5s cubic-bezier(0.12, 0.8, 0.25, 1)'
+          wheelRef.current.style.transform = `translateX(calc(50% - 64px + ${offsetPx}px))`
+        }
+
+        setTimeout(() => {
+          setSpinWinner(w)
+          setWinner(w)
+          setIsSpinning(false)
+        }, 5600)
+      })
+    })
   }
 
   useEffect(() => {
-    if (!rouletteOpen) {
-      setSpinOffset(0)
+    if (!rouletteOpen && wheelRef.current) {
+      wheelRef.current.style.transition = 'none'
+      wheelRef.current.style.transform = 'translateX(calc(50% - 64px))'
       setSpinWinner(null)
       setIsSpinning(false)
     }
@@ -576,11 +600,10 @@ export default function Home() {
               <ArrowDown className="w-6 h-6 text-yellow-500 drop-shadow-md" />
             </div>
             
-            <motion.div 
+            <div
+              ref={wheelRef}
               className="flex items-center h-full"
-              initial={{ x: "calc(50% - 64px)" }}
-              animate={{ x: `calc(50% - ${64 - spinOffset}px)` }}
-              transition={{ duration: 5.4, ease: [0.15, 0.85, 0.3, 1] }}
+              style={{ transform: 'translateX(calc(50% - 64px))', willChange: 'transform' }}
             >
                {spinList.map((p, i) => (
                  <div key={i} className="shrink-0 flex flex-col items-center justify-center border-r border-[#333] last:border-none relative" style={{ width: 128, height: '100%' }}>
@@ -590,7 +613,7 @@ export default function Home() {
                    <span className="text-xs font-semibold text-white truncate w-24 text-center">{p.username}</span>
                  </div>
                ))}
-            </motion.div>
+            </div>
           </div>
 
           {/* Winner Display */}
