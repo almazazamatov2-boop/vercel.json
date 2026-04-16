@@ -95,6 +95,9 @@ export default function KinoPage() {
   const handleSelectFilm = useCallback(async (suggestion: FilmSuggestion) => {
     setShowSuggestions(false)
     setQuery(suggestion.nameRu || suggestion.nameEn || '')
+    setFilmLoading(true)
+    setSelectedFilm(null)
+    try {
       const res = await fetch(`/api/kino/film?id=${suggestion.filmId}`)
       const data: FilmDetail = await res.json()
       setSelectedFilm(data)
