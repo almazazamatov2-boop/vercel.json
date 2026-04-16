@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Redis } from '@upstash/redis'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
@@ -13,8 +14,15 @@ export interface Timing {
   isSystem?: boolean
 }
 
-// Store in /tmp/timings.json for serverless compatibility (will reset on cold start!)
+// Fallback to /tmp/timings.json if Redis is not configured
 const DATA_FILE = path.join(os.tmpdir(), 'velcam_timings.json')
+
+const redis = (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
+  ? new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    })
+  : null;
 
 // Mock system timings (like for popular films)
 const MOCK_SYSTEM_TIMINGS: Timing[] = [
@@ -47,22 +55,30 @@ const MOCK_SYSTEM_TIMINGS: Timing[] = [
   }
 ]
 
-function readTimings(): Timing[] {
-  let db: Timing[] = []
+async function readTimings(): Promise<Timing[]> {
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, 'utf-8')
-      db = JSON.parse(data)
+    if (redis) {
+      const data = await redis.get<Timing[]>('kino_timings_db')
+      return data || []
+    } else {
+      if (fs.existsSync(DATA_FILE)) {
+        const data = fs.readFileSync(DATA_FILE, 'utf-8')
+        return JSON.parse(data)
+      }
     }
   } catch (e) {
     console.error('Failed to read db', e)
   }
-  return db
+  return []
 }
 
-function writeTimings(timings: Timing[]) {
+async function writeTimings(timings: Timing[]) {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(timings, null, 2))
+    if (redis) {
+      await redis.set('kino_timings_db', timings)
+    } else {
+      fs.writeFileSync(DATA_FILE, JSON.stringify(timings, null, 2))
+    }
   } catch (e) {
     console.error('Failed to write db', e)
   }
@@ -73,7 +89,7 @@ export async function GET(req: NextRequest) {
   const filmId = url.searchParams.get('filmId')
   if (!filmId) return NextResponse.json({ error: 'Missing filmId' }, { status: 400 })
 
-  const allTimings = readTimings()
+  const allTimings = await readTimings()
   let filmTimings = allTimings.filter(t => t.filmId === filmId)
 
   // Append any system mocked ones if they match
@@ -106,9 +122,9 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     }
 
-    const timings = readTimings()
+    const timings = await readTimings()
     timings.push(newTiming)
-    writeTimings(timings)
+    await writeTimings(timings)
 
     return NextResponse.json(newTiming)
   } catch (e) {
