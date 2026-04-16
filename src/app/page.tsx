@@ -33,7 +33,7 @@ const PROJECTS = [
   {
     title: 'ЛОТОМАЛЬ',
     desc: 'Многопользовательская игра в Лото',
-    href: '/loto/game.html',
+    href: '/lotomal',
     color: '#ff4500',
   },
   {

@@ -1046,11 +1046,12 @@
       );
     }
 
-    // ====== WEBSOCKET ======
     // ====== POLLING & API ======
     let pollInterval = null;
+    let wsReady = false;
 
     function initWS() {
+      wsReady = true; // Разрешаем действия в режиме поллинга
       // Авторизация при старте
       sendAPI({ action: 'auth', userId, nickname: userProfile.nickname })
         .then(msg => handleWsMessage(msg));
