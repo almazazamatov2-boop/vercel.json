@@ -34,34 +34,32 @@ interface FilmDetail {
 }
 
 function PlayerModal({ film, onClose }: { film: FilmDetail; onClose: () => void }) {
-  // kinopoisk.vip = replace .ru with .vip — full Kinobox aggregator player
-  const playerUrl = `https://kinopoisk.vip/film/${film.kinopoiskId}/`
+  const playerUrl = `https://fbsite.fun/${film.kinopoiskId}/`
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col"
-      style={{ background: '#0a0a0a' }}
-    >
-      <div className="flex items-center justify-between px-6 py-3 border-b border-white/10">
-        <div className="flex items-center gap-2 text-yellow-400">
-          <Play className="w-4 h-4" />
-          <span className="text-sm font-semibold">просмотр</span>
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: '#000' }}>
+      <div className="flex items-center justify-between px-4 py-2 shrink-0" style={{ background: '#111' }}>
+        <div className="flex items-center gap-2">
+          <Play className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+          <span className="text-sm font-semibold text-white">{film.nameRu || film.nameOriginal}</span>
         </div>
         <button
           onClick={onClose}
-          className="flex items-center gap-2 text-gray-400 hover:text-white text-sm px-3 py-1.5 rounded-lg border border-white/10 hover:border-white/30 transition-all"
+          className="flex items-center gap-1.5 text-gray-400 hover:text-white text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-white/10"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
           закрыть
         </button>
       </div>
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         <iframe
           src={playerUrl}
-          className="w-full h-full"
+          className="absolute inset-0 w-full h-full"
           allowFullScreen
-          allow="autoplay; fullscreen"
-          style={{ border: 'none' }}
+          referrerPolicy="no-referrer"
+          allow="autoplay; fullscreen; picture-in-picture"
+          style={{ border: 'none', display: 'block' }}
+          title={film.nameRu || 'Player'}
         />
       </div>
     </div>
