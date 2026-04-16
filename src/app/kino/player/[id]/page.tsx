@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Play, X } from 'lucide-react'
 
@@ -9,39 +8,10 @@ export default function PlayerPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const id = params?.id as string
-  const title = searchParams?.get('title') || ''
-  const containerRef = useRef<HTMLDivElement>(null)
-  const initRef = useRef(false)
+  const title = searchParams?.get('title') ?? ''
 
-  useEffect(() => {
-    if (!id || initRef.current) return
-    initRef.current = true
-
-    const kpId = parseInt(id, 10)
-
-    // Dynamically load Kinobox player script
-    const script = document.createElement('script')
-    script.src = `https://kinobox.tv/kinobox.min.js`
-    script.async = true
-    script.onload = () => {
-      // @ts-ignore
-      if (window.kbox && containerRef.current) {
-        // @ts-ignore
-        window.kbox(containerRef.current, {
-          search: { kinopoisk: kpId },
-          params: {
-            // Try to use Alloha, Collaps, etc in order
-            all: { poster: '' },
-          },
-        })
-      }
-    }
-    document.head.appendChild(script)
-
-    return () => {
-      if (script.parentNode) script.parentNode.removeChild(script)
-    }
-  }, [id])
+  // Use our server-side proxy that spoof Referer as velcam.ru → fbsite.fun allows it
+  const proxyUrl = `/api/kino/proxy/${id}`
 
   return (
     <div
@@ -69,12 +39,38 @@ export default function PlayerPage() {
         </button>
       </div>
 
-      {/* Player area - kinobox renders here */}
-      <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+      {/* Iframe via proxy — hides top ~200px ad banner with overflow trick */}
+      <div
+        className="flex-1 relative"
+        style={{ overflow: 'hidden' }}
+      >
+        {/* Shift iframe up to hide the top ad banner (~190px) */}
+        <iframe
+          src={proxyUrl}
+          style={{
+            position: 'absolute',
+            top: '-190px',
+            left: 0,
+            width: '100%',
+            height: 'calc(100% + 190px)',
+            border: 'none',
+            display: 'block',
+          }}
+          allowFullScreen
+          allow="autoplay; fullscreen; picture-in-picture"
+          title={decodeURIComponent(title) || 'Player'}
+        />
+        {/* Block bottom-left Telegram ad popup with transparent overlay */}
         <div
-          ref={containerRef}
-          className="kinobox_player w-full h-full"
-          style={{ minHeight: '400px' }}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: 120,
+            height: 100,
+            zIndex: 10,
+            background: '#0a0a0a',
+          }}
         />
       </div>
     </div>
