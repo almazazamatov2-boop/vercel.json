@@ -1,4 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Redis } from '@upstash/redis';
+
+const redis = (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
+  ? new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    })
+  : null;
 
 const API_BASE = 'https://followage.showmasterokda.com';
 
@@ -16,6 +24,13 @@ export async function GET(request: NextRequest) {
 
   if (!username) {
     return NextResponse.json({ error: 'Username is required' }, { status: 400 });
+  }
+
+  // Update stats in background
+  if (redis) {
+    const cleanUsername = username.trim().toLowerCase();
+    redis.incr('twitch_total_searches').catch(() => {});
+    redis.sadd('twitch_unique_users', cleanUsername).catch(() => {});
   }
 
   try {

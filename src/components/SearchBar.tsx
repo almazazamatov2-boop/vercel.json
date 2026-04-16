@@ -39,6 +39,9 @@ export default function SearchBar({ onSearch, isLoading, initialUsername = '' }:
             className="w-full h-14 pl-12 pr-4 bg-[#1f1f23] border border-[#2f2f35] rounded-xl text-foreground placeholder:text-muted-foreground text-base focus:outline-none focus:border-twitch-purple focus:ring-1 focus:ring-twitch-purple transition-all"
             disabled={isLoading}
           />
+          <p className="text-center text-muted-foreground text-[10px] md:text-sm mt-2 opacity-60">
+            Пример: <span className="text-twitch-purple-light cursor-pointer hover:underline" onClick={() => { setUsername('tiktokevelone888'); }}>tiktokevelone888</span>
+          </p>
         </div>
         <button
           type="submit"
@@ -55,9 +58,6 @@ export default function SearchBar({ onSearch, isLoading, initialUsername = '' }:
           )}
         </button>
       </form>
-      <p className="text-center text-muted-foreground text-sm mt-3">
-        Пример: <span className="text-twitch-purple-light cursor-pointer hover:underline" onClick={() => { setUsername('tiktokevelone888'); }}>tiktokevelone888</span>
-      </p>
     </div>
   );
 }

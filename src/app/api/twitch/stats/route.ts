@@ -1,29 +1,39 @@
 import { NextResponse } from 'next/server';
+import { Redis } from '@upstash/redis';
 
-const API_BASE = 'https://followage.showmasterokda.com';
-
-const HEADERS = {
-  'Accept': 'application/json',
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Origin': 'https://followage.showmasterokda.com',
-  'Referer': 'https://followage.showmasterokda.com/',
-};
+const redis = (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
+  ? new Redis({
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    })
+  : null;
 
 export async function GET() {
-  try {
-    const res = await fetch(`${API_BASE}/search_stats_api.php?action=get`, {
-      headers: HEADERS,
-      cache: 'no-store',
+  if (!redis) {
+    return NextResponse.json({
+      success: true,
+      total_searches: 0,
+      unique_users: 0
     });
+  }
 
-    if (!res.ok) {
-      return NextResponse.json({ error: 'Failed to fetch stats' }, { status: res.status });
-    }
+  try {
+    const [totalResults, uniqueResults] = await Promise.all([
+      redis.get<number>('twitch_total_searches'),
+      redis.scard('twitch_unique_users')
+    ]);
 
-    const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json({
+      success: true,
+      total_searches: totalResults || 0,
+      unique_users: uniqueResults || 0
+    });
   } catch (error) {
     console.error('Error fetching stats:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      success: true, 
+      total_searches: 0, 
+      unique_users: 0 
+    });
   }
 }
