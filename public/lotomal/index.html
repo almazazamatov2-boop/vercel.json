@@ -1054,27 +1054,47 @@
     let wsReady = false; const chatMessagesList = []; const chatMessagesIds = new Set();
 
     function initWS() {
-      wsReady = true; const savedId = sessionStorage.getItem("currentLobbyId"); if(savedId) { currentLobbyId = savedId; isAdmin = (sessionStorage.getItem("isAdmin") === "true"); }
-      // Авторизация при старте
+      wsReady = true;
+      // Восстановление сессии
+      const _sid   = sessionStorage.getItem('currentLobbyId');
+      const _adm   = sessionStorage.getItem('isAdmin') === 'true';
+      const _card  = sessionStorage.getItem('cardNumbers');
+      const _marks = sessionStorage.getItem('markedCells');
+      const _game  = sessionStorage.getItem('gameScreenShown') === 'true';
+      if (_sid) {
+        currentLobbyId = _sid;
+        isAdmin        = _adm;
+        try { if (_card)   cardNumbers = JSON.parse(_card);           } catch(e){}
+        try { if (_marks)  markedCells = new Set(JSON.parse(_marks)); } catch(e){}
+        if (_game) {
+          gameScreenShown = true;
+          document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+          const gs = document.getElementById('gameScreen');
+          if (gs) { gs.classList.add('active'); currentScreen = 'gameScreen'; }
+          if (!cardNumbers || !cardNumbers.length) cardNumbers = generateLotoCard();
+          setTimeout(() => { renderCard(); updateGameStats(); updateGameDisplay(); }, 100);
+        }
+      }
+      // Авторизация
+      setConnStatus('connecting', 'Подключение...');
       sendAPI({ action: 'auth', userId, nickname: userProfile.nickname })
-        .then(msg => handleWsMessage(msg));
-      
-      // Запуск поллинга
+        .then(msg => {
+          handleWsMessage(msg);
+          setConnStatus('connected', 'Онлайн');
+          setTimeout(() => { const el = document.getElementById('connStatus'); if(el) el.style.opacity='0'; }, 2000);
+        })
+        .catch(() => setConnStatus('error', 'Ошибка'));
+      // Поллинг
       if (!pollInterval) {
         pollInterval = setInterval(async () => {
-          if (currentLobbyId) {
-            try {
-              const res = await fetch(`/api/loto?action=get_state&lobbyId=${currentLobbyId}`);
-              if (res.ok) {
-                const msg = await res.json();
-                handleWsMessage(msg);
-              }
-            } catch(e) {}
-          }
-        }, 1000); // Быстрее (1 сек)
+          if (!currentLobbyId) return;
+          try {
+            const res = await fetch(`/api/loto?action=get_state&lobbyId=${currentLobbyId}`);
+            if (res.status === 404 || res.status === 410) { clearGameSession(); showScreen('mainMenu'); return; }
+            if (res.ok) { const msg = await res.json(); handleWsMessage(msg); }
+          } catch(e) {}
+        }, 1500);
       }
-      
-      setConnStatus('connected', 'Онлайн (Vercel Mode)');
     }
 
     async function sendAPI(data) {
@@ -1118,15 +1138,23 @@
               maxPlayers: msg.lobby.max_players || 10,
               players: msg.lobby.players || []
             };
-            isAdmin = (String(msg.lobby.admin_id).trim() === String(userId).trim()); sessionStorage.setItem("currentLobbyId", currentLobbyId); sessionStorage.setItem("isAdmin", isAdmin);
-            
+            isAdmin = (String(msg.lobby.admin_id).trim() === String(userId).trim());
+            sessionStorage.setItem('currentLobbyId', currentLobbyId);
+            sessionStorage.setItem('isAdmin', String(isAdmin));
+
             if (msg.lobby.status === 'playing' && !gameScreenShown && currentScreen !== 'mainMenu') {
-               gameScreenShown = true;
-               showScreen('gameScreen');
-               if (!cardNumbers || cardNumbers.length === 0) { cardNumbers = generateLotoCard(); sessionStorage.setItem("cardNumbers", JSON.stringify(cardNumbers)); } if (!cardNumbers || cardNumbers.length === 0) { cardNumbers = generateLotoCard(); sessionStorage.setItem("cardNumbers", JSON.stringify(cardNumbers)); } updateGameDisplay(); renderCard();
+              gameScreenShown = true;
+              sessionStorage.setItem('gameScreenShown', 'true');
+              if (!cardNumbers || !cardNumbers.length) {
+                cardNumbers = generateLotoCard();
+                sessionStorage.setItem('cardNumbers', JSON.stringify(cardNumbers));
+              }
+              showScreen('gameScreen');
+              updateGameDisplay(); renderCard(); updateGameStats();
             }
             updateLobbyDisplay(); updateGameDisplay();
           }
+
           if (msg.drawn) {
             const newCount = msg.drawn.length;
             const oldCount = drawnNumbers.size;
@@ -1188,28 +1216,22 @@
 
         case 'game_started':
           if (msg.card) {
-            cardNumbers = msg.card; sessionStorage.setItem("cardNumbers", JSON.stringify(cardNumbers));
-            markedCells.clear();
-            drawnNumbers.clear();
-            drawnOrder = [];
-            alreadyWon = false;
-            alreadyNotified14 = false;
-            gameScreenShown = true;
-            renderCard();
-            updateGameStats();
-            if (currentScreen !== 'gameScreen') showScreen('gameScreen');
-          } else if (!gameScreenShown) {
-            if (!cardNumbers.length) cardNumbers = generateLotoCard();
-            markedCells.clear();
-            drawnNumbers.clear();
-            drawnOrder = [];
-            alreadyWon = false;
-            alreadyNotified14 = false;
-            gameScreenShown = true;
-            renderCard();
-            updateGameStats();
-            showScreen('gameScreen');
+            cardNumbers = msg.card;
+          } else {
+            if (!cardNumbers || !cardNumbers.length) cardNumbers = generateLotoCard();
           }
+          markedCells.clear();
+          drawnNumbers.clear();
+          drawnOrder = [];
+          alreadyWon = false;
+          alreadyNotified14 = false;
+          gameScreenShown = true;
+          sessionStorage.setItem('cardNumbers', JSON.stringify(cardNumbers));
+          sessionStorage.setItem('markedCells', '[]');
+          sessionStorage.setItem('gameScreenShown', 'true');
+          renderCard();
+          updateGameStats();
+          if (currentScreen !== 'gameScreen') showScreen('gameScreen');
           break;
 
         case 'number_drawn':
@@ -1588,18 +1610,13 @@
 
     
     function clearGameSession() {
-      currentLobbyId = null;
-      isAdmin = false;
-      gameScreenShown = false;
-      cardNumbers = [];
-      markedCells.clear();
-      drawnNumbers.clear();
-      drawnOrder = [];
-      sessionStorage.removeItem('currentLobbyId');
-      sessionStorage.removeItem('isAdmin');
-      sessionStorage.removeItem('cardNumbers');
-      sessionStorage.removeItem('markedCells');
-      console.log('Game session cleared');
+      currentLobbyId = null; isAdmin = false; gameScreenShown = false;
+      cardNumbers = []; markedCells.clear(); drawnNumbers.clear(); drawnOrder = [];
+      alreadyWon = false; alreadyNotified14 = false;
+      chatMessagesList.length = 0; chatMessagesIds.clear();
+      sessionStorage.removeItem('currentLobbyId'); sessionStorage.removeItem('isAdmin');
+      sessionStorage.removeItem('cardNumbers'); sessionStorage.removeItem('markedCells');
+      sessionStorage.removeItem('gameScreenShown');
     }
 
     function leaveLobby() {
@@ -1609,13 +1626,9 @@
     }
 
     function leaveGame() {
-      if (confirm('Выйти из игры?')) {
-        if (currentLobbyId) sendWS({ type: 'leave_lobby' });
-        clearGameSession();
-        showScreen('mainMenu');
-      }
-    } }
-      currentLobbyId = null;
+      if (!confirm('Выйти из игры?')) return;
+      if (currentLobbyId) sendWS({ type: 'leave_lobby' });
+      clearGameSession();
       showScreen('mainMenu');
     }
 
@@ -1854,6 +1867,8 @@
       }
       updateGameStats();
       checkWinLocal();
+      sessionStorage.setItem('markedCells', JSON.stringify([...markedCells]));
+      if (currentLobbyId) sendAPI({ action: 'mark_cell', userId, lobbyId: currentLobbyId, count: markedCells.size });
     }
 
     function applyMarkIcon(cell) {
@@ -2102,56 +2117,34 @@
       updateGameStats();
     }
 
-    function leaveGame() {
-      if (confirm('Выйти из игры?')) {
-        if (currentLobbyId) sendWS({ type: 'leave_lobby' });
-        currentLobby = null;
-        currentLobbyId = null;
-        isAdmin = false;
-        gameScreenShown = false;
-        drawnNumbers.clear();
-        showScreen('mainMenu');
-      }
-    }
 
-    // ====== ЧАТ (через WebSocket) ======
-        function appendChatMessage(msg) {
-      if (!msg.id || chatMessagesIds.has(msg.id)) return;
+
+    // ====== ЧАТ ======
+    function appendChatMessage(msg) {
+      if (!msg || !msg.id || chatMessagesIds.has(msg.id)) return;
       chatMessagesIds.add(msg.id);
       chatMessagesList.push(msg);
-      renderChatMessages();
-    }
-
-    function renderChatMessages() {
-      const boxId = (currentScreen === 'gameScreen' || gameScreenShown) ? 'chatBoxGame' : 'chatBoxLobby';
-      const box = document.getElementById(boxId);
-      if (!box) return;
-      
-      // Чтобы не перерисовывать все каждый раз, будем просто добавлять недостающие в активное окно
-      const existingIds = new Set([...box.querySelectorAll('.chat-msg .chat-nick')].map(el => el.dataset.uid_msg));
-      
-      chatMessagesList.forEach(msg => {
-        if (existingIds.has(msg.id)) return;
-        
+      // Рендерим в ОБА чата сразу — виден и в лобби и в игре
+      ['chatBoxLobby', 'chatBoxGame'].forEach(boxId => {
+        const box = document.getElementById(boxId);
+        if (!box) return;
+        if (box.querySelector(`[data-msgid="${msg.id}"]`)) return;
         const atBottom = (box.scrollTop + box.clientHeight + 40) >= box.scrollHeight;
         const el = document.createElement('div');
         el.className = 'chat-msg';
+        el.dataset.msgid = msg.id;
         const dt = new Date(msg.timestamp || Date.now());
         const hh = String(dt.getHours()).padStart(2,'0');
         const mm = String(dt.getMinutes()).padStart(2,'0');
-        el.innerHTML = `
-          <div class="chat-meta">
-            <span class="chat-nick" style="cursor:pointer;color:#FFD700;" 
-              data-uid_msg="${msg.id}"
-              data-uid="${escapeHtml(String(msg.userId || ''))}" 
-              data-nick="${escapeHtml(msg.nickname || 'Игрок')}" 
-              data-av="${escapeHtml(msg.avatar || '👤')}">${escapeHtml(msg.nickname || 'Игрок')}</span>
-            <span>${hh}:${mm}</span>
-          </div>
-          <div class="chat-text">${escapeHtml(msg.text || '')}</div>
-        `;
-        el.querySelector('.chat-nick').addEventListener('click', (e) => {
-          showPlayerProfile({ id: e.target.dataset.uid, nickname: e.target.dataset.nick, avatar: e.target.dataset.av });
+        el.innerHTML = `<div class="chat-meta"><span class="chat-nick" style="cursor:pointer;color:#FFD700;"
+          data-uid="${escapeHtml(String(msg.userId||''))}"
+          data-nick="${escapeHtml(msg.nickname||'Игрок')}"
+          data-av="${escapeHtml(msg.avatar||'👤')}">${escapeHtml(msg.nickname||'Игрок')}</span>
+          <span>${hh}:${mm}</span></div>
+          <div class="chat-text">${escapeHtml(msg.text||'')}</div>`;
+        el.querySelector('.chat-nick').addEventListener('click', e => {
+          const t = e.target;
+          showPlayerProfile({ id: t.dataset.uid, nickname: t.dataset.nick, avatar: t.dataset.av });
         });
         box.appendChild(el);
         if (atBottom) box.scrollTop = box.scrollHeight;
@@ -2166,9 +2159,12 @@
       if (!input) return;
       const text = (input.value || '').trim();
       if (!text) return;
-      sendWS({ type: 'chat_message', text });
       input.value = '';
       if (settings.vibration && tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      // Отправляем через API напрямую с данными пользователя
+      sendAPI({ action: 'chat_message', userId, lobbyId: currentLobbyId, text,
+        nickname: userProfile.nickname, avatar: userProfile.avatar || '👤' })
+        .then(resp => { if (resp && resp.message) appendChatMessage(resp.message); });
     }
 
     function clearChatPrompt() {
