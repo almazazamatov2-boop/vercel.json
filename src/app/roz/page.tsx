@@ -86,7 +86,7 @@ function getRandomMessage(): string {
 
 /* ─── Component ─── */
 export default function Home() {
-  const [streamerName, setStreamerName] = useState('veigardi')
+  const [streamerName, setStreamerName] = useState('tiktokevelone888')
   const [keyword, setKeyword] = useState('розыгрыш')
   const [isConnected, setIsConnected] = useState(false)
   const [participants, setParticipants] = useState<Participant[]>([])
@@ -291,16 +291,13 @@ export default function Home() {
             {/* Title */}
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight winner-glow">
-                VelRoll
+                РОЗ
               </h1>
-              <p className="text-xs sm:text-sm text-white/70 mt-0.5 max-w-md leading-tight">
-                Twitch Чат Рулетка (Включайте аппаратное ускорение в браузере, чтобы не было лагов)
-              </p>
             </div>
           </div>
           {/* Version badge */}
           <Badge variant="secondary" className="bg-white/15 text-white border-white/20 text-xs font-medium px-3 py-1 hidden sm:flex">
-            v0.7
+            v0.1
           </Badge>
         </div>
       </header>
@@ -525,7 +522,7 @@ export default function Home() {
       {/* ─── Footer ─── */}
       <footer className="mt-auto border-t border-[#1e1e1e]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-center text-sm text-gray-500">&copy; 2025 VelRoll Twitch</p>
+          <p className="text-center text-sm text-gray-500">&copy; 2026 РОЗ</p>
         </div>
       </footer>
 

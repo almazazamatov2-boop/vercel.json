@@ -217,7 +217,7 @@
 .paracetamol-di-highlight::after {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 55%;
   left: 50%;
   width: calc(100% + 0.24em);
   height: calc(100% + 0.12em);
