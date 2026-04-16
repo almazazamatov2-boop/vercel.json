@@ -49,18 +49,29 @@ export default function PlayerPage() {
         className="flex-1 relative"
         style={{ overflow: 'hidden', background: '#000' }}
       >
+        <style>{`
+          .player-iframe {
+            position: absolute;
+            top: -330px;
+            left: 0;
+            width: 100%;
+            height: calc(100% + 330px);
+            border: none;
+          }
+          .player-iframe:fullscreen {
+            top: 0 !important;
+            height: 100% !important;
+          }
+          .player-iframe:-webkit-full-screen {
+            top: 0 !important;
+            height: 100% !important;
+          }
+        `}</style>
         <iframe
           src={src}
+          className="player-iframe"
           allowFullScreen
-          allow="autoplay; fullscreen; picture-in-picture"
-          style={{
-            position: 'absolute',
-            top: -330,
-            left: 0,
-            width: '100%',
-            height: 'calc(100% + 330px)',
-            border: 'none',
-          }}
+          allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *"
           title={decodeURIComponent(title) || 'Player'}
         />
 
