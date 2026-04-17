@@ -80,7 +80,7 @@
 
         async function loadSettings() {
             try {
-                const res = await fetch(`/api/overlays/settings?userId=${userId}`);
+                const res = await fetch(`/api/ov_settings?userId=${userId}`);
                 settings = await res.json();
                 if (settings.color_bg) document.getElementById('panel').style.background = settings.color_bg;
                 if (settings.color_name) document.getElementById('user-name').style.color = settings.color_name;
@@ -97,7 +97,7 @@
         async function checkTrigger() {
             if (isRunning) return;
             try {
-                const res = await fetch(`/api/overlays/trigger?userId=${userId}`);
+                const res = await fetch(`/api/ov_trigger?userId=${userId}`);
                 const data = await res.json();
                 if (data && data.triggerId && data.triggerId !== lastTriggerId) {
                     lastTriggerId = data.triggerId;

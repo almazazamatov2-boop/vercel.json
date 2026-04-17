@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
               condition: { broadcaster_user_id: userId },
               transport: {
                 method: 'webhook',
-                callback: `${baseUrl}/api/overlays/webhook`,
+                callback: `${baseUrl}/api/ov_webhook`,
                 secret: clientSecret || 'fallback_secret_1234567890123'
               }
             })

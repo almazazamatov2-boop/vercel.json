@@ -957,10 +957,8 @@
     btn.textContent = '...';
     btn.disabled = true;
 
-    reader.onload = async () => {
-      try {
         const base64 = reader.result;
-        const res = await fetch('/api/overlays/upload', {
+        const res = await fetch('/api/ov_upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ asset: base64, key: key })
@@ -1007,7 +1005,7 @@
     btn.textContent = '...';
     btn.disabled = true;
     try {
-      const res = await fetch('/api/overlays/trigger/test', { method: 'POST' });
+      const res = await fetch('/api/ov_test', { method: 'POST' });
       let result;
       const contentType = res.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
@@ -1056,7 +1054,7 @@
     };
 
     try {
-      const res = await fetch('/api/overlays/settings', {
+      const res = await fetch('/api/ov_settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -1094,7 +1092,7 @@
       document.getElementById('obs-url').textContent = obsPath;
 
       // Load existing settings
-      const settingsRes = await fetch(`/api/overlays/settings?userId=${user.id}`);
+      const settingsRes = await fetch(`/api/ov_settings?userId=${user.id}`);
       const settings = await settingsRes.json();
       if (settings.reward_name) {
         const form = document.getElementById('settings-form');
