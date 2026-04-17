@@ -207,17 +207,17 @@
         <div id="badge"></div>
     </div>
 
-    <audio id="sIn" preload="auto"></audio>
-    <audio id="sRoll" preload="auto"></audio>
-    <audio id="sWin" preload="auto"></audio>
-    <audio id="sLose" preload="auto"></audio>
-    <audio id="sOut" preload="auto"></audio>
+    <audio id="sIn" src="/overlays/defaults/sounds/in.mp3" preload="auto"></audio>
+    <audio id="sRoll" src="/overlays/defaults/sounds/roll.mp3" preload="auto"></audio>
+    <audio id="sWin" src="/overlays/defaults/sounds/win.mp3" preload="auto"></audio>
+    <audio id="sLose" src="/overlays/defaults/sounds/lose.mp3" preload="auto"></audio>
+    <audio id="sOut" src="/overlays/defaults/sounds/out.mp3" preload="auto"></audio>
 
     <script>
         const T_IN    = 650;
         const T_STAND = 1000;
         const T_ROLL  = 3000;
-        const T_AFTER = 1000;
+        const T_AFTER = 2000; // Updated to 2 seconds
         const T_OUT   = 650;
 
         const urlParams = new URLSearchParams(window.location.search);
