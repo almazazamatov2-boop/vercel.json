@@ -960,7 +960,15 @@
 
     try {
       const res = await fetch('/api/overlays/upload', { method: 'POST', body: formData });
-      const result = await res.json();
+      let result;
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        result = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(`Server returned HTML (likely 404 or 500). Snippet: ${text.substring(0, 50)}...`);
+      }
+
       if (res.ok) {
         statusEl.textContent = '✓ Загружено';
         statusEl.className = 'asset-status';
@@ -987,7 +995,15 @@
     btn.disabled = true;
     try {
       const res = await fetch('/api/overlays/trigger/test', { method: 'POST' });
-      const result = await res.json();
+      let result;
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        result = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(`Server returned HTML. Snippet: ${text.substring(0, 50)}...`);
+      }
+
       if (!res.ok) throw new Error(result.error || 'Ошибка сервера');
       
       // Open overlay in a small popup
