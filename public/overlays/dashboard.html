@@ -1,1121 +1,668 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Дашборд — FATE OVERLAYS</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Martian+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fate Overlays — Дашборд</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080808;
+            --sidebar: #111111;
+            --card: #111111;
+            --border: #1e1e1e;
+            --text: #e8e8e8;
+            --text-muted: #818181;
+            --purple: #7c3aed;
+            --purple-glow: rgba(124, 58, 237, 0.4);
+            --green: #22c55e;
+            --red: #ef4444;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    :root {
-      --bg:        #080808;
-      --surface:   #111111;
-      --surface2:  #161616;
-      --border:    #1e1e1e;
-      --accent:    #7c3aed;
-      --accent2:   #a855f7;
-      --text:      #e8e8e8;
-      --muted:     #555;
-      --green:     #22c55e;
-      --red:       #ef4444;
-      --yellow:    #eab308;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Martian Mono', monospace;
-      min-height: 100vh;
-    }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
 
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 999;
-      opacity: .5;
-    }
+        /* Loading Overlay */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.4s;
+        }
 
-    /* LAYOUT */
-    .layout {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      min-height: 100vh;
-    }
+        /* Sidebar */
+        aside {
+            width: 240px;
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+        }
 
-    /* SIDEBAR */
-    aside {
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      position: sticky; top: 0; height: 100vh;
-    }
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            letter-spacing: 3px;
+            margin-bottom: 32px;
+            color: var(--text);
+        }
 
-    .sidebar-logo {
-      padding: 28px 24px;
-      border-bottom: 1px solid var(--border);
-    }
-    .sidebar-logo a {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: .12em;
-      color: var(--text);
-      text-decoration: none;
-    }
-    .sidebar-logo a span { color: var(--accent2); }
+        .logo span { color: var(--purple); }
 
-    .sidebar-user {
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .user-avatar {
-      width: 32px; height: 32px;
-      border-radius: 2px;
-      background: var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 16px;
-      color: #fff;
-      overflow: hidden;
-    }
-    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .user-info {}
-    .user-name { font-size: 12px; color: var(--text); }
-    .user-status {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 10px; color: var(--green);
-      margin-top: 3px; letter-spacing: .1em;
-    }
-    .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+        .user-panel {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            transition: var(--transition);
+        }
 
-    nav.sidebar-nav {
-      padding: 24px 0;
-      flex: 1;
-    }
-    .nav-section {
-      padding: 0 24px 8px;
-      font-size: 9px;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-    .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 24px;
-      font-size: 11px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color .2s, background .2s;
-      border-left: 2px solid transparent;
-    }
-    .nav-link:hover { color: var(--text); background: rgba(255,255,255,.03); }
-    .nav-link.active { color: var(--accent2); border-left-color: var(--accent2); background: rgba(168,85,247,.06); }
-    .nav-link svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; flex-shrink: 0; }
+        #user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), #a855f7);
+            object-fit: cover;
+        }
 
-    .sidebar-bottom {
-      padding: 20px 24px;
-      border-top: 1px solid var(--border);
-    }
-    .logout-link {
-      font-size: 11px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color .2s;
-    }
-    .logout-link:hover { color: var(--red); }
+        .user-info { min-width: 0; }
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-status {
+            font-size: 11px;
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-    /* MAIN */
-    main {
-      padding: 0;
-      overflow-y: auto;
-    }
+        .nav-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin: 24px 0 12px 0;
+        }
 
-    .page-header {
-      padding: 36px 48px 32px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-    }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            background: none;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
 
-    .page-title-label {
-      font-size: 10px;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      color: var(--accent2);
-      margin-bottom: 8px;
-    }
+        .nav-item:hover { background: rgba(255,255,255,0.05); }
+        .nav-item.active {
+            background: rgba(124, 58, 237, 0.1);
+            color: #a855f7;
+        }
 
-    .page-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 48px;
-      letter-spacing: .06em;
-      line-height: 1;
-    }
+        .nav-item svg { width: 18px; color: currentColor; }
 
-    .page-header-actions { display: flex; gap: 12px; }
+        /* Main Content */
+        main {
+            flex: 1;
+            margin-left: 240px;
+            padding: 40px 60px;
+            max-width: 1200px;
+        }
 
-    /* STATUS BADGE */
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border: 1px solid var(--green);
-      font-size: 10px;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--green);
-    }
-    .status-badge .dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+        .page-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 42px;
+            letter-spacing: 1px;
+            margin-bottom: 32px;
+        }
 
-    /* CONTENT */
-    .content { padding: 40px 48px; display: flex; flex-direction: column; gap: 40px; }
+        /* Dashboard Cards */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
 
-    /* CARDS */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-    }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
 
-    .card-head {
-      padding: 20px 28px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+        .card-header svg { color: var(--purple); width: 22px; }
+        .card-title { font-size: 18px; font-weight: 700; }
 
-    .card-head-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+        .input-group { margin-bottom: 20px; }
+        .label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-    .card-icon {
-      width: 32px; height: 32px;
-      background: rgba(124,58,237,.15);
-      border: 1px solid rgba(124,58,237,.3);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .card-icon svg { width: 15px; height: 15px; fill: none; stroke: var(--accent2); stroke-width: 1.5; }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
 
-    .card-title {
-      font-size: 11px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: var(--text);
-    }
-    .card-subtitle {
-      font-size: 10px;
-      letter-spacing: .1em;
-      color: var(--muted);
-      margin-top: 3px;
-    }
+        input:focus { border-color: var(--purple); }
 
-    .card-body { padding: 28px; }
+        .obs-box {
+            display: flex;
+            gap: 12px;
+            background: #1a1a1a;
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
 
-    /* OBS BLOCK */
-    .obs-url-block {
-      display: flex;
-      gap: 10px;
-      align-items: stretch;
-    }
+        .obs-url {
+            flex: 1;
+            padding: 8px 12px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #a855f7;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
-    .obs-url {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 12px 16px;
-      font-family: 'Martian Mono', monospace;
-      font-size: 11px;
-      color: var(--accent2);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      user-select: all;
-    }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            color: #fff;
+        }
 
-    .btn-copy {
-      background: var(--accent);
-      border: none;
-      padding: 0 20px;
-      font-family: 'Martian Mono', monospace;
-      font-size: 10px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: #fff;
-      cursor: pointer;
-      transition: background .2s;
-      white-space: nowrap;
-    }
-    .btn-copy:hover { background: var(--accent2); }
+        .btn-purple { background: var(--purple); }
+        .btn-purple:hover { background: #6d28d9; transform: translateY(-1px); }
 
-    .btn-test {
-      background: transparent;
-      border: 1px solid var(--border);
-      padding: 0 20px;
-      font-family: 'Martian Mono', monospace;
-      font-size: 10px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all .2s;
-      white-space: nowrap;
-      text-decoration: none;
-      display: inline-flex; align-items: center;
-    }
-    .btn-test:hover { border-color: var(--accent2); color: var(--accent2); }
+        .btn-green { background: var(--green); }
+        .btn-green:hover { background: #16a34a; transform: translateY(-1px); }
 
-    .obs-hint {
-      margin-top: 12px;
-      font-size: 10px;
-      line-height: 1.7;
-      color: var(--muted);
-      letter-spacing: .06em;
-    }
-    .obs-hint strong { color: var(--text); font-weight: 400; }
+        .btn-icon { padding: 8px 12px; background: rgba(255,255,255,0.05); }
 
-    /* SETTINGS FORM */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
-    .form-grid.full { grid-template-columns: 1fr; }
+        /* Asset Grid */
+        .asset-list { display: grid; gap: 12px; }
+        .asset-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
 
-    .field { display: flex; flex-direction: column; gap: 8px; }
+        .asset-icon { color: var(--text-muted); }
+        .asset-info { flex: 1; }
+        .asset-name { font-size: 14px; font-weight: 500; }
+        .asset-ext { font-size: 12px; color: var(--text-muted); }
 
-    .field-label {
-      font-size: 10px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
+        .asset-upload-btn {
+            padding: 8px 16px;
+            background: #252528;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+        }
 
-    .field-hint {
-      font-size: 10px;
-      color: var(--muted);
-      opacity: .7;
-      letter-spacing: .04em;
-      line-height: 1.5;
-    }
+        .asset-status { font-size: 13px; font-weight: 600; }
+        .status-ok { color: var(--green); }
+        .status-err { color: var(--red); }
 
-    .field input[type="text"],
-    .field input[type="number"] {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 12px 14px;
-      font-family: 'Martian Mono', monospace;
-      font-size: 12px;
-      color: var(--text);
-      outline: none;
-      width: 100%;
-      transition: border-color .2s;
-    }
-    .field input:focus { border-color: var(--accent); }
+        /* Color Inputs */
+        .color-pickers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
 
-    .color-field {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .color-swatch {
-      width: 40px; height: 40px;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      flex-shrink: 0;
-      position: relative;
-    }
-    .color-swatch input[type="color"] {
-      position: absolute; inset: 0;
-      opacity: 0;
-      width: 100%; height: 100%;
-      cursor: pointer;
-      border: none;
-    }
-    .color-preview {
-      width: 100%;
-      height: 100%;
-    }
-    .color-hex {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 10px 14px;
-      font-family: 'Martian Mono', monospace;
-      font-size: 12px;
-      color: var(--text);
-      outline: none;
-      width: 110px;
-    }
-    .color-hex:focus { border-color: var(--accent); }
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a1a1a;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
 
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 4px 0;
-    }
+        input[type="color"] {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
 
-    .btn-save {
-      background: var(--accent);
-      border: none;
-      padding: 14px 32px;
-      font-family: 'Martian Mono', monospace;
-      font-size: 11px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: #fff;
-      cursor: pointer;
-      transition: background .2s, transform .15s;
-      align-self: flex-start;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .btn-save:hover { background: var(--accent2); }
-    .btn-save svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            background: #161618;
+            border: 1px solid var(--border);
+            color: #fff;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateY(150%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+        }
 
-    /* ASSETS */
-    .assets-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      background: var(--border);
-    }
+        #toast.show { transform: translateY(0); }
 
-    .asset-row {
-      display: grid;
-      grid-template-columns: 36px 1fr 200px 120px;
-      align-items: center;
-      gap: 0;
-      background: var(--surface);
-    }
-    .asset-row:hover { background: var(--surface2); }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    .asset-type-icon {
-      padding: 0 0 0 16px;
-      font-size: 18px;
-      display: flex; align-items: center; justify-content: center;
-      align-self: stretch;
-    }
-
-    .asset-info { padding: 18px 16px; }
-
-    .asset-name {
-      font-size: 11px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--text);
-      margin-bottom: 5px;
-    }
-
-    .asset-desc {
-      font-size: 10px;
-      line-height: 1.6;
-      color: var(--muted);
-      letter-spacing: .04em;
-    }
-
-    .asset-spec {
-      display: inline-block;
-      margin-top: 6px;
-      padding: 3px 8px;
-      border: 1px solid var(--border);
-      font-size: 10px;
-      letter-spacing: .1em;
-      color: var(--accent2);
-      text-transform: uppercase;
-    }
-
-    .asset-upload {
-      padding: 18px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .file-input-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-
-    .file-input-label input[type="file"] { display: none; }
-
-    .file-btn {
-      padding: 7px 12px;
-      border: 1px solid var(--border);
-      font-family: 'Martian Mono', monospace;
-      font-size: 10px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      background: var(--bg);
-      cursor: pointer;
-      transition: all .2s;
-      white-space: nowrap;
-    }
-    .file-btn:hover { border-color: var(--accent2); color: var(--accent2); }
-
-    .file-name {
-      font-size: 10px;
-      color: var(--muted);
-      max-width: 140px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .asset-action {
-      padding: 18px 16px;
-    }
-
-    .btn-upload {
-      width: 100%;
-      background: var(--accent);
-      border: none;
-      padding: 10px 0;
-      font-family: 'Martian Mono', monospace;
-      font-size: 10px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: #fff;
-      cursor: pointer;
-      transition: background .2s;
-    }
-    .btn-upload:hover { background: var(--accent2); }
-    .btn-upload:disabled { background: var(--border); color: var(--muted); cursor: default; }
-
-    .asset-status {
-      font-size: 10px;
-      color: var(--green);
-      letter-spacing: .08em;
-      margin-top: 4px;
-    }
-    .asset-status.none { color: var(--muted); }
-
-    /* ASSETS SECTION DIVIDER */
-    .assets-section-head {
-      padding: 10px 16px;
-      background: var(--bg);
-      font-size: 9px;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-    }
-
-    /* TOAST */
-    .toast {
-      position: fixed;
-      bottom: 32px; right: 32px;
-      background: var(--surface);
-      border: 1px solid var(--green);
-      padding: 14px 20px;
-      font-size: 11px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--green);
-      transform: translateY(80px);
-      opacity: 0;
-      transition: all .3s;
-      z-index: 9999;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
-
-    /* SCROLLBAR */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border); }
-
-    @media (max-width: 900px) {
-      .layout { grid-template-columns: 1fr; }
-      aside { display: none; }
-      .page-header { padding: 24px; }
-      .content { padding: 24px; }
-      .form-grid { grid-template-columns: 1fr; }
-      .form-grid.cols-3 { grid-template-columns: 1fr; }
-      .asset-row { grid-template-columns: 1fr; }
-    }
-  </style>
+        .fade-in { animation: fadeInUp 0.4s ease forwards; }
+    </style>
 </head>
 <body>
 
-<div class="layout">
-
-  <!-- SIDEBAR -->
-  <aside>
-    <div class="sidebar-logo">
-      <a href="/">FATE<span>.</span>OVERLAYS</a>
+    <div id="preloader">
+        <div style="font-family: 'Bebas Neue'; font-size: 32px; letter-spacing: 4px; color: var(--purple);">ЗАГРУЗКА...</div>
     </div>
 
-    <div class="sidebar-user">
-      <div class="user-avatar" id="user-avatar-container">
-        ?
-      </div>
-      <div class="user-info">
-        <div class="user-name" id="user-name-display">Загрузка...</div>
-        <div class="user-status">
-          <span class="dot"></span>
-          Доступ активен
-        </div>
-      </div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <div class="nav-section">Оверлеи</div>
-      <a href="#" class="nav-link active">
-        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        Ролл
-      </a>
-      <div class="nav-section" style="margin-top:16px">Аккаунт</div>
-      <a href="/" class="nav-link">
-        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-        Главная
-      </a>
-    </nav>
-
-    <div class="sidebar-bottom">
-      <a href="/logout" class="logout-link">← Выйти</a>
-    </div>
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <main>
-
-    <div class="page-header">
-      <div>
-        <div class="page-title-label">Fate Roll Overlay</div>
-        <h1 class="page-title">ДАШБОРД</h1>
-      </div>
-      <div class="page-header-actions">
-        <div class="status-badge">
-          <span class="dot"></span>
-          Доступ активен
-        </div>
-      </div>
-    </div>
-
-    <div class="content">
-
-      <!-- OBS SOURCE -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-head-left">
-            <div class="card-icon">
-              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-            </div>
-            <div>
-              <div class="card-title">OBS Browser Source</div>
-              <div class="card-subtitle">Добавь этот URL в OBS как Browser Source</div>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="obs-url-block">
-            <div class="obs-url" id="obs-url">Загрузка...</div>
-            <button class="btn-copy" onclick="copyUrl()">URL</button>
-            <button class="btn-copy" style="background:#22c55e" onclick="triggerTest(this)">ТЕСТ</button>
-          </div>
-          <div class="obs-hint">
-            В OBS: <strong>Источники → + → Браузер</strong> &nbsp;·&nbsp;
-            Ширина: <strong>1600</strong> &nbsp;·&nbsp;
-            Высота: <strong>250</strong>
-          </div>
-        </div>
-      </div>
-
-      <!-- SETTINGS -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-head-left">
-            <div class="card-icon">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
-            </div>
-            <div>
-              <div class="card-title">Настройки</div>
-              <div class="card-subtitle">Параметры оверлея и внешний вид</div>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <form id="settings-form" onsubmit="saveSettings(event)">
-            <div style="display:flex; flex-direction:column; gap:24px;">
-
-              <!-- Reward name -->
-              <div class="field" style="grid-column:1/-1">
-                <label class="field-label">Название награды в Twitch Channel Points</label>
-                <input type="text" name="reward_name" value="РАНДОМ СКИН КС2" placeholder="Точно как в Twitch" />
-                <span class="field-hint">Должно совпадать с именем награды в Twitch Dashboard до символа. Регистр важен.</span>
-              </div>
-
-              <div class="divider"></div>
-
-              <!-- Min / Max -->
-              <div class="form-grid">
-                <div class="field">
-                  <label class="field-label">Мин. число</label>
-                  <input type="number" name="min_val" value="1" min="0" />
-                  <span class="field-hint">Минимальное число рандома (включительно)</span>
-                </div>
-                <div class="field">
-                  <label class="field-label">Макс. число</label>
-                  <input type="number" name="max_val" value="100" min="1" />
-                  <span class="field-hint">Максимальное число рандома (включительно)</span>
-                </div>
-              </div>
-
-              <div class="divider"></div>
-
-              <!-- Colors -->
-              <div class="form-grid cols-3">
-                <div class="field">
-                  <label class="field-label">Фон панели</label>
-                  <div class="color-field">
-                    <div class="color-swatch">
-                      <div class="color-preview" id="prev-bg" style="background:#1a1a2e"></div>
-                      <input type="color" name="color_bg" value="#1a1a2e" oninput="syncColor(this,'prev-bg','hex-bg')" />
-                    </div>
-                    <input type="text" class="color-hex" id="hex-bg" value="#1a1a2e" maxlength="7"
-                      oninput="syncHex(this,'prev-bg',document.querySelector('[name=color_bg]'))" />
-                  </div>
-                  <span class="field-hint">Цвет или картинка (загрузи в Ассеты)</span>
-                </div>
-
-                <div class="field">
-                  <label class="field-label">Цвет имени</label>
-                  <div class="color-field">
-                    <div class="color-swatch">
-                      <div class="color-preview" id="prev-name" style="background:#ffffff"></div>
-                      <input type="color" name="color_name" value="#ffffff" oninput="syncColor(this,'prev-name','hex-name')" />
-                    </div>
-                    <input type="text" class="color-hex" id="hex-name" value="#ffffff" maxlength="7"
-                      oninput="syncHex(this,'prev-name',document.querySelector('[name=color_name]'))" />
-                  </div>
-                  <span class="field-hint">Цвет имени зрителя на панели</span>
-                </div>
-
-                <div class="field">
-                  <label class="field-label">Цвет цифр</label>
-                  <div class="color-field">
-                    <div class="color-swatch">
-                      <div class="color-preview" id="prev-num" style="background:#ffffff"></div>
-                      <input type="color" name="color_num" value="#ffffff" oninput="syncColor(this,'prev-num','hex-num')" />
-                    </div>
-                    <input type="text" class="color-hex" id="hex-num" value="#ffffff" maxlength="7"
-                      oninput="syncHex(this,'prev-num',document.querySelector('[name=color_num]'))" />
-                  </div>
-                  <span class="field-hint">Цвет выпавшего числа на панели</span>
-                </div>
-              </div>
-
-              <button type="submit" class="btn-save">
-                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                Сохранить настройки
-              </button>
-
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- ASSETS -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-head-left">
-            <div class="card-icon">
-              <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-            </div>
-            <div>
-              <div class="card-title">Ассеты</div>
-              <div class="card-subtitle">Картинки и звуки оверлея</div>
-            </div>
-          </div>
-        </div>
-        <div class="card-body" style="padding:0">
-
-          <div class="assets-grid">
-
-            <!-- SECTION: Изображения -->
-            <div class="assets-section-head">Изображения</div>
-
-            <!-- panel_bg -->
-            <div class="asset-row">
-              <div class="asset-type-icon">🖼️</div>
-              <div class="asset-info">
-                <div class="asset-name">Фон панели</div>
-                <div class="asset-desc">Фоновое изображение оверлея.</div>
-                <span class="asset-spec">PNG / JPG</span>
-              </div>
-              <div class="asset-upload">
-                <label class="file-input-label">
-                  <span class="file-btn">Выбрать файл</span>
-                  <input type="file" accept="image/png,image/jpeg" onchange="updateFileName(this)">
-                </label>
-                <span class="file-name">Файл не выбран</span>
-              </div>
-              <div class="asset-action">
-                <button class="btn-upload" onclick="uploadAsset('panel_bg', this)">Загрузить</button>
-                <div class="asset-status none" id="status-panel_bg">—</div>
-              </div>
-            </div>
-
-            <!-- reward_img -->
-            <div class="asset-row">
-              <div class="asset-type-icon">🏆</div>
-              <div class="asset-info">
-                <div class="asset-name">Картинка награды</div>
-                <div class="asset-desc">Иконка, отображаемая при активации.</div>
-                <span class="asset-spec">PNG</span>
-              </div>
-              <div class="asset-upload">
-                <label class="file-input-label">
-                  <span class="file-btn">Выбрать файл</span>
-                  <input type="file" accept="image/png" onchange="updateFileName(this)">
-                </label>
-                <span class="file-name">Файл не выбран</span>
-              </div>
-              <div class="asset-action">
-                <button class="btn-upload" onclick="uploadAsset('reward_img', this)">Загрузить</button>
-                <div class="asset-status none" id="status-reward_img">—</div>
-              </div>
-            </div>
-
-            <!-- SECTION: Звуки -->
-            <div class="assets-section-head">Звуковые дорожки</div>
-
-            <!-- s_in -->
-            <div class="asset-row">
-              <div class="asset-type-icon">🔔</div>
-              <div class="asset-info">
-                <div class="asset-name">Звук появления</div>
-                <div class="asset-desc">Играет при появлении панели.</div>
-                <span class="asset-spec">MP3</span>
-              </div>
-              <div class="asset-upload">
-                <label class="file-input-label">
-                  <span class="file-btn">Выбрать файл</span>
-                  <input type="file" accept="audio/mpeg" onchange="updateFileName(this)">
-                </label>
-                <span class="file-name">Файл не выбран</span>
-              </div>
-              <div class="asset-action">
-                <button class="btn-upload" onclick="uploadAsset('s_in', this)">Загрузить</button>
-                <div class="asset-status none" id="status-s_in">—</div>
-              </div>
-            </div>
-
-            <!-- s_roll -->
-            <div class="asset-row">
-              <div class="asset-type-icon">🎲</div>
-              <div class="asset-info">
-                <div class="asset-name">Звук рандома</div>
-                <div class="asset-desc">Играет во время прокрутки.</div>
-                <span class="asset-spec">MP3</span>
-              </div>
-              <div class="asset-upload">
-                <label class="file-input-label">
-                  <span class="file-btn">Выбрать файл</span>
-                  <input type="file" accept="audio/mpeg" onchange="updateFileName(this)">
-                </label>
-                <span class="file-name">Файл не выбран</span>
-              </div>
-              <div class="asset-action">
-                <button class="btn-upload" onclick="uploadAsset('s_roll', this)">Загрузить</button>
-                <div class="asset-status none" id="status-s_roll">—</div>
-              </div>
-            </div>
-
-            <!-- s_win -->
-            <div class="asset-row">
-              <div class="asset-type-icon">🏅</div>
-              <div class="asset-info">
-                <div class="asset-name">Звук победы</div>
-                <div class="asset-desc">Играет при совпадении чисел.</div>
-                <span class="asset-spec">MP3</span>
-              </div>
-              <div class="asset-upload">
-                <label class="file-input-label">
-                  <span class="file-btn">Выбрать файл</span>
-                  <input type="file" accept="audio/mpeg" onchange="updateFileName(this)">
-                </label>
-                <span class="file-name">Файл не выбран</span>
-              </div>
-              <div class="asset-action">
-                <button class="btn-upload" onclick="uploadAsset('s_win', this)">Загрузить</button>
-                <div class="asset-status none" id="status-s_win">—</div>
-              </div>
-            </div>
-
-            <!-- s_lose -->
-            <div class="asset-row">
-              <div class="asset-type-icon">💀</div>
-              <div class="asset-info">
-                <div class="asset-name">Звук проигрыша</div>
-                <div class="asset-desc">Играет при проигрыше.</div>
-                <span class="asset-spec">MP3</span>
-              </div>
-              <div class="asset-upload">
-                <label class="file-input-label">
-                  <span class="file-btn">Выбрать файл</span>
-                  <input type="file" accept="audio/mpeg" onchange="updateFileName(this)">
-                </label>
-                <span class="file-name">Файл не выбран</span>
-              </div>
-              <div class="asset-action">
-                <button class="btn-upload" onclick="uploadAsset('s_lose', this)">Загрузить</button>
-                <div class="asset-status none" id="status-s_lose">—</div>
-              </div>
-            </div>
-
-            <!-- s_out -->
-            <div class="asset-row">
-              <div class="asset-type-icon">🌫️</div>
-              <div class="asset-info">
-                <div class="asset-name">Звук исчезновения</div>
-                <div class="asset-desc">Играет при уходе панели.</div>
-                <span class="asset-spec">MP3</span>
-              </div>
-              <div class="asset-upload">
-                <label class="file-input-label">
-                  <span class="file-btn">Выбрать файл</span>
-                  <input type="file" accept="audio/mpeg" onchange="updateFileName(this)">
-                </label>
-                <span class="file-name">Файл не выбран</span>
-              </div>
-              <div class="asset-action">
-                <button class="btn-upload" onclick="uploadAsset('s_out', this)">Загрузить</button>
-                <div class="asset-status none" id="status-s_out">—</div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /content -->
-  </main>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-<script>
-  // Color sync
-  function syncColor(input, previewId, hexId) {
-    document.getElementById(previewId).style.background = input.value;
-    document.getElementById(hexId).value = input.value;
-  }
-  function syncHex(input, previewId, colorInput) {
-    const val = input.value;
-    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
-      document.getElementById(previewId).style.background = val;
-      colorInput.value = val;
-    }
-  }
-
-  // File label update
-  function updateFileName(input) {
-    const label = input.closest('.file-input-label');
-    const nameEl = label.parentElement.nextElementSibling
-      || label.closest('.asset-upload').querySelector('.file-name');
-    const fileNameEl = input.closest('.asset-upload').querySelector('.file-name');
-    if (fileNameEl) {
-      fileNameEl.textContent = input.files[0] ? input.files[0].name : 'Файл не выбран';
-    }
-  }
-
-  // Upload asset
-  async function uploadAsset(key, btn) {
-    const row = btn.closest('.asset-row');
-    const fileInput = row.querySelector('input[type="file"]');
-    const statusEl = document.getElementById('status-' + key);
-
-    if (!fileInput.files[0]) {
-      showToast('Сначала выбери файл', true);
-      return;
-    }
-
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-
-    btn.textContent = '...';
-    btn.disabled = true;
-
-        const base64 = reader.result;
-        const res = await fetch('/api/ov_upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ asset: base64, key: key })
-        });
+    <aside>
+        <div class="logo">FATE<span>.OVERLAYS</span></div>
         
-        let result;
-        const contentType = res.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          result = await res.json();
-        } else {
-          const text = await res.text();
-          throw new Error(`Server returned HTML (likely 404 or 500). Snippet: ${text.substring(0, 50)}...`);
+        <div class="user-panel">
+            <img src="" id="user-avatar" alt="Avatar" style="display: none;">
+            <div id="avatar-fallback" style="width:36px; height:36px; border-radius:50%; background:var(--purple); display:flex; align-items:center; justify-content:center; font-weight:700;">?</div>
+            <div class="user-info">
+                <div class="user-name" id="user-name-display">Загрузка...</div>
+                <div class="user-status"><span style="width:6px; height:6px; background:var(--green); border-radius:50%;"></span>Доступ активен</div>
+            </div>
+        </div>
+
+        <div class="nav-label">Оверлеи</div>
+        <button class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            РОЛЛ
+        </button>
+
+        <div class="nav-label">Аккаунт</div>
+        <a href="/" class="nav-item" style="color: var(--text-muted);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            ГЛАВНАЯ
+        </a>
+
+        <div style="margin-top: auto;">
+            <button class="nav-item" style="color: var(--red);" onclick="logout()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                ВЫЙТИ
+            </button>
+        </div>
+    </aside>
+
+    <main>
+        <h1 class="page-title fade-in">ДАШБОРД</h1>
+
+        <!-- OBS Section -->
+        <div class="card fade-in" style="animation-delay: 0.1s;">
+            <div class="card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                <div class="card-title">OBS Browser Source</div>
+            </div>
+            <div class="obs-box">
+                <div class="obs-url" id="obs-url">Загрузка...</div>
+                <button class="btn btn-icon" onclick="copyUrl()" title="Копировать">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
+                <button class="btn btn-green" onclick="triggerTest(this)">ТЕСТ</button>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="card fade-in" style="animation-delay: 0.2s;">
+            <div class="card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                <div class="card-title">Настройки</div>
+            </div>
+            
+            <form id="settings-form" onsubmit="saveSettings(event)">
+                <div class="input-group">
+                    <label class="label">Название награды в Twitch</label>
+                    <input type="text" name="reward_name" placeholder="РАНДОМ СКИН КС2">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+                    <div>
+                        <label class="label">Мин. число</label>
+                        <input type="number" name="min_val" value="1">
+                    </div>
+                    <div>
+                        <label class="label">Макс. число</label>
+                        <input type="number" name="max_val" value="100">
+                    </div>
+                </div>
+
+                <div class="color-pickers">
+                    <div>
+                        <label class="label">Фон панели</label>
+                        <div class="color-item">
+                            <input type="color" name="color_bg" value="#111111">
+                            <input type="text" id="color_bg_text" value="#111111" style="border:none; width:60px; font-size:12px; background:none;">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label">Цвет имени</label>
+                        <div class="color-item">
+                            <input type="color" name="color_name" value="#ffffff">
+                            <input type="text" id="color_name_text" value="#ffffff" style="border:none; width:60px; font-size:12px; background:none;">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label">Цвет чисел</label>
+                        <div class="color-item">
+                            <input type="color" name="color_num" value="#9146ff">
+                            <input type="text" id="color_num_text" value="#9146ff" style="border:none; width:60px; font-size:12px; background:none;">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-purple" style="margin-top: 32px; width: 100%;">СОХРАНИТЬ НАСТРОЙКИ</button>
+            </form>
+        </div>
+
+        <!-- Assets Section -->
+        <div class="card fade-in" style="animation-delay: 0.3s;">
+            <div class="card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div class="card-title">Ассеты</div>
+            </div>
+
+            <div class="asset-list">
+                <!-- Asset Rows -->
+                <div class="asset-row">
+                    <div class="asset-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+                    <div class="asset-info"><div class="asset-name">Фон панели</div><div class="asset-ext">PNG, JPG</div></div>
+                    <div class="asset-status" id="status-panel_bg"></div>
+                    <label class="asset-upload-btn">ВЫБРАТЬ<input type="file" hidden onchange="uploadFile(this, 'panel_bg')" accept="image/*"></label>
+                </div>
+                <div class="asset-row">
+                    <div class="asset-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg></div>
+                    <div class="asset-info"><div class="asset-name">Иконка награды</div><div class="asset-ext">PNG</div></div>
+                    <div class="asset-status" id="status-reward_img"></div>
+                    <label class="asset-upload-btn">ВЫБРАТЬ<input type="file" hidden onchange="uploadFile(this, 'reward_img')" accept="image/png"></label>
+                </div>
+                <div class="asset-row">
+                    <div class="asset-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+                    <div class="asset-info"><div class="asset-name">Звук появления</div><div class="asset-ext">MP3, WAV</div></div>
+                    <div class="asset-status" id="status-s_in"></div>
+                    <label class="asset-upload-btn">ВЫБРАТЬ<input type="file" hidden onchange="uploadFile(this, 's_in')" accept="audio/*"></label>
+                </div>
+                <div class="asset-row">
+                    <div class="asset-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></div>
+                    <div class="asset-info"><div class="asset-name">Звук рандома</div><div class="asset-ext">MP3, WAV</div></div>
+                    <div class="asset-status" id="status-s_roll"></div>
+                    <label class="asset-upload-btn">ВЫБРАТЬ<input type="file" hidden onchange="uploadFile(this, 's_roll')" accept="audio/*"></label>
+                </div>
+                <div class="asset-row">
+                    <div class="asset-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+                    <div class="asset-info"><div class="asset-name">Звук победы</div><div class="asset-ext">MP3, WAV</div></div>
+                    <div class="asset-status" id="status-s_win"></div>
+                    <label class="asset-upload-btn">ВЫБРАТЬ<input type="file" hidden onchange="uploadFile(this, 's_win')" accept="audio/*"></label>
+                </div>
+                <div class="asset-row">
+                    <div class="asset-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg></div>
+                    <div class="asset-info"><div class="asset-name">Звук проигрыша</div><div class="asset-ext">MP3, WAV</div></div>
+                    <div class="asset-status" id="status-s_lose"></div>
+                    <label class="asset-upload-btn">ВЫБРАТЬ<input type="file" hidden onchange="uploadFile(this, 's_lose')" accept="audio/*"></label>
+                </div>
+                <div class="asset-row">
+                    <div class="asset-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></div>
+                    <div class="asset-info"><div class="asset-name">Звук исчезновения</div><div class="asset-ext">MP3, WAV</div></div>
+                    <div class="asset-status" id="status-s_out"></div>
+                    <label class="asset-upload-btn">ВЫБРАТЬ<input type="file" hidden onchange="uploadFile(this, 's_out')" accept="audio/*"></label>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast">✅ Настройки сохранены!</div>
+
+    <script>
+        let currentUser = null;
+
+        // Load data
+        async function init() {
+            try {
+                const res = await fetch('/api/auth_me');
+                if (!res.ok) { window.location.href = '/auth/twitch'; return; }
+                currentUser = await res.json();
+                
+                document.getElementById('user-name-display').textContent = currentUser.display_name;
+                if (currentUser.profile_image_url) {
+                    const avatar = document.getElementById('user-avatar');
+                    avatar.src = currentUser.profile_image_url;
+                    avatar.style.display = 'block';
+                    document.getElementById('avatar-fallback').style.display = 'none';
+                }
+
+                const obsPath = `${window.location.origin}/overlays/roll?id=${currentUser.id}`;
+                document.getElementById('obs-url').textContent = obsPath;
+
+                await loadSettings();
+                await loadAssetStatuses();
+            } catch (e) {
+                console.error(e);
+                showToast('Ошибка загрузки профиля', true);
+            } finally {
+                document.getElementById('preloader').style.opacity = '0';
+                setTimeout(() => document.getElementById('preloader').remove(), 400);
+            }
         }
 
-        if (res.ok) {
-          statusEl.textContent = '✓ Загружено';
-          statusEl.className = 'asset-status';
-          showToast('Файл загружен');
-        } else {
-          throw new Error(result.error || 'Ошибка сервера');
+        async function loadSettings() {
+            try {
+                const res = await fetch(`/api/ov_settings?userId=${currentUser.id}`);
+                const s = await res.json();
+                const form = document.getElementById('settings-form');
+                form.reward_name.value = s.reward_name || '';
+                form.min_val.value = s.min_val || 1;
+                form.max_val.value = s.max_val || 100;
+                form.color_bg.value = s.color_bg || '#111111';
+                form.color_name.value = s.color_name || '#ffffff';
+                form.color_num.value = s.color_num || '#9146ff';
+                
+                updateColorTexts();
+            } catch (e) {}
         }
-      } catch (err) {
-        statusEl.textContent = '✗ Ошибка';
-        statusEl.style.color = 'var(--red)';
-        showToast(err.message || 'Ошибка загрузки', true);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Загрузить';
-      }
-    };
-    reader.onerror = () => {
-      showToast('Ошибка чтения файла', true);
-      btn.disabled = false;
-      btn.textContent = 'Загрузить';
-    };
-    reader.readAsDataURL(file);
-  }
 
-  // Trigger Test — opens popup with overlay preview
-  async function triggerTest(btn) {
-    const obsUrl = document.getElementById('obs-url').textContent.trim();
-    if (obsUrl === 'Загрузка...') { showToast('Подождите загрузки...', true); return; }
-    const oldText = btn.textContent;
-    btn.textContent = '...';
-    btn.disabled = true;
-    try {
-      const res = await fetch('/api/ov_test', { method: 'POST' });
-      let result;
-      const contentType = res.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        result = await res.json();
-      } else {
-        const text = await res.text();
-        throw new Error(`Server returned HTML. Snippet: ${text.substring(0, 50)}...`);
-      }
+        async function saveSettings(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                reward_name: form.reward_name.value,
+                min_val: form.min_val.value,
+                max_val: form.max_val.value,
+                color_bg: form.color_bg.value,
+                color_name: form.color_name.value,
+                color_num: form.color_num.value,
+            };
+            try {
+                const res = await fetch('/api/ov_settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) showToast('Настройки сохранены');
+                else throw new Error();
+            } catch (e) {
+                showToast('Ошибка сохранения', true);
+            }
+        }
 
-      if (!res.ok) throw new Error(result.error || 'Ошибка сервера');
-      
-      // Open overlay in a small popup
-      const popup = window.open(
-        obsUrl,
-        'overlay_test',
-        'width=1620,height=290,toolbar=no,menubar=no,scrollbars=no,resizable=no'
-      );
-      showToast('Тест запущен!');
-      setTimeout(() => { if (popup) popup.close(); }, 15000);
-    } catch (err) {
-      showToast(err.message || 'Ошибка запуска теста', true);
-    } finally {
-      btn.textContent = oldText;
-      btn.disabled = false;
-    }
-  }
+        async function uploadFile(input, key) {
+            const file = input.files[0];
+            if (!file) return;
 
-  // Copy URL
-  function copyUrl() {
-    const url = document.getElementById('obs-url').textContent.trim();
-    if (url === 'Загрузка...') return;
-    navigator.clipboard.writeText(url).then(() => showToast('URL скопирован'));
-  }
+            const status = document.getElementById(`status-${key}`);
+            status.textContent = '...';
+            status.className = 'asset-status';
 
-  // Save Settings
-  async function saveSettings(e) {
-    e.preventDefault();
-    const form = e.target;
-    const data = {
-      reward_name: form.reward_name.value,
-      min_val: parseInt(form.min_val.value),
-      max_val: parseInt(form.max_val.value),
-      color_bg: form.color_bg.value,
-      color_name: form.color_name.value,
-      color_num: form.color_num.value,
-    };
+            const reader = new FileReader();
+            reader.onload = async () => {
+                try {
+                    const res = await fetch('/api/ov_upload', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ asset: reader.result, key })
+                    });
+                    if (res.ok) {
+                        status.textContent = '✓ Загружено';
+                        status.className = 'asset-status status-ok';
+                        showToast('Файл успешно загружен');
+                    } else throw new Error();
+                } catch (e) {
+                    status.textContent = '✗ Ошибка';
+                    status.className = 'asset-status status-err';
+                    showToast('Ошибка загрузки файла', true);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
 
-    try {
-      const res = await fetch('/api/ov_settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (res.ok) showToast('Настройки сохранены');
-      else throw new Error();
-    } catch {
-      showToast('Ошибка сохранения', true);
-    }
-  }
+        async function loadAssetStatuses() {
+            try {
+                const res = await fetch(`/api/ov_upload?userId=${currentUser.id}`);
+                const assets = await res.json();
+                Object.keys(assets).forEach(key => {
+                    const status = document.getElementById(`status-${key}`);
+                    if (status) {
+                        status.textContent = '✓ Загружено';
+                        status.className = 'asset-status status-ok';
+                    }
+                });
+            } catch (e) {}
+        }
 
-  // Toast
-  function showToast(msg, error = false) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.borderColor = error ? 'var(--red)' : 'var(--green)';
-    t.style.color = error ? 'var(--red)' : 'var(--green)';
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2800);
-  }
+        async function triggerTest(btn) {
+            const oldText = btn.textContent;
+            btn.textContent = '...';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/ov_test', { method: 'POST' });
+                if (res.ok) {
+                    const url = document.getElementById('obs-url').textContent;
+                    window.open(url, 'testOverlay', 'width=1620,height=290');
+                    showToast('Тест запущен!');
+                } else throw new Error();
+            } catch (e) {
+                showToast('Ошибка запуска теста', true);
+            } finally {
+                btn.textContent = oldText;
+                btn.disabled = false;
+            }
+        }
 
-  // Load User Data
-  async function loadUser() {
-    try {
-      const res = await fetch('/api/auth/me');
-      if (!res.ok) throw new Error('Unauthorized');
-      
-      const user = await res.json();
-      document.getElementById('user-name-display').textContent = user.display_name;
-      const avatarContainer = document.getElementById('user-avatar-container');
-      avatarContainer.innerHTML = `<img src="${user.profile_image_url}" alt="${user.display_name}">`;
-      
-      const siteUrl = window.location.origin;
-      const obsPath = `${siteUrl}/overlays/roll?id=${user.id}`;
-      document.getElementById('obs-url').textContent = obsPath;
+        function copyUrl() {
+            const url = document.getElementById('obs-url').textContent;
+            navigator.clipboard.writeText(url).then(() => showToast('URL скопирован'));
+        }
 
-      // Load existing settings
-      const settingsRes = await fetch(`/api/ov_settings?userId=${user.id}`);
-      const settings = await settingsRes.json();
-      if (settings.reward_name) {
-        const form = document.getElementById('settings-form');
-        form.reward_name.value = settings.reward_name;
-        form.min_val.value = settings.min_val;
-        form.max_val.value = settings.max_val;
-        form.color_bg.value = settings.color_bg;
-        form.color_name.value = settings.color_name;
-        form.color_num.value = settings.color_num;
-        syncColor({value: settings.color_bg}, 'prev-bg', 'hex-bg');
-        syncColor({value: settings.color_name}, 'prev-name', 'hex-name');
-        syncColor({value: settings.color_num}, 'prev-num', 'hex-num');
-      }
-      
-    } catch (err) {
-      console.error('Auth error:', err);
-      window.location.href = '/overlays';
-    }
-  }
+        function logout() {
+            fetch('/api/auth_logout', { method: 'POST' }).then(() => window.location.href = '/');
+        }
 
-  window.onload = () => {
-    loadUser();
-  };
-</script>
+        function showToast(msg, error = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.borderColor = error ? 'var(--red)' : 'var(--green)';
+            t.style.color = error ? 'var(--red)' : 'var(--green)';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function updateColorTexts() {
+            ['bg', 'name', 'num'].forEach(k => {
+                const input = document.querySelector(`input[name="color_${k}"]`);
+                const text = document.getElementById(`color_${k}_text`);
+                if (input && text) {
+                    text.value = input.value;
+                    input.addEventListener('input', () => { text.value = input.value; });
+                }
+            });
+        }
+
+        init();
+    </script>
 </body>
 </html>
