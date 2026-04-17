@@ -45,8 +45,9 @@ const PROJECTS = [
   {
     title: 'ФЕЙССВАП',
     desc: 'Замена лица LIVE',
-    href: '/faceswap',
+    href: '#',
     color: '#ff4500',
+    disabled: true,
   },
   {
     title: 'ПАСТА',
