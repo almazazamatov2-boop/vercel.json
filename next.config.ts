@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
         source: '/overlays/dashboard',
         destination: '/overlays/dashboard.html',
       },
+      {
+        source: '/overlays/roll',
+        destination: '/overlays/roll.html',
+      },
     ]
   },
 };

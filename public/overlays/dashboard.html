@@ -628,9 +628,9 @@
         </div>
         <div class="card-body">
           <div class="obs-url-block">
-            <div class="obs-url" id="obs-url">https://overlayroll-production.up.railway.app/overlay/317c522990bf51a82e8c5e4ff536b77e</div>
+            <div class="obs-url" id="obs-url">Загрузка...</div>
             <button class="btn-copy" onclick="copyUrl()">Скопировать</button>
-            <a href="#" class="btn-test" target="_blank">Тест ↗</a>
+            <a href="#" class="btn-test" id="obs-test-btn" target="_blank">Тест ↗</a>
           </div>
           <div class="obs-hint">
             В OBS: <strong>Источники → + → Браузер</strong> &nbsp;·&nbsp;
@@ -655,7 +655,7 @@
           </div>
         </div>
         <div class="card-body">
-          <form action="/dashboard/save" method="POST">
+          <form id="settings-form" onsubmit="saveSettings(event)">
             <div style="display:flex; flex-direction:column; gap:24px;">
 
               <!-- Reward name -->
@@ -997,7 +997,34 @@
   // Copy URL
   function copyUrl() {
     const url = document.getElementById('obs-url').textContent.trim();
+    if (url === 'Загрузка...') return;
     navigator.clipboard.writeText(url).then(() => showToast('URL скопирован'));
+  }
+
+  // Save Settings
+  async function saveSettings(e) {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+      reward_name: form.reward_name.value,
+      min_val: parseInt(form.min_val.value),
+      max_val: parseInt(form.max_val.value),
+      color_bg: form.color_bg.value,
+      color_name: form.color_name.value,
+      color_num: form.color_num.value,
+    };
+
+    try {
+      const res = await fetch('/api/overlays/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) showToast('Настройки сохранены');
+      else throw new Error();
+    } catch {
+      showToast('Ошибка сохранения', true);
+    }
   }
 
   // Toast
@@ -1021,9 +1048,26 @@
       const avatarContainer = document.getElementById('user-avatar-container');
       avatarContainer.innerHTML = `<img src="${user.profile_image_url}" alt="${user.display_name}">`;
       
-      // Update OBS URL for this user if needed
-      // const obsUrl = document.getElementById('obs-url');
-      // obsUrl.textContent = `https://overlayroll-production.up.railway.app/overlay/${user.id}`;
+      const siteUrl = window.location.origin;
+      const obsPath = `${siteUrl}/overlays/roll?id=${user.id}`;
+      document.getElementById('obs-url').textContent = obsPath;
+      document.getElementById('obs-test-btn').href = obsPath;
+
+      // Load existing settings
+      const settingsRes = await fetch(`/api/overlays/settings?userId=${user.id}`);
+      const settings = await settingsRes.json();
+      if (settings.reward_name) {
+        const form = document.getElementById('settings-form');
+        form.reward_name.value = settings.reward_name;
+        form.min_val.value = settings.min_val;
+        form.max_val.value = settings.max_val;
+        form.color_bg.value = settings.color_bg;
+        form.color_name.value = settings.color_name;
+        form.color_num.value = settings.color_num;
+        syncColor({value: settings.color_bg}, 'prev-bg', 'hex-bg');
+        syncColor({value: settings.color_name}, 'prev-name', 'hex-name');
+        syncColor({value: settings.color_num}, 'prev-num', 'hex-num');
+      }
       
     } catch (err) {
       console.error('Auth error:', err);
