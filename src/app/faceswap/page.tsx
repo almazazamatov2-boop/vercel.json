@@ -78,8 +78,8 @@ export default function FaceSwapPage() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[#080808]/80 backdrop-blur-xl border-b border-white/5 py-4">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <a href="/" className="text-xl font-black tracking-tighter uppercase italic">
-            PARACETAMOL<span className="text-violet-500 italic block -mt-1 text-sm tracking-[0.3em] font-medium">HAZE</span>
+          <a href="/faceswap" className="text-2xl font-black tracking-tighter uppercase italic">
+            ФЕЙССВАП
           </a>
           <div className="hidden md:flex gap-8 text-sm font-medium text-white/60">
             <a href="#demo" className="hover:text-white transition-colors">Демонстрация</a>
@@ -87,7 +87,7 @@ export default function FaceSwapPage() {
             <a href="#download" className="hover:text-white transition-colors">Загрузка</a>
           </div>
           {isLogged ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.location.href='/profile'}>
                {subscription?.active && <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-green-500/20 text-green-400 border border-green-500/30">ACTIVE</span>}
               <span className="text-sm font-medium text-white/80">{user.display_name}</span>
               <img src={user.profile_image_url} className="w-8 h-8 rounded-full border border-white/10" alt="" />
@@ -118,14 +118,14 @@ export default function FaceSwapPage() {
                 Попробовать бесплатно
               </a>
               <button 
-                onClick={() => window.open('https://your-video-demo-url.com', '_blank')}
+                onClick={() => document.getElementById('demo-video')?.scrollIntoView({ behavior: 'smooth' })}
                 className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 font-bold hover:bg-white/10 transition-all"
               >
                 Смотреть демо
               </button>
             </div>
           </div>
-          <div className="relative group">
+          <div className="relative group" id="demo-video">
             <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-cyan-500 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
             <div className="relative bg-[#111] rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
               <img 
@@ -190,23 +190,20 @@ export default function FaceSwapPage() {
           <div className="relative space-y-6">
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter">ГОТОВЫ НАЧАТЬ?</h2>
             <p className="text-white/40 text-lg max-w-2xl mx-auto">
-              Наш лаунчер автоматически скачает последние модели нейросетей и настроит ваше железо для максимальной производительности.
+              Наш клиент автоматически скачает последние модели нейросетей и настроит ваше железо для максимальной производительности.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center pt-8">
               <a 
                 href="/dist/launcher.exe" 
                 download
-                className="px-10 py-5 rounded-2xl bg-white text-black font-black hover:scale-105 transition-all flex items-center justify-center gap-3 no-underline"
+                className="px-16 py-6 rounded-2xl bg-white text-black font-black hover:scale-105 transition-all flex items-center justify-center gap-3 no-underline shadow-[0_0_50px_rgba(255,255,255,0.2)]"
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                СКАЧАТЬ ЛАУНЧЕР (34MB)
+                СКАЧАТЬ КЛИЕНТ (34MB)
               </a>
-              <button className="px-10 py-5 rounded-2xl bg-white/10 border border-white/10 font-bold hover:bg-white/20 transition-all">
-                ПОЛНЫЙ ПАКЕТ (1.9GB)
-              </button>
             </div>
             <div className="pt-12 text-xs font-bold text-white/20 tracking-widest uppercase">
-              Supports Windows 10/11 • NVIDIA GPU Required • RTX 2060+ Recommended
+              Supports Windows 10/11 • DIRECTX 12 REQUIRED • LESS THAN 1GB
             </div>
           </div>
         </div>
