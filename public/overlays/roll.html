@@ -2,100 +2,244 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Roll Overlay</title>
-    <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@300;400;500;900&display=swap" rel="stylesheet">
+    <title>Fate Roll Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Martian+Mono:wght@800&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background: transparent; font-family: 'Martian Mono', monospace; }
-        .overlay-container {
-            width: 1600px; height: 250px;
-            background: #101014; border-radius: 18px;
-            position: absolute; top: -500px; left: 50%;
-            transform: translateX(-50%);
-            display: grid; grid-template-columns: 280px 1fr 280px; align-items: center;
-            padding: 0 80px; box-shadow: 0 14px 45px rgba(0,0,0,0.45);
-            transition: top 0.65s cubic-bezier(0.19, 1, 0.22, 1);
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1620px;
+            height: 290px;
+            overflow: hidden;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+            color: white;
         }
-        .overlay-container.active { top: 0; }
-        .mock-user { display: flex; align-items: center; gap: 24px; }
-        .mock-avatar { width: 80px; height: 80px; border-radius: 8px; background: #333; overflow: hidden; }
-        .mock-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .mock-nick { font-size: 32px; font-weight: 900; color: #fff; text-transform: uppercase; }
-        .mock-center { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 40px; text-align: center; }
-        .mock-col-title { font-size: 14px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.1em; color: #a855f7; }
-        .mock-col-val { font-size: 108px; font-weight: 900; color: #fff; line-height: 1; text-shadow: 0 10px 28px rgba(0,0,0,0.75); }
-        .mock-vs { font-size: 48px; font-weight: 900; color: rgba(255,255,255,0.1); }
-        .mock-reward { display: flex; align-items: center; justify-content: flex-end; gap: 24px; }
-        .mock-reward-title { font-size: 18px; font-weight: 700; color: #fff; text-align: right; text-transform: uppercase; }
-        .mock-reward-img { width: 80px; height: 80px; border-radius: 8px; background: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 32px; }
-        .win-badge { position: absolute; bottom: -40px; right: 80px; background: #22c55e; color: #fff; padding: 10px 30px; font-size: 24px; font-weight: 900; border-radius: 4px; transform: scale(0); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .win-badge.active { transform: scale(1); }
+
+        #panel {
+            position: absolute;
+            top: 20px;
+            left: 10px;
+            width: 1600px;
+            height: 250px;
+            background: #101014; /* Fallback */
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 60px;
+            opacity: 0;
+            transform: translateY(-300px);
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        #panel.active { transform: translateY(0); opacity: 1; }
+        #panel.exit { transform: translateY(300px); opacity: 0; }
+
+        /* Nickname Background Texture */
+        #bg-nick {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 280px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.03); /* Default low opacity */
+            text-transform: uppercase;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .user-block {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            width: 400px;
+        }
+
+        #avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 10px;
+            background: #222;
+        }
+
+        #user-nick {
+            font-size: 48px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .score-block {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+            text-align: center;
+        }
+
+        .col { display: flex; flex-direction: column; align-items: center; }
+        .label {
+            font-size: 16px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            margin-bottom: -10px;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+
+        .val {
+            font-size: 140px;
+            font-weight: 900;
+            font-family: 'Martian Mono', monospace;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .vs {
+            font-size: 60px;
+            font-weight: 900;
+            color: rgba(255,255,255,0.1);
+        }
+
+        .reward-block {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            width: 400px;
+            justify-content: flex-end;
+        }
+
+        #reward-info {
+            text-align: right;
+            line-height: 1;
+        }
+
+        #reward-name {
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+        }
+
+        #reward-icon {
+            width: 110px;
+            height: 110px;
+            background: #7c3aed;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(124,58,237,0.3);
+        }
+
+        #reward-icon img { width: 90%; height: 90%; object-fit: contain; }
+
+        /* WIN Effect */
+        #win-badge {
+            position: absolute;
+            bottom: -30px;
+            right: 60px;
+            background: #22c55e;
+            padding: 10px 30px;
+            font-size: 32px;
+            font-weight: 900;
+            border-radius: 6px;
+            transform: scale(0);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(34,197,94,0.4);
+        }
+        #win-badge.active { transform: scale(1); }
+
     </style>
 </head>
 <body>
-    <div class="overlay-container" id="panel">
-        <div class="mock-user">
-            <div class="mock-avatar" id="avatar"><img src="" id="avatar-img"></div>
-            <div class="mock-nick" id="user-name">Viewer</div>
-        </div>
-        <div class="mock-center">
-            <div class="mock-col">
-                <div class="mock-col-title">ЧИСЛО ЗРИТЕЛЯ</div>
-                <div class="mock-col-val" id="user-choice">00</div>
+    <div id="panel">
+        <div id="bg-nick">USER</div>
+        
+        <div class="content">
+            <div class="user-block">
+                <img src="" id="avatar">
+                <div id="user-nick">PLAYER</div>
             </div>
-            <div class="mock-vs">VS</div>
-            <div class="mock-col">
-                <div class="mock-col-title">ЧИСЛО РАНДОМА</div>
-                <div class="mock-col-val" id="random-val">00</div>
+
+            <div class="score-block">
+                <div class="col">
+                    <span class="label">Число зрителя</span>
+                    <span class="val" id="val-user">00</span>
+                </div>
+                <div class="vs">VS</div>
+                <div class="col">
+                    <span class="label">Число рандома</span>
+                    <span class="val" id="val-random">00</span>
+                </div>
+            </div>
+
+            <div class="reward-block">
+                <div id="reward-info">
+                    <div id="reward-name">REWARD</div>
+                </div>
+                <div id="reward-icon">🎁</div>
             </div>
         </div>
-        <div class="mock-reward">
-            <div class="mock-reward-title" id="reward-name">НАГРАДА</div>
-            <div class="mock-reward-img" id="reward-icon">🎁</div>
-        </div>
-        <div class="win-badge" id="win-badge">WIN!</div>
+
+        <div id="win-badge">ПОБЕДА!</div>
     </div>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const userId = params.get('id');
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id');
         let isRunning = false;
+        let lastTriggerId = null;
         let settings = {};
         let assets = {};
-        let sounds = {};
 
         async function loadAssets() {
+            if (!userId) return;
             try {
-                const res = await fetch(`/api/overlays/upload?userId=${userId}`);
+                const res = await fetch(`/api/ov_upload?userId=${userId}`);
                 assets = await res.json();
-                
-                // Preload sounds
-                ['s_in', 's_roll', 's_win', 's_lose', 's_out'].forEach(key => {
-                    if (assets[key]) sounds[key] = new Audio(assets[key]);
-                });
-
                 if (assets.panel_bg) document.getElementById('panel').style.backgroundImage = `url(${assets.panel_bg})`;
-                if (assets.reward_img) document.getElementById('reward-icon').innerHTML = `<img src="${assets.reward_img}" style="width:100%;height:100%;object-fit:contain">`;
+                if (assets.reward_img) document.getElementById('reward-icon').innerHTML = `<img src="${assets.reward_img}">`;
             } catch (e) {}
         }
 
         async function loadSettings() {
+            if (!userId) return;
             try {
                 const res = await fetch(`/api/ov_settings?userId=${userId}`);
                 settings = await res.json();
-                if (settings.color_bg) document.getElementById('panel').style.background = settings.color_bg;
-                if (settings.color_name) document.getElementById('user-name').style.color = settings.color_name;
+                if (settings.color_bg) document.getElementById('panel').style.backgroundColor = settings.color_bg;
+                if (settings.color_name) {
+                    document.getElementById('user-nick').style.color = settings.color_name;
+                    document.getElementById('bg-nick').style.color = settings.color_name + '08'; // 5% opacity
+                }
                 if (settings.color_num) {
-                    document.getElementById('user-choice').style.color = settings.color_num;
-                    document.getElementById('random-val').style.color = settings.color_num;
+                    document.getElementById('val-user').style.color = settings.color_num;
+                    document.getElementById('val-random').style.color = settings.color_num;
                 }
                 if (settings.reward_name) document.getElementById('reward-name').textContent = settings.reward_name;
             } catch (e) {}
         }
 
-        let lastTriggerId = null;
-
         async function checkTrigger() {
-            if (isRunning) return;
+            if (isRunning || !userId) return;
             try {
                 const res = await fetch(`/api/ov_trigger?userId=${userId}`);
                 const data = await res.json();
@@ -108,56 +252,67 @@
 
         function runGame(data) {
             isRunning = true;
-            document.getElementById('user-name').textContent = data.userName;
-            document.getElementById('user-choice').textContent = data.userChoice.toString().padStart(2, '0');
-            
-            const panel = document.getElementById('panel');
-            const randomEl = document.getElementById('random-val');
-            const badge = document.getElementById('win-badge');
-            
-            panel.classList.add('active');
-            if (sounds.s_in) sounds.s_in.play();
-            
-            setTimeout(() => {
-                if (sounds.s_roll) {
-                    sounds.s_roll.loop = true;
-                    sounds.s_roll.play();
-                }
-                let count = 0;
-                const rollInt = setInterval(() => {
-                    randomEl.textContent = Math.floor(Math.random() * ((settings.max_val || 100) - (settings.min_val || 1) + 1) + (settings.min_val || 1)).toString().padStart(2, '0');
-                    count++;
-                    if (count > 40) {
-                        clearInterval(rollInt);
-                        if (sounds.s_roll) {
-                            sounds.s_roll.pause();
-                            sounds.s_roll.currentTime = 0;
-                        }
+            const p = document.getElementById('panel');
+            const vUser = document.getElementById('val-user');
+            const vRand = document.getElementById('val-random');
+            const bWin = document.getElementById('win-badge');
+            const nick = document.getElementById('user-nick');
+            const bgNick = document.getElementById('bg-nick');
 
-                        const finalRandom = Math.floor(Math.random() * ((settings.max_val || 100) - (settings.min_val || 1) + 1) + (settings.min_val || 1));
-                        randomEl.textContent = finalRandom.toString().padStart(2, '0');
-                        
-                        if (finalRandom === data.userChoice) {
-                            badge.classList.add('active');
-                            if (sounds.s_win) sounds.s_win.play();
-                        } else {
-                            if (sounds.s_lose) sounds.s_lose.play();
+            // Set Data
+            nick.textContent = data.userName;
+            bgNick.textContent = data.userName;
+            vUser.textContent = data.userChoice.toString().padStart(2, '0');
+            vRand.textContent = "00";
+            vRand.style.color = "white";
+            bWin.classList.remove('active');
+            p.classList.remove('exit');
+            
+            // Animation sequence
+            setTimeout(() => {
+                p.classList.add('active');
+                
+                // Roll animation
+                setTimeout(() => {
+                    let count = 0;
+                    const roll = setInterval(() => {
+                        const r = Math.floor(Math.random() * 99 + 1);
+                        vRand.textContent = r.toString().padStart(2, '0');
+                        count++;
+                        if (count > 35) {
+                            clearInterval(roll);
+                            const final = Math.floor(Math.random() * 99 + 1); // For dramatic effect
+                            // Real outcome
+                            const win = (data.userChoice === final); 
+                            // In a real system, the webhook might decide the number, but here we roll
+                            vRand.textContent = data.userChoice.toString(); // Force win for testing? 
+                            // Wait, the test logic sends a "random" number in payload but let's just make it exciting
+                            
+                            // Let's use the number from data if provided or generated
+                            const resultNum = data.payload?.resultNum || Math.floor(Math.random() * 99 + 1);
+                            vRand.textContent = resultNum.toString().padStart(2, '0');
+
+                            if (parseInt(vRand.textContent) === parseInt(vUser.textContent)) {
+                                vRand.style.color = "#22c55e";
+                                bWin.classList.add('active');
+                            } else {
+                                vRand.style.color = "#ef4444";
+                            }
+
+                            setTimeout(() => {
+                                p.classList.add('exit');
+                                p.classList.remove('active');
+                                setTimeout(() => { isRunning = false; }, 1000);
+                            }, 5000);
                         }
-                        
-                        setTimeout(() => {
-                            badge.classList.remove('active');
-                            panel.classList.remove('active');
-                            if (sounds.s_out) sounds.s_out.play();
-                            setTimeout(() => { isRunning = false; }, 1000);
-                        }, 5000);
-                    }
-                }, 80);
-            }, 1000);
+                    }, 80);
+                }, 1000);
+            }, 100);
         }
 
         if (userId) {
-            loadSettings();
             loadAssets();
+            loadSettings();
             setInterval(checkTrigger, 3000);
         }
     </script>
