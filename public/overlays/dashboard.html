@@ -414,31 +414,7 @@
                     </div>
                 </div>
 
-                <div class="color-pickers">
-                    <div>
-                        <label class="label">Фон панели</label>
-                        <div class="color-item">
-                            <input type="color" name="color_bg" value="#111111">
-                            <input type="text" id="color_bg_text" value="#111111" style="border:none; width:60px; font-size:12px; background:none;">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="label">Цвет имени</label>
-                        <div class="color-item">
-                            <input type="color" name="color_name" value="#ffffff">
-                            <input type="text" id="color_name_text" value="#ffffff" style="border:none; width:60px; font-size:12px; background:none;">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="label">Цвет чисел</label>
-                        <div class="color-item">
-                            <input type="color" name="color_num" value="#9146ff">
-                            <input type="text" id="color_num_text" value="#9146ff" style="border:none; width:60px; font-size:12px; background:none;">
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-purple" style="margin-top: 32px; width: 100%;">СОХРАНИТЬ НАСТРОЙКИ</button>
+                <button type="submit" class="btn btn-purple" style="margin-top: 12px; width: 100%;">СОХРАНИТЬ НАСТРОЙКИ</button>
             </form>
         </div>
 
@@ -654,17 +630,6 @@
             t.style.color = error ? 'var(--red)' : 'var(--green)';
             t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 3000);
-        }
-
-        function updateColorTexts() {
-            ['bg', 'name', 'num'].forEach(k => {
-                const input = document.querySelector(`input[name="color_${k}"]`);
-                const text = document.getElementById(`color_${k}_text`);
-                if (input && text) {
-                    text.value = input.value;
-                    input.addEventListener('input', () => { text.value = input.value; });
-                }
-            });
         }
 
         init();
