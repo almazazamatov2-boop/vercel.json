@@ -284,6 +284,10 @@ export async function GET(req: NextRequest) {
           lobby: { ...lobby, players },
           drawn: drawn.map(Number),
           chat: chat.map(m => JSON.parse(m as string))
+        }, {
+          headers: {
+            'Cache-Control': 'public, s-maxage=1, stale-while-revalidate=5'
+          }
         });
       }
 

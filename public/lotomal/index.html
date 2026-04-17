@@ -1093,7 +1093,7 @@
             if (res.status === 404 || res.status === 410) { clearGameSession(); showScreen('mainMenu'); return; }
             if (res.ok) { const msg = await res.json(); handleWsMessage(msg); }
           } catch(e) {}
-        }, 1500);
+        }, 2500);
       }
     }
 
