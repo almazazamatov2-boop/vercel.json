@@ -108,13 +108,13 @@
       font-size: clamp(40px, 6vw, 84px);
       font-weight: 950;
       line-height: .95;
-      letter-spacing: -0.01em; /* Reduced negative space to avoid kerning issues */
+      letter-spacing: 0; /* Reset letter spacing to fix kerning gaps */
       margin-bottom: 32px;
       background: linear-gradient(135deg, #fff 10%, var(--accent2) 90%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       text-transform: uppercase;
-      text-align: center; /* Explicit center to avoid justification gaps */
+      text-align: center;
       word-spacing: normal;
     }
 
@@ -321,7 +321,7 @@
     </div>
     <h1>Привлекай аудиторию<br>мини-игрой на стриме</h1>
     <p class="hero-desc">
-      Оверлеи для стримеров. Зрители активируют награду за Channel Points, выбирают число и испытывают удачу прямо на стриме.
+      Оверлеи для стримеров. Зрители активируют награду за баллы канала, выбирают число и испытывают удачу прямо на стриме.
     </p>
   </div>
 
@@ -383,9 +383,9 @@
           Классический игровой автомат на вашем стриме. Три барабана, кастомные символы и поддержка комбинаций. Идеально для удержания зрителей.
         </p>
         <ul class="overlay-features">
-          <li>Triple Reels</li>
-          <li>Custom Icons</li>
-          <li>Jackpot Effect</li>
+          <li>Три барабана</li>
+          <li>Свои иконки</li>
+          <li>Джекпот эффект</li>
         </ul>
         <span class="btn-action" style="background: #222; color: #555; cursor: default;">В разработке</span>
       </div>
