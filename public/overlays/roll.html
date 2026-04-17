@@ -12,7 +12,7 @@
             overflow: hidden;
             background: transparent;
             font-family: 'Inter', sans-serif;
-            color: white;
+            color: white; /* Default White */
         }
 
         #panel {
@@ -21,14 +21,14 @@
             left: 10px;
             width: 1600px;
             height: 250px;
-            background: #101014; /* Fallback */
+            background: #101014;
             background-size: cover;
             background-position: center;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 60px;
+            padding: 0 80px;
             opacity: 0;
             transform: translateY(-300px);
             transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
@@ -39,7 +39,6 @@
         #panel.active { transform: translateY(0); opacity: 1; }
         #panel.exit { transform: translateY(300px); opacity: 0; }
 
-        /* Nickname Background Texture */
         #bg-nick {
             position: absolute;
             inset: 0;
@@ -48,7 +47,7 @@
             justify-content: center;
             font-size: 280px;
             font-weight: 900;
-            color: rgba(255, 255, 255, 0.03); /* Default low opacity */
+            color: rgba(255, 255, 255, 0.03); 
             text-transform: uppercase;
             white-space: nowrap;
             pointer-events: none;
@@ -67,52 +66,56 @@
         .user-block {
             display: flex;
             align-items: center;
-            gap: 25px;
-            width: 400px;
+            gap: 30px;
+            min-width: 450px;
         }
 
         #avatar {
-            width: 90px;
-            height: 90px;
-            border-radius: 10px;
+            width: 110px;
+            height: 110px;
+            border-radius: 12px;
             background: #222;
+            object-fit: cover;
         }
 
         #user-nick {
-            font-size: 48px;
+            font-size: 54px; /* Enlarged */
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: -1px;
+            letter-spacing: -2px;
+            color: #ffffff; /* Forced White */
         }
 
         .score-block {
             display: flex;
             align-items: center;
-            gap: 60px;
+            gap: 50px;
             text-align: center;
         }
 
         .col { display: flex; flex-direction: column; align-items: center; }
         .label {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 800;
-            color: rgba(255,255,255,0.4);
+            color: rgba(255,255,255,0.5);
             text-transform: uppercase;
-            margin-bottom: -10px;
-            background: rgba(0,0,0,0.3);
-            padding: 4px 12px;
+            margin-bottom: -5px;
+            background: rgba(0,0,0,0.4);
+            padding: 4px 14px;
             border-radius: 4px;
+            letter-spacing: 1px;
         }
 
         .val {
-            font-size: 140px;
+            font-size: 150px; /* Bigger numbers */
             font-weight: 900;
             font-family: 'Martian Mono', monospace;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            color: #ffffff; /* Forced White */
+            text-shadow: 0 10px 40px rgba(0,0,0,0.6);
         }
 
         .vs {
-            font-size: 60px;
+            font-size: 50px;
             font-weight: 900;
             color: rgba(255,255,255,0.1);
         }
@@ -121,27 +124,27 @@
             display: flex;
             align-items: center;
             gap: 30px;
-            width: 400px;
+            min-width: 450px;
             justify-content: flex-end;
         }
 
         #reward-info {
             text-align: right;
-            line-height: 1;
+            line-height: 1.1;
         }
 
         #reward-name {
-            font-size: 28px;
+            font-size: 54px; /* Same as Nickname size */
             font-weight: 900;
             text-transform: uppercase;
-            color: #fff;
+            color: #ffffff;
+            letter-spacing: -2px;
         }
 
         #reward-icon {
-            width: 130px;
-            height: 130px;
-            background: transparent; /* Removed background */
-            border-radius: 12px;
+            width: 150px; /* Much bigger icon */
+            height: 150px;
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -150,19 +153,19 @@
 
         #reward-icon img { width: 100%; height: 100%; object-fit: contain; }
 
-        /* WIN Effect */
         #win-badge {
             position: absolute;
-            bottom: -30px;
-            right: 60px;
+            bottom: -35px;
+            right: 120px;
             background: #22c55e;
-            padding: 10px 30px;
-            font-size: 32px;
+            padding: 12px 40px;
+            font-size: 38px;
             font-weight: 900;
-            border-radius: 6px;
+            border-radius: 8px;
             transform: scale(0);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(34,197,94,0.4);
+            box-shadow: 0 15px 40px rgba(34,197,94,0.5);
+            color: white;
         }
         #win-badge.active { transform: scale(1); }
 
@@ -206,7 +209,6 @@
         const userId = urlParams.get('id');
         let isRunning = false;
         let lastTriggerId = null;
-        let settings = {};
         let assets = {};
 
         async function loadAssets() {
@@ -223,16 +225,8 @@
             if (!userId) return;
             try {
                 const res = await fetch(`/api/ov_settings?userId=${userId}`);
-                settings = await res.json();
-                if (settings.color_bg) document.getElementById('panel').style.backgroundColor = settings.color_bg;
-                if (settings.color_name) {
-                    document.getElementById('user-nick').style.color = settings.color_name;
-                    document.getElementById('bg-nick').style.color = settings.color_name + '08'; // 5% opacity
-                }
-                if (settings.color_num) {
-                    document.getElementById('val-user').style.color = settings.color_num;
-                    document.getElementById('val-random').style.color = settings.color_num;
-                }
+                const settings = await res.json();
+                // We keep static white values but can overwrite if user really wants later
                 if (settings.reward_name) document.getElementById('reward-name').textContent = settings.reward_name;
             } catch (e) {}
         }
@@ -268,39 +262,37 @@
             bWin.classList.remove('active');
             p.classList.remove('exit');
             
-            // Animation sequence
+            // Sequence Start
             setTimeout(() => {
-                p.classList.add('active');
+                p.classList.add('active'); // IN Animation (0.6s)
                 
-                // Roll animation
+                // WAIT (1.0s)
                 setTimeout(() => {
+                    // ROLL Animation (~3s)
                     let count = 0;
                     const roll = setInterval(() => {
                         const r = Math.floor(Math.random() * 99 + 1);
                         vRand.textContent = r.toString().padStart(2, '0');
                         count++;
-                        if (count > 35) {
+                        if (count > 38) {
                             clearInterval(roll);
-                            const final = Math.floor(Math.random() * 99 + 1); // For dramatic effect
-                            // Real outcome
-                            const win = (data.userChoice === final); 
-                            // In a real system, the webhook might decide the number, but here we roll
-                            vRand.textContent = data.userChoice.toString(); // Force win for testing? 
-                            // Wait, the test logic sends a "random" number in payload but let's just make it exciting
                             
-                            // Let's use the number from data if provided or generated
-                            const resultNum = data.payload?.resultNum || Math.floor(Math.random() * 99 + 1);
+                            // Result logic
+                            // If test, we can force a win sometimes
+                            let resultNum = data.isTest ? (Math.random() > 0.5 ? data.userChoice : Math.floor(Math.random() * 99 + 1)) : Math.floor(Math.random() * 99 + 1);
+                            
                             vRand.textContent = resultNum.toString().padStart(2, '0');
 
                             if (parseInt(vRand.textContent) === parseInt(vUser.textContent)) {
-                                vRand.style.color = "#22c55e";
-                                bWin.classList.add('active');
+                                vRand.style.color = "#22c55e"; // Green for win
+                                bWin.classList.add('active'); // WIN (shows for 5s)
                             } else {
-                                vRand.style.color = "#ef4444";
+                                vRand.style.color = "#ef4444"; // Red for lose
                             }
 
+                            // STAY (5.0s)
                             setTimeout(() => {
-                                p.classList.add('exit');
+                                p.classList.add('exit'); // OUT Animation (0.6s)
                                 p.classList.remove('active');
                                 setTimeout(() => { isRunning = false; }, 1000);
                             }, 5000);
