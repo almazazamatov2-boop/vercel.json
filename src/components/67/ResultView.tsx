@@ -66,8 +66,15 @@ export function ResultView() {
             Ещё раз
           </Button>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1 h-11 rounded-xl border-white/10 text-neutral-400 hover:text-white hover:bg-white/[0.04]" onClick={() => useAppStore.getState().openModal('leaderboard')}>
-              <Trophy className="w-4 h-4 mr-1.5 text-yellow-500" />
+            <Button 
+              variant="outline" 
+              className="flex-1 h-14 rounded-2xl border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.06] text-neutral-400 hover:text-white transition-all"
+              onClick={() => useAppStore.getState().setView('landing')}
+            >
+              В меню
+            </Button>
+            <Button className="flex-1 h-14 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] text-white transition-all" onClick={() => useAppStore.getState().openModal('leaderboard')}>
+              <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
               Рейтинг
             </Button>
             <Button variant="outline" className="flex-1 h-11 rounded-xl border-white/10 text-neutral-400 hover:text-white hover:bg-white/[0.04]" onClick={() => {

@@ -86,10 +86,15 @@ export function LeaderboardModal() {
                      e.rank === 3 ? <Medal className="w-4 h-4 text-amber-700" /> :
                      <span className="text-xs text-neutral-600 font-medium">{e.rank}</span>}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-200 truncate">{e.username}</p>
-                    <p className="text-[10px] text-neutral-600">{e.gamesPlayed} игр</p>
-                  </div>
+                  <a 
+                    href={`https://twitch.tv/${e.login}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex-1 min-w-0 group/link"
+                  >
+                    <p className="text-sm font-medium text-neutral-200 truncate group-hover/link:text-[#9146FF] transition-colors">{e.username}</p>
+                    <p className="text-[10px] text-neutral-600">Нажми, чтобы открыть Twitch</p>
+                  </a>
                   <div className="text-right">
                     <p className="text-sm font-bold text-white">{e.bestScore}</p>
                     <p className="text-[10px] text-neutral-600">комбо {e.maxCombo}</p>

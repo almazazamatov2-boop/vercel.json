@@ -91,15 +91,20 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 4. Update/Create user in database for game 67
+    // 4. Update/Create user in database for game 67 (Supabase)
     if (userData?.data?.[0]) {
       const u = userData.data[0];
-      const { db } = await import('@/lib/67/db');
-      await db.user.upsert({
-        where: { twitchId: u.id },
-        update: { username: u.display_name, login: u.login, image: u.profile_image_url },
-        create: { twitchId: u.id, username: u.display_name, login: u.login, image: u.profile_image_url }
-      });
+      const { supabase } = await import('@/lib/supabase');
+      const { error: syncError } = await supabase
+        .from('game_67_users')
+        .upsert({
+          twitch_id: u.id,
+          username: u.display_name,
+          login: u.login,
+          image: u.profile_image_url
+        }, { onConflict: 'twitch_id' });
+      
+      if (syncError) console.error('Supabase User Sync Error:', syncError);
     }
 
     // Determine target redirect
