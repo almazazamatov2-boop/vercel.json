@@ -45,7 +45,7 @@ function AnimatedBg() {
   );
 }
 
-const BLUR_LEVELS = ['blur-2xl brightness-[0.3]', 'blur-lg brightness-[0.5]', 'blur-sm brightness-[0.75]', 'blur-0 brightness-100'];
+const BLUR_LEVELS = ['blur-xl brightness-[0.35]', 'blur-lg brightness-[0.5]', 'blur-sm brightness-[0.75]', 'blur-0 brightness-100'];
 const SCORE_FOR_HINTS = [5, 3, 2, 1];
 
 function KinokadrContent() {
@@ -227,9 +227,6 @@ function KinokadrContent() {
                     <span className="px-3 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest leading-none flex items-center h-7">
                       {movies[currentIndex].type === 'movie' ? 'Фильм' : 'Сериал'}
                     </span>
-                    <span className="px-3 py-1 rounded-lg bg-cyan-500/20 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-[10px] font-black uppercase tracking-widest leading-none flex items-center h-7">
-                      {movies[currentIndex].category}
-                    </span>
                  </div>
 
                  <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
@@ -267,7 +264,7 @@ function KinokadrContent() {
                         disabled={state.hintsUsed >= 3}
                         className="flex-1 h-14 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center gap-2 font-bold hover:bg-white/[0.1] active:scale-95 transition-all text-neutral-400 hover:text-white disabled:opacity-30"
                       >
-                         <Lightbulb className="w-5 h-5" /> Подсказка ({state.hintsUsed}/3)
+                         <Lightbulb className="w-5 h-5" /> Открыть ({state.hintsUsed}/3)
                       </button>
                       <button 
                         onClick={handleGuess}
