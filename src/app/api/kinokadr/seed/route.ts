@@ -4,54 +4,58 @@ import { supabase } from '@/lib/supabase';
 const API_KEY = '5ee2ab49-8a04-436d-ae88-cf6943b51018';
 const BASE = 'https://kinopoiskapiunofficial.tech/api';
 
-/**
- * API для автоматического заполнения базы фильмов и сериалов.
- * Вызов: /api/kinokadr/seed?page=1&type=TOP_250_BEST_FILMS
- */
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = searchParams.get('page') || '1';
-  const type = searchParams.get('type') || 'TOP_250_BEST_FILMS'; // TOP_250_BEST_FILMS, TOP_100_POPULAR_FILMS, TOP_AWAIT_FILMS
+  const type = searchParams.get('type') || 'TOP_250_BEST_FILMS';
+  const cat = searchParams.get('cat') || 'films'; // films or series
 
   try {
-    // 1. Получаем список фильмов
-    const listRes = await fetch(`${BASE}/v2.2/films/top?type=${type}&page=${page}`, {
+    let url = `${BASE}/v2.2/films/top?type=${type}&page=${page}`;
+    
+    // Если нужны именно сериалы, используем другой эндпоинт с фильтрами
+    if (cat === 'series') {
+      url = `${BASE}/v2.2/films?order=RATING&type=TV_SERIES&page=${page}`;
+    }
+
+    const listRes = await fetch(url, {
       headers: { 'X-API-KEY': API_KEY, 'Content-Type': 'application/json' }
     });
     const listData = await listRes.json();
 
-    if (!listData.films || listData.films.length === 0) {
-      return NextResponse.json({ error: 'No films found', data: listData });
+    const items = listData.films || listData.items;
+
+    if (!items || items.length === 0) {
+      return NextResponse.json({ error: 'No items found', data: listData });
     }
 
     const results = [];
 
-    // 2. Формируем данные
-    for (const film of listData.films) {
+    for (const item of items) {
+      const filmId = item.filmId || item.kinopoiskId;
       const movieData = {
-        id: `kp-${film.filmId}`,
-        title: film.nameEn || film.nameRu,
-        title_ru: film.nameRu,
-        image_url: film.posterUrl, // Используем постер
-        type: film.type === 'TV_SERIES' ? 'series' : 'movie',
-        category: film.genres?.[0]?.genre || 'Кино',
-        year: parseInt(film.year) || null
+        id: `kp-${filmId}`,
+        title: item.nameEn || item.nameRu || 'Unknown',
+        title_ru: item.nameRu || item.nameEn || 'Без названия',
+        image_url: item.posterUrl,
+        type: (item.type === 'TV_SERIES' || cat === 'series') ? 'series' : 'movie',
+        category: item.genres?.[0]?.genre || 'Кино',
+        year: parseInt(item.year) || null
       };
 
-      // 3. Сохраняем в Supabase
       const { error } = await supabase
         .from('kinokadr_movies')
         .upsert(movieData, { onConflict: 'id' });
 
       results.push({ 
-        title: film.nameRu, 
+        title: movieData.title_ru, 
         status: error ? 'error' : 'success',
         error: error?.message 
       });
     }
 
     return NextResponse.json({
-      message: `Processed page ${page}`,
+      message: `Processed page ${page} of ${cat}`,
       count: results.length,
       results
     });
