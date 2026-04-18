@@ -97,11 +97,7 @@ export function Landing() {
 
       {/* Header */}
       <header className="relative z-50 w-full border-b border-white/[0.06] backdrop-blur-md bg-black/40">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 group cursor-pointer" onClick={() => window.location.href = '/'}>
-            <span className="text-3xl font-black italic tracking-tighter bg-gradient-to-r from-orange-400 via-red-500 to-pink-500 bg-clip-text text-transparent transform group-hover:scale-105 transition-all">67</span>
-          </div>
-
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-end">
           <div className="flex items-center gap-3">
              {session ? (
                 <button 
@@ -125,28 +121,20 @@ export function Landing() {
         <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-12 items-start py-10">
           
           {/* Left: Hero & Menu */}
-          <div className="lg:col-span-5 space-y-12">
+          <div className="lg:col-span-12 xl:col-span-5 space-y-12">
             <div className="space-y-4">
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="inline-block px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400">Project Alpha</span>
-              </motion.div>
-              <h1 className="text-9xl font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none italic drop-shadow-2xl">
-                67 <br/>
-                <span className="text-4xl text-neutral-500">SPEED TEST</span>
+              <h1 className="text-[10rem] font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none italic drop-shadow-2xl">
+                67
               </h1>
-              <p className="text-neutral-400 font-medium max-w-xs">Испытай свою реакцию. Используй камеру, чтобы ловить цифры руками.</p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-sm">
               <Button
                 className="w-full h-24 text-4xl font-black tracking-[0.2em] rounded-[2.5rem] bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-400 hover:via-red-400 hover:to-pink-400 text-white shadow-2xl shadow-red-500/30 hover:shadow-red-500/50 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
                 onClick={play}
               >
                 ИГРАТЬ
               </Button>
-              <p className="text-[10px] text-center text-neutral-600 uppercase font-black tracking-widest leading-none">
-                Результаты сохраняются при входе через Twitch
-              </p>
             </div>
           </div>
 
