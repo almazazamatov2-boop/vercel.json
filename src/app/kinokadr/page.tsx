@@ -116,18 +116,37 @@ function KinokadrContent() {
 
   const twitchLogin = () => signIn('kinokadr');
 
+  // ANTI-REPEAT LOGIC
+  const getSeenIds = () => {
+    try {
+      return JSON.parse(localStorage.getItem('kinokadr_seen_ids') || '[]');
+    } catch (e) { return []; }
+  };
+  const saveSeenIds = (ids: string[]) => {
+    const current = getSeenIds();
+    const updated = Array.from(new Set([...current, ...ids])).slice(-200); // Last 200 items
+    localStorage.setItem('kinokadr_seen_ids', JSON.stringify(updated));
+  };
+
   const fetchMovies = async (mode: string) => {
     setIsLoading(true);
     try {
+      const seenIds = getSeenIds();
       let query = supabase.from('kinokadr_movies').select('*').eq('is_textless', true);
+      
       if (mode === 'movie') query = query.eq('type', 'movie');
       else if (mode === 'series') query = query.eq('type', 'series');
       
-      const { data } = await query.order('id', { ascending: Math.random() > 0.5 }).limit(50);
+      const { data } = await query.order('id', { ascending: Math.random() > 0.5 }).limit(100);
       
       if (data && data.length > 0) {
-        const shuffled = data.sort(() => Math.random() - 0.5).slice(0, 10);
+        // Filter out seen ids if pool is large enough
+        let pool = data.filter(m => !seenIds.includes(m.id));
+        if (pool.length < 15) pool = data; // Fallback to full pool if too many seen
+        
+        const shuffled = pool.sort(() => Math.random() - 0.5).slice(0, 10);
         setMovies(shuffled);
+        saveSeenIds(shuffled.map(m => m.id));
       } else {
         setMovies([{
           id: 'demo-1',
@@ -260,9 +279,6 @@ function KinokadrContent() {
           </div>
 
           <div className="flex items-center gap-2">
-             <Button variant="ghost" className="text-neutral-400 hover:text-white rounded-lg h-9 px-3 text-xs" onClick={() => setScreen('leaderboard')}>
-               Рейтинг
-             </Button>
              {session?.user ? (
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
                   <img src={(session.user as any).image} className="w-6 h-6 rounded-full" alt="" />
@@ -285,23 +301,28 @@ function KinokadrContent() {
               key="home" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
               className="text-center space-y-12 max-w-xl w-full"
             >
-              <div className="space-y-0 -mt-20">
+              <div className="space-y-0 -mt-10">
                 <h1 className="text-7xl sm:text-9xl font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none uppercase select-none">
                   Угадай <br/> Арт
                 </h1>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 w-full max-w-md mx-auto">
+              <div className="grid grid-cols-1 gap-3 w-full max-w-md mx-auto relative">
+                {/* Ranking Button - More Prominent */}
+                <button 
+                  onClick={() => setScreen('leaderboard')}
+                  className="absolute -top-14 right-0 flex items-center gap-2 bg-yellow-500 text-black px-4 py-2 rounded-2xl font-black text-xs hover:bg-yellow-400 transition-all shadow-lg active:scale-95"
+                >
+                  <Trophy className="w-4 h-4" /> РЕЙТИНГ
+                </button>
+
                 {['combo', 'movie', 'series'].map((m) => (
-                  <button key={m} onClick={() => startNewGame(m)} className="group relative w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 flex items-center gap-4 hover:bg-white/[0.06] transition-all hover:scale-[1.02] active:scale-[0.98]">
-                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform ${m === 'combo' ? 'bg-cyan-500/10 text-cyan-400' : m === 'movie' ? 'bg-orange-500/10 text-orange-400' : 'bg-purple-500/10 text-purple-400'}`}>
-                      {m === 'combo' ? <Inbox className="w-7 h-7" /> : m === 'movie' ? <Film className="w-7 h-7" /> : <Tv className="w-7 h-7" />}
+                  <button key={m} onClick={() => startNewGame(m)} className="group relative w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 flex items-center gap-4 hover:bg-white/[0.06] transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform ${m === 'combo' ? 'bg-cyan-500/10 text-cyan-400' : m === 'movie' ? 'bg-orange-500/10 text-orange-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                      {m === 'combo' ? <Inbox className="w-6 h-6" /> : m === 'movie' ? <Film className="w-6 h-6" /> : <Tv className="w-6 h-6" />}
                     </div>
                     <div className="text-left flex-1">
-                      <h3 className="text-xl font-black tracking-tight uppercase">{m === 'combo' ? 'КОМБО' : m === 'movie' ? 'ФИЛЬМЫ' : 'СЕРИАЛЫ'}</h3>
-                      <p className="text-xs text-neutral-500 font-medium">
-                        {m === 'combo' ? 'Постеры кино и сериалов' : m === 'movie' ? 'Только полнометражное кино' : 'Хиты мировых сериалов'}
-                      </p>
+                      <h3 className="text-2xl font-black tracking-tight uppercase">{m === 'combo' ? 'КОМБО' : m === 'movie' ? 'ФИЛЬМЫ' : 'СЕРИАЛЫ'}</h3>
                     </div>
                     <ChevronRight className="w-5 h-5 text-neutral-500 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                   </button>
@@ -416,12 +437,12 @@ function KinokadrContent() {
                             <p className={`text-[9px] font-black uppercase tracking-widest mb-0.5 ${state.correct ? 'text-emerald-400' : 'text-rose-400'}`}>
                                {state.correct ? 'Верно!' : 'Не угадали'}
                             </p>
-                            <p className="text-lg font-black leading-tight">{movies[currentIndex].title_ru}</p>
+                            <p className="text-xl font-black leading-tight">{movies[currentIndex].title_ru}</p>
                          </div>
                       </div>
                       <div className="text-right ml-4">
                          <p className="text-[9px] text-white/40 uppercase font-black tracking-widest">Баллы</p>
-                         <p className="text-2xl font-black text-cyan-400 leading-none mt-1">+{state.score}</p>
+                         <p className="text-3xl font-black text-cyan-400 leading-none mt-1">+{state.score}</p>
                       </div>
                    </div>
 
@@ -466,37 +487,37 @@ function KinokadrContent() {
           {screen === 'leaderboard' && (
              <motion.div key="leaderboard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md space-y-6">
                 <div className="flex items-center gap-3">
-                  <Medal className="w-8 h-8 text-yellow-500" />
-                  <h2 className="text-3xl font-black uppercase italic tracking-tighter">Лучшие из лучших</h2>
+                  <Medal className="w-10 h-10 text-yellow-500" />
+                  <h2 className="text-4xl font-black uppercase italic tracking-tighter">Лучшие из лучших</h2>
                 </div>
                 
-                <div className="flex gap-1 bg-white/[0.03] p-1 rounded-2xl border border-white/[0.06]">
+                <div className="flex gap-1 bg-white/[0.03] p-1.5 rounded-2xl border border-white/[0.06]">
                    {['combo', 'movie', 'series'].map(m => (
-                      <button key={m} onClick={() => setLbMode(m)} className={`flex-1 py-3 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all ${lbMode === m ? 'bg-white/10 text-white' : 'text-neutral-500 hover:text-neutral-300'}`}>
-                        {m === 'combo' ? 'Комбо' : m === 'movie' ? 'Кино' : 'Сериалы'}
+                      <button key={m} onClick={() => setLbMode(m)} className={`flex-1 py-4 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${lbMode === m ? 'bg-white/10 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-300'}`}>
+                        {m === 'combo' ? 'Комбо' : m === 'movie' ? 'Фильмы' : 'Сериалы'}
                       </button>
                    ))}
                 </div>
 
-                <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-3 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
                    {leaderboard.length > 0 ? leaderboard.map((p, i) => (
-                      <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] transition-all">
-                         <div className="w-6 text-xl font-black italic text-neutral-700">#{i+1}</div>
-                         <img src={p.avatar} className="w-10 h-10 rounded-full border border-white/10" alt="" />
+                      <div key={i} className="flex items-center gap-5 p-5 rounded-3xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] transition-all">
+                         <div className="w-8 text-2xl font-black italic text-neutral-700">#{i+1}</div>
+                         <img src={p.avatar} className="w-14 h-14 rounded-2xl border border-white/10 shadow-lg" alt="" />
                          <div className="flex-1 min-w-0">
-                            <p className="font-bold truncate">{p.username}</p>
-                            <p className="text-[9px] text-neutral-500 uppercase font-black leading-none mt-1">{p.mode}</p>
+                            <p className="text-lg font-black tracking-tight truncate">{p.username}</p>
+                            <p className="text-[10px] text-neutral-500 uppercase font-black leading-none mt-1">{p.mode === 'combo' ? 'Комбо' : p.mode === 'movie' ? 'Фильмы' : 'Сериалы'}</p>
                          </div>
                          <div className="text-right">
-                            <p className="text-2xl font-black italic text-cyan-400 leading-none">{p.score}</p>
+                            <p className="text-3xl font-black italic text-cyan-400 leading-none">{p.score}</p>
                          </div>
                       </div>
                    )) : (
-                      <div className="py-20 text-center text-neutral-500 font-bold uppercase text-xs tracking-widest">Рейтинг пуст</div>
+                      <div className="py-24 text-center text-neutral-500 font-bold uppercase text-xs tracking-widest">Рейтинг пуст</div>
                    )}
                 </div>
 
-                <Button className="w-full h-14 rounded-2xl bg-white/[0.05] border border-white/10" onClick={() => setScreen('home')}>
+                <Button className="w-full h-16 rounded-[1.5rem] bg-white/[0.05] border border-white/10 text-lg font-black" onClick={() => setScreen('home')}>
                    НАЗАД
                 </Button>
              </motion.div>
@@ -504,8 +525,18 @@ function KinokadrContent() {
         </AnimatePresence>
       </main>
 
-      <footer className="relative z-10 border-t border-white/[0.04] py-3 text-center bg-black/50">
-        <p className="text-[9px] font-black text-neutral-500 uppercase tracking-[0.2em]">КИНОКАДР • SEASON 1</p>
+      <footer className="relative z-10 border-t border-white/[0.06] py-5 px-6 bg-black/50 backdrop-blur-md">
+        <div className="max-w-5xl mx-auto flex items-center justify-center">
+          <a 
+            href="https://t.me/paracetamolhaze" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2"
+          >
+            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] group-hover:text-white/40 transition-colors">Powered by</span>
+            <span className="text-xs font-black italic tracking-tighter bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent group-hover:from-cyan-300 group-hover:to-blue-400 transition-all">PARACETAMOLHAZE</span>
+          </a>
+        </div>
       </footer>
     </div>
   );
