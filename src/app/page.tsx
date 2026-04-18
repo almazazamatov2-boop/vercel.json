@@ -43,14 +43,13 @@ const PROJECTS = [
     href: '/67',
   },
   {
-    title: 'СекТрек',
-    desc: 'Угадай трек за секунду',
-    href: '#',
-    disabled: true,
-  },
-  {
     title: 'КиноКадр',
     desc: 'Угадай фильм по кадру',
+    href: '/kinokadr',
+  },
+  {
+    title: 'СекТрек',
+    desc: 'Угадай трек за секунду',
     href: '#',
     disabled: true,
   },
