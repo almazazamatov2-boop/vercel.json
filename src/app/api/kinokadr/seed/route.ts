@@ -45,7 +45,8 @@ export async function GET(req: NextRequest) {
 
       results.push({ 
         title: film.nameRu, 
-        status: error ? 'error' : 'success'
+        status: error ? 'error' : 'success',
+        error: error?.message 
       });
     }
 
