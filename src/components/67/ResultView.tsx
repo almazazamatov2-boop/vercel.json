@@ -15,14 +15,15 @@ export function ResultView() {
 
   const handleShare = () => {
     const text = `Я смог набрать ${pumps}, а сколько сможешь ты?`;
-    const url = window.location.href;
-    const fullMessage = `${text}\nИграй в 67: ${url}`;
+    const baseUrl = window.location.origin + window.location.pathname;
+    const shareUrl = `${baseUrl}?score=${pumps}&user=${encodeURIComponent(session?.user?.name || 'Игрок')}`;
+    const fullMessage = `${text}\nИграй в 67: ${shareUrl}`;
 
     if (navigator.share) {
       navigator.share({
         title: 'Project 67',
         text: text,
-        url: url,
+        url: shareUrl,
       }).catch(() => {});
     } else {
       navigator.clipboard.writeText(fullMessage);

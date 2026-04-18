@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Film, Tv, Lightbulb, SkipForward, Trophy, Home, ChevronRight, 
   Search, X, Check, Sparkles, Clapperboard, Eye, Crown, LogIn, 
-  Zap, Medal, Menu, User, Inbox, RefreshCw, Loader2, LogOut
+  Zap, Medal, Menu, User, Inbox, RefreshCw, Loader2, LogOut, Share2
 } from 'lucide-react';
 import { Button } from '@/components/67/ui/button'; 
 import { AuthProvider, useSession, signIn, signOut } from '@/lib/67/authHook'; 
@@ -470,7 +470,7 @@ function KinokadrContent() {
                           <img src={p.avatar} className="w-14 h-14 rounded-2xl border border-white/10 shadow-lg group-hover:scale-110 transition-transform" alt="" />
                           <div className="flex-1 min-w-0">
                               <p className="text-lg font-black tracking-tight truncate">{p.username}</p>
-                              <p className="text-[10px] text-neutral-500 uppercase font-black leading-none mt-1">{p.mode === 'combo' ? 'Комбо' : p.mode === 'movie' ? 'Фильмы' : 'Сериалы'}</p>
+                              <p className="text-[10px] text-neutral-500 uppercase font-black leading-none mt-1">{p.mode === 'combo' ? 'Комбо' : p.mode === 'movie' ? 'Фильмы' : p.mode === 'series' ? 'Сериалы' : ''}</p>
                           </div>
                           <div className="text-right">
                               <p className={`text-4xl font-black italic leading-none ${i < 3 ? 'text-cyan-400' : 'text-white/60'}`}>{p.score}</p>
@@ -574,7 +574,7 @@ function KinokadrContent() {
                          <span className="text-[8px] uppercase font-black tracking-widest mt-1">СКИП</span>
                       </button>
                       <button onClick={() => handleGuess()} className="col-span-2 h-16 rounded-2xl bg-cyan-500 text-black flex items-center justify-center gap-2 font-black hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20 active:scale-95">
-                         <Sparkles className="w-5 h-5" /> УГАДАТЬ
+                         <circle className="w-5 h-5" /> УГАДАТЬ
                       </button>
                    </div>
                 </div>
@@ -629,17 +629,19 @@ function KinokadrContent() {
                  <Button className="w-full h-16 rounded-[1.5rem] bg-cyan-500 text-black font-black hover:bg-cyan-400 shadow-lg shadow-cyan-500/20" onClick={() => startNewGame(state.mode)}>
                    ИГРАТЬ СНОВА <RefreshCw className="w-5 h-5 ml-2" />
                  </Button>
-                 
+
                  <Button 
                    variant="ghost" 
                    className="w-full h-16 rounded-[1.5rem] bg-white/5 border border-white/10 text-white font-black hover:bg-white/10" 
                    onClick={() => {
-                     const text = `Я смог набрать ${state.totalScore} в игре УГАДАЙ КАДР! А сколько ты сможешь?`;
-                     const url = window.location.href;
+                     const text = `Я смог набрать ${state.totalScore}! А сколько ты сможешь?`;
+                     const baseUrl = window.location.origin + window.location.pathname;
+                     const shareUrl = `${baseUrl}?score=${state.totalScore}&user=${encodeURIComponent(session?.user?.name || 'Игрок')}`;
+                     
                      if (navigator.share) {
-                       navigator.share({ title: 'Угадай Кадр', text, url }).catch(() => {});
+                       navigator.share({ title: 'Угадай Кадр', text, url: shareUrl }).catch(() => {});
                      } else {
-                       navigator.clipboard.writeText(`${text}\n${url}`);
+                       navigator.clipboard.writeText(`${text}\nИграй здесь: ${shareUrl}`);
                        alert('Ссылка скопирована!');
                      }
                    }}
