@@ -26,28 +26,13 @@ export async function GET(req: NextRequest) {
 
     const results = [];
 
-    // 2. Для каждого фильма получаем кадр (STILL)
+    // 2. Формируем данные
     for (const film of listData.films) {
-      const filmId = film.filmId;
-      
-      // Небольшая задержка, чтобы не спамить API слишком быстро
-      await new Promise(r => setTimeout(r, 200));
-
-      const imgRes = await fetch(`${BASE}/v2.2/films/${filmId}/images?type=STILL&page=1`, {
-        headers: { 'X-API-KEY': API_KEY, 'Content-Type': 'application/json' }
-      });
-      const imgData = await imgRes.json();
-
-      let imageUrl = film.posterUrl; // Фолбэк на постер, если кадров нет
-      if (imgData.items && imgData.items.length > 0) {
-        imageUrl = imgData.items[0].imageUrl;
-      }
-
       const movieData = {
-        id: `kp-${filmId}`,
+        id: `kp-${film.filmId}`,
         title: film.nameEn || film.nameRu,
         title_ru: film.nameRu,
-        image_url: imageUrl,
+        image_url: film.posterUrl, // Используем постер
         type: film.type === 'TV_SERIES' ? 'series' : 'movie',
         category: film.genres?.[0]?.genre || 'Кино',
         year: parseInt(film.year) || null
@@ -60,8 +45,7 @@ export async function GET(req: NextRequest) {
 
       results.push({ 
         title: film.nameRu, 
-        status: error ? 'error' : 'success',
-        error: error?.message 
+        status: error ? 'error' : 'success'
       });
     }
 
