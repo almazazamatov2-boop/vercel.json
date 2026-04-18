@@ -11,7 +11,7 @@ const DEFAULT_NICKS = [
   'evelone2004'
 ];
 
-const PROJECTS = [
+const ONLINE_PROJECTS = [
   {
     title: 'РОЗ',
     desc: 'Розыгрыши в чате твича',
@@ -48,18 +48,28 @@ const PROJECTS = [
     href: '/67',
     color: '#ff4500',
   },
+]
+
+const INACTIVE_PROJECTS = [
   {
-    title: 'ФЕЙССВАП',
-    desc: 'Замена лица LIVE',
+    title: 'СекТрек',
+    desc: 'Угадай трек за секунду',
     href: '#',
-    color: '#ff4500',
+    color: '#555',
+    disabled: true,
+  },
+  {
+    title: 'КиноКадр',
+    desc: 'Угадай фильм по кадру',
+    href: '#',
+    color: '#555',
     disabled: true,
   },
   {
     title: 'ПАСТА',
     desc: 'Генерация и поиск паст',
     href: '#',
-    color: '#ff4500',
+    color: '#555',
     disabled: true,
   },
 ]
@@ -147,17 +157,36 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Projects */}
+        {/* Online Projects */}
         <div className="paracetamol-projects-section">
           <div className="paracetamol-projects-title">ОНЛАЙН ПРОЕКТЫ</div>
           <div className="paracetamol-projects-grid">
-            {PROJECTS.map((project) => (
+            {ONLINE_PROJECTS.map((project) => (
               <a
                 key={project.title}
-                href={project.disabled ? undefined : project.href}
-                className={`paracetamol-project-card ${(project as any).disabled ? 'is-disabled' : ''}`}
+                href={project.href}
+                className="paracetamol-project-card"
                 onMouseMove={handleCardMouseMove}
                 onMouseLeave={handleCardMouseLeave}
+              >
+                <div className="paracetamol-project-title">{project.title}</div>
+                {project.desc && <div className="paracetamol-project-desc">{project.desc}</div>}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Inactive Projects */}
+        <div className="paracetamol-projects-section" style={{ marginTop: '3rem' }}>
+          <div className="paracetamol-projects-title" style={{ opacity: 0.5 }}>НЕАКТИВНЫЕ ПРОЕКТЫ</div>
+          <div className="paracetamol-projects-grid">
+            {INACTIVE_PROJECTS.map((project) => (
+              <a
+                key={project.title}
+                className="paracetamol-project-card is-disabled"
+                onMouseMove={handleCardMouseMove}
+                onMouseLeave={handleCardMouseLeave}
+                style={{ opacity: 0.4 }}
               >
                 <div className="paracetamol-project-title">{project.title}</div>
                 {project.desc && <div className="paracetamol-project-desc">{project.desc}</div>}

@@ -46,25 +46,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { score, pumps, maxCombo, avgSpeed, duration } = body;
 
-    // Ensure user exists specifically in the Supabase game_67_users table
-    const { data: dbUser, error: syncError } = await supabase.from('game_67_users').upsert({
-      twitch_id: user.twitch_id,
-      username: user.username,
-      login: user.login,
-      image: user.image
-    }, { onConflict: 'twitch_id' }).select().single();
-
-    if (syncError || !dbUser) {
-      console.error('User sync failed:', syncError);
-      throw new Error('User sync failed');
-    }
-
-    console.log('Saving game record for internally identified user:', dbUser.id);
+    console.log('Saving game record for user:', user.username, 'ID:', user.id);
 
     const { data: record, error } = await supabase
       .from('game_67_records')
       .insert({
-        user_id: dbUser.id, // Using the internal UUID
+        user_id: user.id, // Using the internal UUID
         score: Math.round(score),
         pumps: Math.round(pumps),
         max_combo: Math.round(maxCombo) || 0,
@@ -95,14 +82,23 @@ export async function GET(request: NextRequest) {
     }
 
     const [statsRes, historyRes] = await Promise.all([
-      supabase.from('game_67_records').select('score, max_combo, pumps').eq('user_id', user.twitch_id),
-      supabase.from('game_67_records').select('*').eq('user_id', user.twitch_id).order('created_at', { ascending: false }).limit(20)
+      supabase.from('game_67_records').select('score, max_combo, pumps').eq('user_id', user.id),
+      supabase.from('game_67_records').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20)
     ]);
 
     const records = statsRes.data || [];
     const bestScore = Math.max(0, ...records.map(r => r.score));
     const bestCombo = Math.max(0, ...records.map(r => r.max_combo));
     const totalPumps = records.reduce((acc, r) => acc + r.pumps, 0);
+
+    const history = (historyRes.data || []).map(r => ({
+      id: r.id,
+      score: r.score,
+      pumps: r.pumps,
+      maxCombo: r.max_combo,
+      avgSpeed: r.avg_speed,
+      createdAt: r.created_at
+    }));
 
     return NextResponse.json({
       success: true,
@@ -112,7 +108,7 @@ export async function GET(request: NextRequest) {
         bestCombo,
         totalPumps,
       },
-      history: historyRes.data || []
+      history
     });
   } catch (error) {
     console.error('Game history error:', error);

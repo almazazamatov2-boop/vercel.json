@@ -76,8 +76,6 @@ export function ProfileModal() {
               <div className="grid grid-cols-2 gap-2 p-4">
                 {[
                   { icon: Trophy, label: 'Лучший результат', value: stats.bestScore, color: 'text-yellow-500' },
-                  { icon: Flame, label: 'Макс. комбо', value: stats.bestCombo, color: 'text-orange-500' },
-                  { icon: Zap, label: 'Всего движений', value: stats.totalPumps, color: 'text-red-400' },
                   { icon: Gamepad2, label: 'Игр сыграно', value: stats.totalGames, color: 'text-emerald-400' },
                 ].map((s) => (
                   <div key={s.label} className="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4">
@@ -103,10 +101,9 @@ export function ProfileModal() {
                           <div key={g.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.02]">
                             <div className="w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center"><Target className="w-3.5 h-3.5 text-neutral-500" /></div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-neutral-200">{g.score} очков</p>
-                              <p className="text-[10px] text-neutral-600">{g.pumps} движ. · комбо {g.maxCombo} · {fmt(g.createdAt)}</p>
-                            </div>
-                            <p className="text-xs text-neutral-500">{g.avgSpeed.toFixed(1)}/с</p>
+                               <p className="text-sm font-medium text-neutral-200">{g.score} очков</p>
+                               <p className="text-[10px] text-neutral-600">{fmt(g.createdAt)}</p>
+                             </div>
                           </div>
                         ))
                       )}
