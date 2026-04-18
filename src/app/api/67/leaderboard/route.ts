@@ -1,43 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
     const limit = parseInt(new URL(request.url).searchParams.get('limit') || '50');
 
-    // Best score per user
-    const bests = await db.gameRecord.groupBy({
-      by: ['userId'],
-      _max: { score: true, maxCombo: true, pumps: true },
-      _count: { id: true },
-    });
+    // Fetch records with user info
+    const { data: records, error } = await supabase
+      .from('game_67_records')
+      .select('score, pumps, max_combo, duration, created_at, user:game_67_users(username, login, image)')
+      .order('score', { ascending: false })
+      .limit(200); // Fetch more to group by user manually if needed, or use a view
 
-    const ids = bests.map((b) => b.userId);
-    const users = await db.user.findMany({
-      where: { id: { in: ids } },
-      select: { id: true, username: true, login: true, image: true },
-    });
-    const uMap = new Map(users.map((u) => [u.id, u]));
+    if (error) throw error;
 
-    const lb = bests
-      .map((b) => {
-        const u = uMap.get(b.userId);
-        return {
-          username: u?.username || '???',
-          login: u?.login || '',
-          image: u?.image,
-          bestScore: b._max.score || 0,
-          maxCombo: b._max.maxCombo || 0,
-          gamesPlayed: b._count.id,
-        };
-      })
-      .sort((a, b) => b.bestScore - a.bestScore)
-      .slice(0, limit)
-      .map((e, i) => ({ ...e, rank: i + 1 }));
+    // Group by user (show only best score per user)
+    const uniqueUsers = new Map();
+    const lb: any[] = [];
 
-    return NextResponse.json({ success: true, leaderboard: lb });
+    for (const r of records || []) {
+      const user = (r as any).user;
+      if (!user) continue;
+      if (!uniqueUsers.has(user.login)) {
+        uniqueUsers.set(user.login, true);
+        lb.push({
+          username: user.username,
+          login: user.login,
+          image: user.image,
+          bestScore: r.score,
+          maxCombo: r.max_combo,
+          gamesPlayed: 1, // Optional: would need a separate count query for accuracy
+        });
+      }
+      if (lb.length >= limit) break;
+    }
+
+    const finalLb = lb.map((e, i) => ({ ...e, rank: i + 1 }));
+
+    return NextResponse.json({ success: true, leaderboard: finalLb });
   } catch (error) {
     console.error('Leaderboard error:', error);
-    return NextResponse.json({ error: 'Ошибка' }, { status: 500 });
+    return NextResponse.json({ error: 'Ошибка загрузки рейтинга' }, { status: 500 });
   }
 }

@@ -1,23 +1,28 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const token = request.cookies.get('twitch_token')?.value;
+  if (!token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Необходима авторизация' }, { status: 401 });
-    }
+    const res = await fetch(`${request.nextUrl.origin}/api/auth/me`, {
+      headers: { Cookie: `twitch_token=${token}` }
+    });
+    const data = await res.json();
+    
+    if (!res.ok) return NextResponse.json(data, { status: res.status });
 
     return NextResponse.json({
       success: true,
       user: {
-        id: (session.user as any).id,
-        name: session.user.name,
-        image: session.user.image,
+        id: data.id,
+        name: data.display_name,
+        image: data.profile_image_url,
       },
     });
   } catch (error) {
-    return NextResponse.json({ error: 'Ошибка' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

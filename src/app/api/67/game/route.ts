@@ -1,85 +1,102 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
+
+// Helper to get user via token
+async function getGameUser(request: NextRequest) {
+  const token = request.cookies.get('twitch_token')?.value;
+  if (!token) return null;
+
+  try {
+    const res = await fetch('https://api.twitch.tv/helix/users', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Client-Id': process.env.TWITCH_CLIENT_ID!,
+      },
+    });
+    const data = await res.json();
+    if (!data.data?.[0]) return null;
+
+    const u = data.data[0];
+    // Sync with game_67_users
+    const { data: user, error } = await supabase
+      .from('game_67_users')
+      .upsert({
+        twitch_id: u.id,
+        username: u.display_name,
+        login: u.login,
+        image: u.profile_image_url
+      }, { onConflict: 'twitch_id' })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return user;
+  } catch (e) {
+    return null;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await getGameUser(request);
+    if (!user) {
       return NextResponse.json({ error: 'Необходима авторизация через Twitch' }, { status: 401 });
-    }
-    const userId = (session.user as any).id;
-    if (!userId) {
-      return NextResponse.json({ error: 'Не найден профиль' }, { status: 401 });
     }
 
     const body = await request.json();
     const { score, pumps, maxCombo, avgSpeed, duration } = body;
-    if (typeof score !== 'number' || typeof pumps !== 'number') {
-      return NextResponse.json({ error: 'Некорректные данные' }, { status: 400 });
-    }
 
-    const record = await db.gameRecord.create({
-      data: {
-        userId,
+    const { data: record, error } = await supabase
+      .from('game_67_records')
+      .insert({
+        user_id: user.twitch_id,
         score: Math.round(score),
         pumps: Math.round(pumps),
-        maxCombo: Math.round(maxCombo) || 0,
-        avgSpeed: avgSpeed || 0,
-        duration: duration || 30,
-      },
-    });
+        max_combo: Math.round(maxCombo) || 0,
+        avg_speed: avgSpeed || 0,
+        duration: duration || 30
+      })
+      .select()
+      .single();
 
-    // Count how many users have a better best score
-    const allBests = await db.gameRecord.groupBy({
-      by: ['userId'],
-      _max: { score: true },
-    });
-    const betterCount = allBests.filter((b) => (b._max.score || 0) > record.score).length;
+    if (error) throw error;
 
-    return NextResponse.json({ success: true, rank: betterCount + 1 });
+    return NextResponse.json({ success: true, record });
   } catch (error) {
     console.error('Game save error:', error);
     return NextResponse.json({ error: 'Ошибка сохранения' }, { status: 500 });
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await getGameUser(request);
+    if (!user) {
       return NextResponse.json({ error: 'Необходима авторизация' }, { status: 401 });
     }
-    const userId = (session.user as any).id;
-    if (!userId) {
-      return NextResponse.json({ error: 'Не найден профиль' }, { status: 401 });
-    }
 
-    const [totalGames, bestRow, bestComboRow, sumRow, recent] = await Promise.all([
-      db.gameRecord.count({ where: { userId } }),
-      db.gameRecord.findFirst({ where: { userId }, orderBy: { score: 'desc' } }),
-      db.gameRecord.findFirst({ where: { userId }, orderBy: { maxCombo: 'desc' } }),
-      db.gameRecord.aggregate({ where: { userId }, _sum: { pumps: true } }),
-      db.gameRecord.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take: 20 }),
+    const [statsRes, historyRes] = await Promise.all([
+      supabase.from('game_67_records').select('score, max_combo, pumps').eq('user_id', user.twitch_id),
+      supabase.from('game_67_records').select('*').eq('user_id', user.twitch_id).order('created_at', { ascending: false }).limit(20)
     ]);
+
+    const records = statsRes.data || [];
+    const bestScore = Math.max(0, ...records.map(r => r.score));
+    const bestCombo = Math.max(0, ...records.map(r => r.max_combo));
+    const totalPumps = records.reduce((acc, r) => acc + r.pumps, 0);
 
     return NextResponse.json({
       success: true,
       stats: {
-        totalGames,
-        bestScore: bestRow?.score || 0,
-        bestCombo: bestComboRow?.maxCombo || 0,
-        totalPumps: sumRow._sum.pumps || 0,
+        totalGames: records.length,
+        bestScore,
+        bestCombo,
+        totalPumps,
       },
-      history: recent.map((g) => ({
-        id: g.id, score: g.score, pumps: g.pumps,
-        maxCombo: g.maxCombo, avgSpeed: g.avgSpeed,
-        createdAt: g.createdAt,
-      })),
+      history: historyRes.data || []
     });
   } catch (error) {
     console.error('Game history error:', error);
-    return NextResponse.json({ error: 'Ошибка' }, { status: 500 });
+    return NextResponse.json({ error: 'Ошибка загрузки истории' }, { status: 500 });
   }
 }
