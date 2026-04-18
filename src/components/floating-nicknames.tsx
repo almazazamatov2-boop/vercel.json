@@ -190,7 +190,7 @@ export default function FloatingNicknames({ nicknames }: FloatingNicknamesProps)
         // Floating rotation
         p.rotation += p.rotationSpeed;
 
-        elSpan.style.transform = `translate(${driftX + p.currentRepelX}px, ${driftY + p.currentRepelY}px) rotate(${p.rotation}deg)`;
+        elSpan.style.transform = `translate(${driftX + p.currentRepelX}px, ${driftY + p.currentRepelY}px)`;
       }
 
       animId = requestAnimationFrame(loop);
