@@ -334,30 +334,42 @@ function KinokadrContent() {
             >
               {/* Image Container */}
               <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-white/[0.02] backdrop-blur-xl group">
-                 {/* Blurred Background */}
+                 {/* Blurred Background (always cover) */}
                  <img src={movies[currentIndex].image_url} className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-30 scale-110" alt="" />
                  
                  {/* Main Image */}
-                 <img 
+                 <motion.img 
+                   layout
                    src={movies[currentIndex].image_url} 
-                   className={`relative w-full h-full object-contain transition-all duration-1000 ${BLUR_LEVELS[state.hintsUsed]}`}
+                   className={`relative w-full h-full transition-all duration-700 ease-in-out ${
+                     !state.guessed 
+                       ? `object-cover object-top scale-[1.35] ${BLUR_LEVELS[state.hintsUsed]}` 
+                       : 'object-contain scale-100 blur-0 brightness-100'
+                   }`}
                    alt=""
                  />
                  
-                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                 {/* Anti-Cheat Gradient (only while guessing) */}
+                 {!state.guessed && (
+                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none z-10" />
+                 )}
                  
-                 <div className="absolute top-4 left-4 flex gap-2">
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                 
+                 <div className="absolute top-4 left-4 flex gap-2 z-20">
                     <span className="px-3 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest leading-none flex items-center h-7">
                       {movies[currentIndex].type === 'movie' ? 'Фильм' : 'Сериал'}
                     </span>
                  </div>
 
-                 <div className="absolute top-4 right-4 animate-pulse">
-                    <div className="bg-cyan-500 text-black px-4 py-2 rounded-xl font-black text-xl shadow-lg shadow-cyan-500/30 flex items-center gap-2">
-                       <Zap className="w-5 h-5 fill-current" />
-                       +{SCORE_FOR_HINTS[state.hintsUsed]}
+                 {!state.guessed && (
+                    <div className="absolute top-4 right-4 animate-pulse z-20">
+                       <div className="bg-cyan-500 text-black px-4 py-2 rounded-xl font-black text-xl shadow-lg shadow-cyan-500/30 flex items-center gap-2">
+                          <Zap className="w-5 h-5 fill-current" />
+                          +{SCORE_FOR_HINTS[state.hintsUsed]}
+                       </div>
                     </div>
-                 </div>
+                 )}
               </div>
 
               {!state.guessed ? (
