@@ -64,8 +64,8 @@ function CountdownTimer({ period }: { period: string }) {
   if (period === 'all') return null;
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-black uppercase tracking-tighter text-cyan-400">
-      <Clock className="w-3 h-3" /> Сброс через: {timeLeft}
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-[11px] font-black uppercase tracking-tighter text-cyan-400">
+      <Clock className="w-3.5 h-3.5" /> Сброс через: {timeLeft}
     </div>
   );
 }
@@ -121,22 +121,14 @@ export function Landing() {
         <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-12 items-start py-10">
           
           {/* Left: Hero & Menu */}
-          <div className="lg:col-span-12 xl:col-span-5 space-y-12">
-            <div className="space-y-6">
-              <h1 className="text-[10rem] font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none italic drop-shadow-2xl">
+          <div className="lg:col-span-12 xl:col-span-5 flex flex-col items-center justify-center space-y-8">
+            <div className="text-center">
+              <h1 className="text-[12rem] font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none italic drop-shadow-2xl">
                 67
               </h1>
-              <div className="space-y-2 max-w-sm">
-                <p className="text-2xl font-black italic uppercase tracking-tighter text-cyan-400">Reaction Test</p>
-                <p className="text-neutral-400 font-medium leading-relaxed">
-                  Проверь свою ловкость на максимум. 
-                  Интерактивная игра с использованием камеры: 
-                  управляй процессом движениями рук и устанавливай новые рекорды в реальном времени.
-                </p>
-              </div>
             </div>
 
-            <div className="space-y-4 max-w-sm">
+            <div className="w-full max-w-sm">
               <Button
                 className="w-full h-24 text-4xl font-black tracking-[0.2em] rounded-[2.5rem] bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 hover:from-cyan-400 hover:via-blue-500 hover:to-purple-500 text-white shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]"
                 onClick={play}
