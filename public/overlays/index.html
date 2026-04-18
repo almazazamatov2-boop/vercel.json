@@ -231,18 +231,19 @@
     .real-overlay-mock.exit { transform: translate(-50%, 280px) scale(0.24); opacity: 0; }
 
     .mock-left { display: flex; align-items: center; gap: 20px; flex: 1; }
-    .mock-nick { font-size: 50px; font-weight: 900; color: #fff; text-transform: uppercase; }
-    .mock-avatar { width: 110px; height: 110px; border-radius: 12px; background: #222; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
+    .mock-nick { font-size: 50px; font-weight: 950; color: #fff; text-transform: uppercase; text-shadow: 0 6px 20px rgba(0,0,0,0.6); }
+    .mock-avatar { width: 110px; height: 110px; border-radius: 12px; background: #222; box-shadow: 0 8px 16px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); }
 
-    .mock-center { display: flex; align-items: center; gap: 30px; justify-content: center; flex: 2; }
+    .mock-center { display: flex; align-items: center; gap: 40px; justify-content: center; flex: 2; }
     .mock-col { text-align: center; }
-    .mock-col-title { font-size: 16px; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; margin-bottom: 6px; }
-    .mock-col-val { font-size: 100px; font-weight: 900; color: #fff; line-height: 1; text-shadow: 0 8px 24px rgba(0,0,0,.7); font-family: 'Martian Mono', monospace; }
-    .mock-vs { font-size: 54px; font-weight: 900; color: #fff; opacity: 1; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    .mock-label-wrap { background: rgba(0,0,0,0.45); border-radius: 8px; padding: 6px 16px; margin-bottom: 10px; display: inline-block; }
+    .mock-col-title { font-size: 18px; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; line-height: 1; }
+    .mock-col-val { font-size: 110px; font-weight: 950; color: #fff; line-height: 1; text-shadow: 0 8px 30px rgba(0,0,0,0.8); font-family: 'Martian Mono', monospace; }
+    .mock-vs { font-size: 54px; font-weight: 950; color: #fff; opacity: 0.8; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
 
     .mock-right { display: flex; align-items: center; gap: 20px; justify-content: flex-end; flex: 1.5; }
-    .mock-reward-title { font-size: 30px; font-weight: 900; color: #fff; text-align: center; text-transform: uppercase; line-height: 1.1; max-width: 300px; }
-    .mock-reward-img { width: 130px; height: 130px; display: flex; align-items: center; justify-content: center; font-size: 80px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4)); }
+    .mock-reward-title { font-size: 32px; font-weight: 950; color: #fff; text-align: center; text-transform: uppercase; line-height: 1.1; max-width: 300px; text-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+    .mock-reward-img { width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; font-size: 90px; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6)); }
 
     /* WIN BADGE */
     .mock-badge {
@@ -347,12 +348,12 @@
           
           <div class="mock-center">
             <div class="mock-col">
-              <div class="mock-col-title">ЧИСЛО ЗРИТЕЛЯ</div>
+              <div class="mock-label-wrap"><div class="mock-col-title">ЧИСЛО ЗРИТЕЛЯ</div></div>
               <div class="mock-col-val" id="mock-choice">50</div>
             </div>
             <div class="mock-vs">VS</div>
             <div class="mock-col">
-              <div class="mock-col-title">ЧИСЛО РАНДОМА</div>
+              <div class="mock-label-wrap"><div class="mock-col-title">ЧИСЛО РАНДОМА</div></div>
               <div class="mock-col-val" id="mock-random">00</div>
             </div>
           </div>
