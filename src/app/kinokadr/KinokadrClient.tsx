@@ -655,3 +655,11 @@ function KinokadrContent() {
     </div>
   );
 }
+
+export default function KinokadrPage() {
+  return (
+    <AuthProvider>
+      <KinokadrContent />
+    </AuthProvider>
+  );
+}
