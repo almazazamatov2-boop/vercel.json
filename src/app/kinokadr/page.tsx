@@ -256,36 +256,43 @@ function KinokadrContent() {
 
       {/* Header */}
       <header className="relative z-10 w-full border-b border-white/[0.06] backdrop-blur-md bg-black/40">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 group cursor-pointer" onClick={() => setScreen('home')}>
-              <span className="text-2xl font-black italic tracking-tighter bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent pr-2 leading-none pt-1">КИНОКАДР</span>
-            </div>
-            
             {screen === 'game' && (
-               <div className="flex items-center gap-4 h-9 px-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+               <div className="flex items-center gap-4 h-10 px-4 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                   <div className="flex items-center gap-2">
-                     <span className="text-[9px] font-black uppercase text-white/30 tracking-widest leading-none">Раунд</span>
-                     <span className="text-xs font-black text-cyan-400">{state.round} / 10</span>
+                     <span className="text-[10px] font-black uppercase text-white/30 tracking-widest leading-none">Раунд</span>
+                     <span className="text-sm font-black text-cyan-400">{state.round} / 10</span>
                   </div>
-                  <div className="w-px h-3 bg-white/10" />
+                  <div className="w-px h-4 bg-white/10" />
                   <div className="flex items-center gap-2">
-                     <span className="text-[9px] font-black uppercase text-white/30 tracking-widest leading-none">Счет</span>
-                     <span className="text-xs font-black text-white">{state.totalScore}</span>
+                     <span className="text-[10px] font-black uppercase text-white/30 tracking-widest leading-none">Счет</span>
+                     <span className="text-sm font-black text-white">{state.totalScore}</span>
                   </div>
                </div>
+            )}
+            {screen !== 'game' && screen !== 'home' && (
+              <button 
+                onClick={() => setScreen('home')}
+                className="flex items-center gap-2 text-white/40 hover:text-white transition-colors uppercase text-[10px] font-black tracking-widest"
+              >
+                <Home className="w-4 h-4" /> Домой
+              </button>
             )}
           </div>
 
           <div className="flex items-center gap-2">
              {session?.user ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
-                  <img src={(session.user as any).image} className="w-6 h-6 rounded-full" alt="" />
-                  <span className="text-[10px] font-bold truncate max-w-[60px]">{session.user.name}</span>
-                </div>
+                <button 
+                  onClick={() => confirm('Выйти из аккаунта?') && window.location.reload()}
+                  className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
+                >
+                  <img src={(session.user as any).image} className="w-8 h-8 rounded-full border border-white/10 group-hover:scale-110 transition-transform" alt="" />
+                  <span className="text-xs font-bold truncate max-w-[120px]">{session.user.name}</span>
+                </button>
              ) : (
-                <Button className="bg-[#9146FF] hover:bg-[#7c3aed] text-white rounded-lg h-9 px-4 text-xs font-bold" onClick={twitchLogin}>
-                  Войти
+                <Button className="bg-[#9146FF] hover:bg-[#7c3aed] text-white rounded-xl h-11 px-6 text-sm font-bold" onClick={twitchLogin}>
+                  Войти через Twitch
                 </Button>
              )}
           </div>
