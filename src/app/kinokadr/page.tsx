@@ -124,7 +124,7 @@ function KinokadrContent() {
   };
   const saveSeenIds = (ids: string[]) => {
     const current = getSeenIds();
-    const updated = Array.from(new Set([...current, ...ids])).slice(-200); // Last 200 items
+    const updated = Array.from(new Set([...current, ...ids])).slice(-200); 
     localStorage.setItem('kinokadr_seen_ids', JSON.stringify(updated));
   };
 
@@ -140,9 +140,8 @@ function KinokadrContent() {
       const { data } = await query.order('id', { ascending: Math.random() > 0.5 }).limit(100);
       
       if (data && data.length > 0) {
-        // Filter out seen ids if pool is large enough
         let pool = data.filter(m => !seenIds.includes(m.id));
-        if (pool.length < 15) pool = data; // Fallback to full pool if too many seen
+        if (pool.length < 15) pool = data; 
         
         const shuffled = pool.sort(() => Math.random() - 0.5).slice(0, 10);
         setMovies(shuffled);
@@ -302,31 +301,41 @@ function KinokadrContent() {
               className="text-center space-y-12 max-w-xl w-full"
             >
               <div className="space-y-0 -mt-10">
-                <h1 className="text-7xl sm:text-9xl font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none uppercase select-none">
-                  Угадай <br/> Арт
+                <h1 className="text-7xl sm:text-9xl font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none uppercase select-none italic">
+                  Угадай <br/> Кадр
                 </h1>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 w-full max-w-md mx-auto relative">
-                {/* Ranking Button - More Prominent */}
-                <button 
-                  onClick={() => setScreen('leaderboard')}
-                  className="absolute -top-14 right-0 flex items-center gap-2 bg-yellow-500 text-black px-4 py-2 rounded-2xl font-black text-xs hover:bg-yellow-400 transition-all shadow-lg active:scale-95"
-                >
-                  <Trophy className="w-4 h-4" /> РЕЙТИНГ
-                </button>
-
+              <div className="grid grid-cols-1 gap-4 w-full max-w-md mx-auto relative pt-4">
                 {['combo', 'movie', 'series'].map((m) => (
-                  <button key={m} onClick={() => startNewGame(m)} className="group relative w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 flex items-center gap-4 hover:bg-white/[0.06] transition-all hover:scale-[1.02] active:scale-[0.98]">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform ${m === 'combo' ? 'bg-cyan-500/10 text-cyan-400' : m === 'movie' ? 'bg-orange-500/10 text-orange-400' : 'bg-purple-500/10 text-purple-400'}`}>
-                      {m === 'combo' ? <Inbox className="w-6 h-6" /> : m === 'movie' ? <Film className="w-6 h-6" /> : <Tv className="w-6 h-6" />}
+                  <button 
+                    key={m} onClick={() => startNewGame(m)} 
+                    className={`group relative w-full border border-white/10 rounded-2xl p-6 flex items-center gap-5 transition-all hover:scale-[1.03] active:scale-[0.98] shadow-2xl ${
+                      m === 'combo' ? 'bg-gradient-to-br from-cyan-600 to-blue-800' : 
+                      m === 'movie' ? 'bg-gradient-to-br from-orange-500 to-red-700' : 
+                      'bg-gradient-to-br from-purple-600 to-indigo-900'
+                    }`}
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
+                      {m === 'combo' ? <Inbox className="w-8 h-8 text-white" /> : m === 'movie' ? <Film className="w-8 h-8 text-white" /> : <Tv className="w-8 h-8 text-white" />}
                     </div>
                     <div className="text-left flex-1">
-                      <h3 className="text-2xl font-black tracking-tight uppercase">{m === 'combo' ? 'КОМБО' : m === 'movie' ? 'ФИЛЬМЫ' : 'СЕРИАЛЫ'}</h3>
+                      <h3 className="text-3xl font-black tracking-tighter uppercase text-white drop-shadow-md">
+                        {m === 'combo' ? 'КОМБО' : m === 'movie' ? 'ФИЛЬМЫ' : 'СЕРИАЛЫ'}
+                      </h3>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-neutral-500 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="w-6 h-6 text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all" />
                   </button>
                 ))}
+
+                {/* Ranking Button - Styled as a primary option */}
+                <button 
+                  onClick={() => setScreen('leaderboard')}
+                  className="w-full bg-white/[0.05] border border-white/10 rounded-2xl p-4 flex items-center justify-center gap-3 hover:bg-white/[0.1] transition-all group mt-2"
+                >
+                  <Trophy className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm font-black uppercase tracking-widest text-neutral-300 group-hover:text-white">Посмотреть рейтинг</span>
+                </button>
               </div>
             </motion.div>
           )}
@@ -337,7 +346,6 @@ function KinokadrContent() {
               className="w-full max-w-sm flex flex-col gap-5"
             >
               <div className="relative aspect-[2/3] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl bg-white/[0.02] backdrop-blur-xl group">
-                 {/* Loading Protection */}
                  {isImageLoading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-md z-30">
                        <Loader2 className="w-10 h-10 text-cyan-400 animate-spin" />
@@ -362,8 +370,6 @@ function KinokadrContent() {
                     <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none z-10" />
                  )}
                  
-                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-                 
                  <div className="absolute top-5 left-5 z-20">
                     <span className="px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest flex items-center h-7 shadow-lg">
                       {movies[currentIndex].type === 'movie' ? 'Фильм' : 'Сериал'}
@@ -372,7 +378,7 @@ function KinokadrContent() {
 
                  {!state.guessed && (
                     <div className="absolute top-5 right-5 animate-pulse z-20 cursor-default">
-                       <div className="bg-cyan-500 text-black px-4 py-2.5 rounded-2xl font-black text-2xl shadow-lg shadow-cyan-500/30 flex items-center gap-2">
+                       <div className="bg-cyan-500 text-black px-4 py-2.5 rounded-2xl font-black text-2xl shadow-lg shadow-cyan-500/30">
                           +{SCORE_FOR_HINTS[state.hintsUsed]}
                        </div>
                     </div>
