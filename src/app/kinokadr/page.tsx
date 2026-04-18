@@ -44,7 +44,7 @@ function AnimatedBg() {
   );
 }
 
-const BLUR_LEVELS = ['blur-2xl brightness-[0.3]', 'blur-xl brightness-[0.45]', 'blur-md brightness-[0.6]', 'blur-0 brightness-100'];
+const BLUR_LEVELS = ['blur-2xl brightness-[0.8]', 'blur-xl brightness-[0.9]', 'blur-sm brightness-100', 'blur-0 brightness-100'];
 const SCORE_FOR_HINTS = [5, 3, 2, 1];
 
 function KinokadrContent() {
@@ -214,7 +214,9 @@ function KinokadrContent() {
         score: points,
         mode: mode,
       });
-    } catch (e) {}
+    } catch (e) {
+      console.error("Score save error:", e);
+    }
   };
 
   const useHint = () => {
@@ -350,7 +352,6 @@ function KinokadrContent() {
                  {!state.guessed && (
                     <div className="absolute top-5 right-5 animate-pulse z-20 cursor-default">
                        <div className="bg-cyan-500 text-black px-4 py-2.5 rounded-2xl font-black text-2xl shadow-lg shadow-cyan-500/30 flex items-center gap-2">
-                          <Zap className="w-5 h-5 fill-current" />
                           +{SCORE_FOR_HINTS[state.hintsUsed]}
                        </div>
                     </div>
