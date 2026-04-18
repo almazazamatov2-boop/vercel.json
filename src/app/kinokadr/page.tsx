@@ -8,7 +8,7 @@ import {
   Zap, Medal, Menu, User, Inbox
 } from 'lucide-react';
 import { Button } from '@/components/67/ui/button'; 
-import { useSession, signIn } from '@/lib/67/authHook'; 
+import { AuthProvider, useSession, signIn } from '@/lib/67/authHook'; 
 import { supabase } from '@/lib/supabase';
 
 // ============ TYPES ============
@@ -48,7 +48,7 @@ function AnimatedBg() {
 const BLUR_LEVELS = ['blur-2xl brightness-[0.3]', 'blur-lg brightness-[0.5]', 'blur-sm brightness-[0.75]', 'blur-0 brightness-100'];
 const SCORE_FOR_HINTS = [5, 3, 2, 1];
 
-export default function KinokadrPage() {
+function KinokadrContent() {
   const { data: session } = useSession();
   const [screen, setScreen] = useState<Screen>('home');
   const [movies, setMovies] = useState<KinokadrMovie[]>([]);
@@ -68,14 +68,11 @@ export default function KinokadrPage() {
   }, [screen, lbMode]);
 
   const fetchLeaderboard = async (mode: string) => {
-    // Real Supabase query would go here:
-    // const { data } = await supabase.from('kinokadr_scores').select('*, user:user_id(*)').eq('mode', mode).order('score', { ascending: false }).limit(20);
     setLeaderboard([]); // Placeholder
   };
 
   const twitchLogin = () => signIn('kinokadr');
 
-  // Demo data fallback
   const DEMO_MOVIES: KinokadrMovie[] = [
     {
       id: 'demo-1',
@@ -361,5 +358,13 @@ export default function KinokadrPage() {
         <p className="text-[9px] text-neutral-600 tracking-tight">Powered by <a href="https://t.me/paracetamolhaze" className="text-orange-500 font-bold hover:text-orange-400 transition-colors">PARACETAMOLHAZE</a></p>
       </footer>
     </div>
+  );
+}
+
+export default function KinokadrPage() {
+  return (
+    <AuthProvider>
+      <KinokadrContent />
+    </AuthProvider>
   );
 }
