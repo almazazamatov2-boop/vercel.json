@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Film, Tv, Lightbulb, SkipForward, Trophy, Home, ChevronRight, 
   Search, X, Check, Sparkles, Clapperboard, Eye, Crown, LogIn, 
-  Zap, Medal, Menu, User, Inbox, RefreshCw, Loader2
+  Zap, Medal, Menu, User, Inbox, RefreshCw, Loader2, LogOut
 } from 'lucide-react';
 import { Button } from '@/components/67/ui/button'; 
-import { AuthProvider, useSession, signIn } from '@/lib/67/authHook'; 
+import { AuthProvider, useSession, signIn, signOut } from '@/lib/67/authHook'; 
 import { supabase } from '@/lib/supabase';
 
 // ============ TYPES ============
@@ -47,6 +47,73 @@ function AnimatedBg() {
 const BLUR_LEVELS = ['blur-2xl brightness-[0.8]', 'blur-xl brightness-[0.9]', 'blur-sm brightness-100', 'blur-0 brightness-100'];
 const SCORE_FOR_HINTS = [5, 3, 2, 1];
 
+function ProfileModal({ isOpen, onClose, user, stats }: { isOpen: boolean, onClose: () => void, user: any, stats: any }) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+        className="relative w-full max-w-md bg-[#0c0c0e] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl p-8"
+      >
+        <button onClick={onClose} className="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors">
+          <X className="w-6 h-6" />
+        </button>
+
+        <div className="flex flex-col items-center text-center space-y-4">
+          <div className="relative">
+            <img src={user.image} className="w-24 h-24 rounded-[2rem] border-2 border-white/10 shadow-2xl shadow-cyan-500/20" alt="" />
+            <div className="absolute -bottom-2 -right-2 bg-cyan-500 text-black p-2 rounded-xl shadow-lg">
+              <Crown className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-2xl font-black">{user.name}</h3>
+            <p className="text-[10px] text-neutral-500 uppercase font-black tracking-widest">Личный кабинет</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 mt-10">
+           <div className="flex items-center justify-between p-5 rounded-3xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-black text-xs">
+                    C
+                 </div>
+                 <span className="text-sm font-bold text-neutral-400">КОМБО</span>
+              </div>
+              <span className="text-xl font-black text-white">{stats.combo || 0}</span>
+           </div>
+           <div className="flex items-center justify-between p-5 rounded-3xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400 font-black text-xs">
+                    M
+                 </div>
+                 <span className="text-sm font-bold text-neutral-400">ФИЛЬМЫ</span>
+              </div>
+              <span className="text-xl font-black text-white">{stats.movie || 0}</span>
+           </div>
+           <div className="flex items-center justify-between p-5 rounded-3xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 font-black text-xs">
+                    S
+                 </div>
+                 <span className="text-sm font-bold text-neutral-400">СЕРИАЛЫ</span>
+              </div>
+              <span className="text-xl font-black text-white">{stats.series || 0}</span>
+           </div>
+        </div>
+
+        <button 
+          onClick={() => window.location.reload()}
+          className="w-full mt-8 p-5 rounded-3xl bg-rose-500/10 border border-rose-500/20 text-rose-500 font-black text-sm hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2"
+        >
+          <LogOut className="w-4 h-4" /> ВЫЙТИ ИЗ АККАУНТА
+        </button>
+      </motion.div>
+    </div>
+  );
+}
+
 function KinokadrContent() {
   const { data: session } = useSession();
   const [screen, setScreen] = useState<Screen>('home');
@@ -69,6 +136,8 @@ function KinokadrContent() {
   const [lbMode, setLbMode] = useState('combo');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [userStats, setUserStats] = useState({ combo: 0, movie: 0, series: 0 });
   const searchTimeout = useRef<any>(null);
 
   // Auto-complete fetch
@@ -97,10 +166,8 @@ function KinokadrContent() {
 
   // Load leaderboard
   useEffect(() => {
-    if (screen === 'leaderboard') {
-      fetchLeaderboard(lbMode);
-    }
-  }, [screen, lbMode]);
+    fetchLeaderboard(lbMode);
+  }, [lbMode]);
 
   const fetchLeaderboard = async (mode: string) => {
     try {
@@ -113,6 +180,28 @@ function KinokadrContent() {
       setLeaderboard(data || []);
     } catch (e) {}
   };
+
+  const fetchUserStats = async () => {
+    if (!session?.user) return;
+    try {
+      const { data } = await supabase
+        .from('kinokadr_scores')
+        .select('*')
+        .eq('user_id', session.user.id || session.user.name);
+      
+      const stats = { combo: 0, movie: 0, series: 0 };
+      data?.forEach(s => {
+        if (s.mode === 'combo' && s.score > stats.combo) stats.combo = s.score;
+        if (s.mode === 'movie' && s.score > stats.movie) stats.movie = s.score;
+        if (s.mode === 'series' && s.score > stats.series) stats.series = s.score;
+      });
+      setUserStats(stats);
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    if (isProfileOpen) fetchUserStats();
+  }, [isProfileOpen]);
 
   const twitchLogin = () => signIn('kinokadr');
 
@@ -232,6 +321,7 @@ function KinokadrContent() {
         score: points,
         mode: mode,
       });
+      fetchLeaderboard(mode);
     } catch (e) {
       console.error("Score save error:", e);
     }
@@ -251,12 +341,18 @@ function KinokadrContent() {
   };
 
   return (
-    <div className="h-screen flex flex-col relative overflow-hidden bg-black text-white font-sans selection:bg-cyan-500/30">
+    <div className="h-screen flex flex-col relative overflow-hidden bg-[#050505] text-white font-sans selection:bg-cyan-500/30">
       <AnimatedBg />
+      
+      <AnimatePresence>
+        {isProfileOpen && session?.user && (
+          <ProfileModal user={session.user} stats={userStats} isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
+        )}
+      </AnimatePresence>
 
       {/* Header */}
-      <header className="relative z-10 w-full border-b border-white/[0.06] backdrop-blur-md bg-black/40">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="relative z-50 w-full border-b border-white/[0.06] backdrop-blur-md bg-black/40">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
             {screen === 'game' && (
                <div className="flex items-center gap-4 h-10 px-4 rounded-xl bg-white/[0.04] border border-white/[0.08]">
@@ -284,14 +380,14 @@ function KinokadrContent() {
           <div className="flex items-center gap-2">
              {session?.user ? (
                 <button 
-                  onClick={() => confirm('Выйти из аккаунта?') && window.location.reload()}
+                  onClick={() => setIsProfileOpen(true)}
                   className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
                 >
-                  <img src={(session.user as any).image} className="w-8 h-8 rounded-full border border-white/10 group-hover:scale-110 transition-transform" alt="" />
-                  <span className="text-xs font-bold truncate max-w-[120px]">{session.user.name}</span>
+                  <img src={(session.user as any).image} className="w-8 h-8 rounded-full border border-white/10 group-hover:scale-110 transition-transform shadow-xl" alt="" />
+                  <span className="text-xs font-bold">{session.user.name}</span>
                 </button>
              ) : (
-                <Button className="bg-[#9146FF] hover:bg-[#7c3aed] text-white rounded-xl h-11 px-6 text-sm font-bold" onClick={twitchLogin}>
+                <Button className="bg-[#9146FF] hover:bg-[#7c3aed] text-white rounded-xl h-11 px-6 text-sm font-bold shadow-lg shadow-purple-500/20" onClick={twitchLogin}>
                   Войти через Twitch
                 </Button>
              )}
@@ -300,49 +396,83 @@ function KinokadrContent() {
       </header>
 
       {/* Content */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-4">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto custom-scrollbar">
         <AnimatePresence mode="wait">
           {screen === 'home' && (
             <motion.div 
               key="home" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-              className="text-center space-y-12 max-w-xl w-full"
+              className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-12 items-start pt-10"
             >
-              <div className="space-y-0 -mt-10">
-                <h1 className="text-7xl sm:text-9xl font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none uppercase select-none italic">
-                  Угадай <br/> Кадр
-                </h1>
+              {/* Left Column: Menu */}
+              <div className="lg:col-span-5 space-y-12">
+                <div className="space-y-2">
+                  <h1 className="text-8xl font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none uppercase italic drop-shadow-2xl">
+                    Угадай <br/> Кадр
+                  </h1>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {['combo', 'movie', 'series'].map((m) => (
+                    <button 
+                      key={m} onClick={() => startNewGame(m)} 
+                      className={`group relative w-full border border-white/10 rounded-[2rem] p-8 flex items-center gap-6 transition-all hover:scale-[1.03] active:scale-[0.98] shadow-2xl ${
+                        m === 'combo' ? 'bg-gradient-to-br from-cyan-600 to-blue-800 shadow-cyan-500/10' : 
+                        m === 'movie' ? 'bg-gradient-to-br from-orange-500 to-red-700 shadow-orange-500/10' : 
+                        'bg-gradient-to-br from-purple-600 to-indigo-900 shadow-purple-500/10'
+                      }`}
+                    >
+                      <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
+                        {m === 'combo' ? <Inbox className="w-9 h-9 text-white" /> : m === 'movie' ? <Film className="w-9 h-9 text-white" /> : <Tv className="w-9 h-9 text-white" />}
+                      </div>
+                      <div className="text-left flex-1">
+                        <h3 className="text-4xl font-black tracking-tighter uppercase text-white drop-shadow-md italic">
+                          {m === 'combo' ? 'КОМБО' : m === 'movie' ? 'ФИЛЬМЫ' : 'СЕРИАЛЫ'}
+                        </h3>
+                      </div>
+                      <ChevronRight className="w-8 h-8 text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 w-full max-w-md mx-auto relative pt-4">
-                {['combo', 'movie', 'series'].map((m) => (
-                  <button 
-                    key={m} onClick={() => startNewGame(m)} 
-                    className={`group relative w-full border border-white/10 rounded-2xl p-6 flex items-center gap-5 transition-all hover:scale-[1.03] active:scale-[0.98] shadow-2xl ${
-                      m === 'combo' ? 'bg-gradient-to-br from-cyan-600 to-blue-800' : 
-                      m === 'movie' ? 'bg-gradient-to-br from-orange-500 to-red-700' : 
-                      'bg-gradient-to-br from-purple-600 to-indigo-900'
-                    }`}
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
-                      {m === 'combo' ? <Inbox className="w-8 h-8 text-white" /> : m === 'movie' ? <Film className="w-8 h-8 text-white" /> : <Tv className="w-8 h-8 text-white" />}
+              {/* Right Column: Embedded Leaderboard */}
+              <div className="lg:col-span-7 bg-[#0c0c0e]/50 backdrop-blur-xl border border-white/[0.06] rounded-[3rem] p-8 flex flex-col h-[600px] shadow-2xl">
+                 <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-yellow-500 shadow-inner">
+                          <Trophy className="w-6 h-6" />
+                       </div>
+                       <h2 className="text-3xl font-black uppercase italic tracking-tighter">Рейтинг</h2>
                     </div>
-                    <div className="text-left flex-1">
-                      <h3 className="text-3xl font-black tracking-tighter uppercase text-white drop-shadow-md">
-                        {m === 'combo' ? 'КОМБО' : m === 'movie' ? 'ФИЛЬМЫ' : 'СЕРИАЛЫ'}
-                      </h3>
-                    </div>
-                    <ChevronRight className="w-6 h-6 text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                  </button>
-                ))}
 
-                {/* Ranking Button - Styled as a primary option */}
-                <button 
-                  onClick={() => setScreen('leaderboard')}
-                  className="w-full bg-white/[0.05] border border-white/10 rounded-2xl p-4 flex items-center justify-center gap-3 hover:bg-white/[0.1] transition-all group mt-2"
-                >
-                  <Trophy className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform" />
-                  <span className="text-sm font-black uppercase tracking-widest text-neutral-300 group-hover:text-white">Посмотреть рейтинг</span>
-                </button>
+                    <div className="flex gap-1 bg-white/[0.03] p-1 rounded-2xl border border-white/[0.06]">
+                      {['combo', 'movie', 'series'].map(m => (
+                          <button key={m} onClick={() => setLbMode(m)} className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${lbMode === m ? 'bg-white/10 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-300'}`}>
+                            {m === 'combo' ? 'Ко' : m === 'movie' ? 'Фил' : 'Сер'}
+                          </button>
+                      ))}
+                    </div>
+                 </div>
+
+                 <div className="flex-1 space-y-3 overflow-y-auto pr-3 custom-scrollbar">
+                    {leaderboard.length > 0 ? leaderboard.map((p, i) => (
+                        <div key={i} className="flex items-center gap-5 p-5 rounded-3xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] transition-all group">
+                          <div className={`w-10 text-2xl font-black italic ${i < 3 ? 'text-cyan-400' : 'text-neutral-700'}`}>#{i+1}</div>
+                          <img src={p.avatar} className="w-14 h-14 rounded-2xl border border-white/10 shadow-lg group-hover:scale-110 transition-transform" alt="" />
+                          <div className="flex-1 min-w-0">
+                              <p className="text-lg font-black tracking-tight truncate">{p.username}</p>
+                              <p className="text-[10px] text-neutral-500 uppercase font-black leading-none mt-1">{p.mode === 'combo' ? 'Комбо' : p.mode === 'movie' ? 'Фильмы' : 'Сериалы'}</p>
+                          </div>
+                          <div className="text-right">
+                              <p className={`text-4xl font-black italic leading-none ${i < 3 ? 'text-cyan-400' : 'text-white/60'}`}>{p.score}</p>
+                          </div>
+                        </div>
+                    )) : (
+                        <div className="flex flex-col items-center justify-center h-full opacity-20 uppercase font-black tracking-widest text-sm italic">
+                           Пусто...
+                        </div>
+                    )}
+                 </div>
               </div>
             </motion.div>
           )}
@@ -495,45 +625,6 @@ function KinokadrContent() {
                  </Button>
               </div>
             </motion.div>
-          )}
-
-          {screen === 'leaderboard' && (
-             <motion.div key="leaderboard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md space-y-6">
-                <div className="flex items-center gap-3">
-                  <Medal className="w-10 h-10 text-yellow-500" />
-                  <h2 className="text-4xl font-black uppercase italic tracking-tighter">Лучшие из лучших</h2>
-                </div>
-                
-                <div className="flex gap-1 bg-white/[0.03] p-1.5 rounded-2xl border border-white/[0.06]">
-                   {['combo', 'movie', 'series'].map(m => (
-                      <button key={m} onClick={() => setLbMode(m)} className={`flex-1 py-4 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${lbMode === m ? 'bg-white/10 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-300'}`}>
-                        {m === 'combo' ? 'Комбо' : m === 'movie' ? 'Фильмы' : 'Сериалы'}
-                      </button>
-                   ))}
-                </div>
-
-                <div className="space-y-3 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
-                   {leaderboard.length > 0 ? leaderboard.map((p, i) => (
-                      <div key={i} className="flex items-center gap-5 p-5 rounded-3xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] transition-all">
-                         <div className="w-8 text-2xl font-black italic text-neutral-700">#{i+1}</div>
-                         <img src={p.avatar} className="w-14 h-14 rounded-2xl border border-white/10 shadow-lg" alt="" />
-                         <div className="flex-1 min-w-0">
-                            <p className="text-lg font-black tracking-tight truncate">{p.username}</p>
-                            <p className="text-[10px] text-neutral-500 uppercase font-black leading-none mt-1">{p.mode === 'combo' ? 'Комбо' : p.mode === 'movie' ? 'Фильмы' : 'Сериалы'}</p>
-                         </div>
-                         <div className="text-right">
-                            <p className="text-3xl font-black italic text-cyan-400 leading-none">{p.score}</p>
-                         </div>
-                      </div>
-                   )) : (
-                      <div className="py-24 text-center text-neutral-500 font-bold uppercase text-xs tracking-widest">Рейтинг пуст</div>
-                   )}
-                </div>
-
-                <Button className="w-full h-16 rounded-[1.5rem] bg-white/[0.05] border border-white/10 text-lg font-black" onClick={() => setScreen('home')}>
-                   НАЗАД
-                </Button>
-             </motion.div>
           )}
         </AnimatePresence>
       </main>
