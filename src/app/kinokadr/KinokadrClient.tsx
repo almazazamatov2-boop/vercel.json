@@ -77,27 +77,27 @@ function ProfileModal({ isOpen, onClose, user, stats }: { isOpen: boolean, onClo
            <div className="flex items-center justify-between p-5 rounded-3xl bg-white/[0.03] border border-white/[0.06]">
               <div className="flex items-center gap-3">
                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-black text-xs">
-                    C
+                    К
                  </div>
-                 <span className="text-sm font-bold text-neutral-400">КОМБО</span>
+                 <span className="text-sm font-bold text-neutral-400 uppercase tracking-widest font-black">КОМБО</span>
               </div>
               <span className="text-xl font-black text-white">{stats.combo || 0}</span>
            </div>
            <div className="flex items-center justify-between p-5 rounded-3xl bg-white/[0.03] border border-white/[0.06]">
               <div className="flex items-center gap-3">
                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400 font-black text-xs">
-                    M
+                    Ф
                  </div>
-                 <span className="text-sm font-bold text-neutral-400">ФИЛЬМЫ</span>
+                 <span className="text-sm font-bold text-neutral-400 uppercase tracking-widest font-black">ФИЛЬМЫ</span>
               </div>
               <span className="text-xl font-black text-white">{stats.movie || 0}</span>
            </div>
            <div className="flex items-center justify-between p-5 rounded-3xl bg-white/[0.03] border border-white/[0.06]">
               <div className="flex items-center gap-3">
                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 font-black text-xs">
-                    S
+                    С
                  </div>
-                 <span className="text-sm font-bold text-neutral-400">СЕРИАЛЫ</span>
+                 <span className="text-sm font-bold text-neutral-400 uppercase tracking-widest font-black">СЕРИАЛЫ</span>
               </div>
               <span className="text-xl font-black text-white">{stats.series || 0}</span>
            </div>
@@ -235,13 +235,13 @@ function KinokadrContent() {
       if (mode === 'movie') query = query.eq('type', 'movie');
       else if (mode === 'series') query = query.eq('type', 'series');
       
-      const { data } = await query.order('id', { ascending: Math.random() > 0.5 }).limit(100);
+      const { data } = await query.order('id', { ascending: Math.random() > 0.5 }).limit(200);
       
       if (data && data.length > 0) {
         let pool = data.filter(m => !seenIds.includes(m.id));
-        if (pool.length < 15) pool = data; 
+        if (pool.length < 35) pool = data; 
         
-        const shuffled = pool.sort(() => Math.random() - 0.5).slice(0, 10);
+        const shuffled = pool.sort(() => Math.random() - 0.5).slice(0, 30);
         setMovies(shuffled);
         saveSeenIds(shuffled.map(m => m.id));
       } else {
@@ -308,7 +308,7 @@ function KinokadrContent() {
   };
 
   const nextMovie = () => {
-    if (state.round < 10 && currentIndex < movies.length - 1) {
+    if (state.round < 30 && currentIndex < movies.length - 1) {
       setIsImageLoading(true);
       setCurrentIndex(prev => prev + 1);
       setState(prev => ({ ...prev, hintsUsed: 0, guessed: false, correct: false, score: 0, round: prev.round + 1 }));
@@ -367,7 +367,7 @@ function KinokadrContent() {
                <div className="flex items-center gap-4 h-10 px-4 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                   <div className="flex items-center gap-2">
                      <span className="text-[10px] font-black uppercase text-white/30 tracking-widest leading-none">Раунд</span>
-                     <span className="text-sm font-black text-cyan-400">{state.round} / 10</span>
+                     <span className="text-sm font-black text-cyan-400">{state.round} / 30</span>
                   </div>
                   <div className="w-px h-4 bg-white/10" />
                   <div className="flex items-center gap-2">
@@ -617,7 +617,7 @@ function KinokadrContent() {
               
               <div className="space-y-1">
                 <h2 className="text-4xl font-black italic tracking-tighter uppercase">Конец игры!</h2>
-                <p className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Все 10 раундов завершены</p>
+                <p className="text-neutral-500 font-bold uppercase tracking-widest text-[10px]">Все 30 раундов завершены</p>
               </div>
 
               <div className="p-10 rounded-[2.5rem] bg-white/[0.03] border border-white/10 shadow-2xl relative overflow-hidden">
@@ -653,13 +653,5 @@ function KinokadrContent() {
         </div>
       </footer>
     </div>
-  );
-}
-
-export default function KinokadrPage() {
-  return (
-    <AuthProvider>
-      <KinokadrContent />
-    </AuthProvider>
   );
 }
