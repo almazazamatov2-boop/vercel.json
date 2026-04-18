@@ -6,7 +6,6 @@ const TMDB_API_KEY = '9e9d7b3624dc47777670354ef25f3cfe';
 const KP_BASE = 'https://kinopoiskapiunofficial.tech/api';
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 
-// Та та же база названий IMDb для удобства
 const IMDB_TITLES = [
   "Игра престолов", "Во все тяжкие", "Ходячие мертвецы", "Теория большого взрыва", "Шерлок", "Декстер", "Друзья", 
   "Как я встретил вашу маму", "Остаться в живых", "Побег", "Настоящий детектив", "Карточный домик", "Доктор Хаус", 
@@ -50,11 +49,11 @@ const IMDB_TITLES = [
   "Морская полиция: Лос-Анджелес", "Дурнушка"
 ];
 
-// Функция для поиска чистого постера на TMDb
 async function getTmdbTextlessPoster(title: string, year: number | null, isSeries: boolean) {
   try {
     const searchType = isSeries ? 'tv' : 'movie';
-    const searchUrl = `${TMDB_BASE}/search/${searchType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}${year ? `&${isSeries?'first_air_date_year':'year'}=${year}` : ''}`;
+    const query = encodeURIComponent(title);
+    const searchUrl = `${TMDB_BASE}/search/${searchType}?api_key=${TMDB_API_KEY}&query=${query}${year ? `&${isSeries?'first_air_date_year':'year'}=${year}` : ''}`;
     
     const searchRes = await fetch(searchUrl);
     const searchData = await searchRes.json();
@@ -65,7 +64,6 @@ async function getTmdbTextlessPoster(title: string, year: number | null, isSerie
     const imagesRes = await fetch(`${TMDB_BASE}/${searchType}/${result.id}/images?api_key=${TMDB_API_KEY}`);
     const imagesData = await imagesRes.json();
 
-    // Ищем постер без языка (обычно это и есть textless)
     const textlessPoster = imagesData.posters?.find((p: any) => p.iso_639_1 === null);
     
     if (textlessPoster) {
@@ -81,17 +79,18 @@ async function getTmdbTextlessPoster(title: string, year: number | null, isSerie
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get('page') || '1');
-  const type = searchParams.get('type') || 'TOP_250_BEST_FILMS';
+  let type = searchParams.get('type') || 'TOP_250_BEST_FILMS';
   const cat = searchParams.get('cat') || 'films';
 
   try {
     const results = [];
 
-    // Режим IMDB коллекции
     if (cat === 'imdb') {
       const itemsPerPage = 20;
       const start = (page - 1) * itemsPerPage;
       const titlesSubset = IMDB_TITLES.slice(start, start + itemsPerPage);
+
+      if (titlesSubset.length === 0) return NextResponse.json({ message: "Done with IMDb list" });
 
       for (const title of titlesSubset) {
         const kpSearch = await fetch(`${KP_BASE}/v2.1/films/search-by-keyword?keyword=${encodeURIComponent(title)}&page=1`, {
@@ -101,9 +100,7 @@ export async function GET(req: NextRequest) {
         const film = kpData.films?.[0];
 
         if (film) {
-          // Ищем чистый постер!
           const textlessImg = await getTmdbTextlessPoster(film.nameEn || film.nameRu, parseInt(film.year), true);
-          
           const movieData = {
             id: `kp-${film.filmId}`,
             title: film.nameEn || film.nameRu || 'Unknown',
@@ -114,17 +111,14 @@ export async function GET(req: NextRequest) {
             year: parseInt(film.year) || null,
             is_textless: !!textlessImg
           };
-
-          const { error } = await supabase.from('kinokadr_movies').upsert(movieData, { onConflict: 'id' });
-          results.push({ title, status: error ? 'error' : 'success', textless: !!textlessImg });
+          await supabase.from('kinokadr_movies').upsert(movieData, { onConflict: 'id' });
+          results.push({ title, textless: !!textlessImg });
         }
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 300));
       }
-
       return NextResponse.json({ message: `Processed IMDB page ${page}`, results });
     }
 
-    // Режим коллекций Кинопоиска
     const isTopSeries = type === 'TOP_250_TV_SHOWS';
     let url = `${KP_BASE}/v2.2/films/top?type=${type}&page=${page}`;
     if (isTopSeries) url = `${KP_BASE}/v2.2/films?order=RATING&type=TV_SERIES&ratingFrom=8&ratingTo=10&page=${page}`;
@@ -133,10 +127,17 @@ export async function GET(req: NextRequest) {
     const listData = await listRes.json();
     const items = listData.films || listData.items;
 
+    if (!items) {
+      return NextResponse.json({ 
+        error: "Kinopoisk API returned no items. Check if the collection type is correct or if you reached rate limit.",
+        data: listData 
+      }, { status: 400 });
+    }
+
     for (const item of items) {
       const filmId = item.filmId || item.kinopoiskId;
       const name = item.nameEn || item.nameRu;
-      const isSer = (item.type?.includes('SERIES') || isTopSeries);
+      const isSer = (item.type?.includes('SERIES') || item.type?.includes('SHOW') || isTopSeries);
       
       const textlessImg = await getTmdbTextlessPoster(name, parseInt(item.year), isSer);
 
@@ -146,13 +147,14 @@ export async function GET(req: NextRequest) {
         title_ru: item.nameRu || item.nameEn || 'Без названия',
         image_url: textlessImg || item.posterUrl,
         type: isSer ? 'series' : 'movie',
-        category: item.genres?.[0]?.genre || 'Кино',
+        category: (item.genres && item.genres[0]) ? item.genres[0].genre : 'Кино',
         year: parseInt(item.year) || null,
         is_textless: !!textlessImg
       };
 
-      const { error } = await supabase.from('kinokadr_movies').upsert(movieData, { onConflict: 'id' });
-      results.push({ title: movieData.title_ru, status: error ? 'error' : 'success', textless: !!textlessImg });
+      await supabase.from('kinokadr_movies').upsert(movieData, { onConflict: 'id' });
+      results.push({ title: movieData.title_ru, textless: !!textlessImg });
+      await new Promise(r => setTimeout(r, 300));
     }
 
     return NextResponse.json({ message: `Processed ${type} page ${page}`, results });
