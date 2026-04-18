@@ -118,7 +118,7 @@ function KinokadrContent() {
   const fetchMovies = async (mode: string) => {
     setIsLoading(true);
     try {
-      let query = supabase.from('kinokadr_movies').select('*');
+      let query = supabase.from('kinokadr_movies').select('*').eq('is_textless', true);
       if (mode === 'movie') query = query.eq('type', 'movie');
       else if (mode === 'series') query = query.eq('type', 'series');
       
