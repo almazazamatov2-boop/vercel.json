@@ -7,15 +7,17 @@ const BASE = 'https://kinopoiskapiunofficial.tech/api';
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = searchParams.get('page') || '1';
-  const type = searchParams.get('type') || 'TOP_250_BEST_FILMS';
-  const cat = searchParams.get('cat') || 'films'; // films or series
+  let type = searchParams.get('type') || 'TOP_250_BEST_FILMS';
+  const cat = searchParams.get('cat') || 'films';
 
   try {
+    // Если указано TOP_250_TV_SHOWS, принудительно ставим категорию series
+    const isTopSeries = type === 'TOP_250_TV_SHOWS';
+    
     let url = `${BASE}/v2.2/films/top?type=${type}&page=${page}`;
     
-    // Если нужны именно сериалы, используем другой эндпоинт с фильтрами
-    if (cat === 'series') {
-      url = `${BASE}/v2.2/films?order=RATING&type=TV_SERIES&page=${page}`;
+    if (cat === 'series' && !isTopSeries) {
+      url = `${BASE}/v2.2/films?order=NUM_VOTE&type=TV_SERIES&page=${page}`;
     }
 
     const listRes = await fetch(url, {
@@ -38,7 +40,7 @@ export async function GET(req: NextRequest) {
         title: item.nameEn || item.nameRu || 'Unknown',
         title_ru: item.nameRu || item.nameEn || 'Без названия',
         image_url: item.posterUrl,
-        type: (item.type === 'TV_SERIES' || cat === 'series') ? 'series' : 'movie',
+        type: (item.type === 'TV_SERIES' || cat === 'series' || isTopSeries) ? 'series' : 'movie',
         category: item.genres?.[0]?.genre || 'Кино',
         year: parseInt(item.year) || null
       };
@@ -55,7 +57,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({
-      message: `Processed page ${page} of ${cat}`,
+      message: `Processed page ${page} of ${isTopSeries ? 'Top 250 Series' : type}`,
       count: results.length,
       results
     });
