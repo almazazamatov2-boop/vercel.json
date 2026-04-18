@@ -574,7 +574,7 @@ function KinokadrContent() {
                          <span className="text-[8px] uppercase font-black tracking-widest mt-1">СКИП</span>
                       </button>
                       <button onClick={() => handleGuess()} className="col-span-2 h-16 rounded-2xl bg-cyan-500 text-black flex items-center justify-center gap-2 font-black hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20 active:scale-95">
-                         <circle className="w-5 h-5" /> УГАДАТЬ
+                         <Sparkles className="w-5 h-5" /> УГАДАТЬ
                       </button>
                    </div>
                 </div>
@@ -589,7 +589,7 @@ function KinokadrContent() {
                             <p className={`text-[9px] font-black uppercase tracking-widest mb-0.5 ${state.correct ? 'text-emerald-400' : 'text-rose-400'}`}>
                                {state.correct ? 'Верно!' : 'Не угадали'}
                             </p>
-                            <p className="text-xl font-black leading-tight">{movies[currentIndex].title_ru}</p>
+                            <p className="text-xl font-black leading-tight">{movies[currentIndex]?.title_ru || '---'}</p>
                          </div>
                       </div>
                       <div className="text-right ml-4">
