@@ -117,7 +117,6 @@ export function LeaderboardModal() {
                     </a>
                     <div className="text-right">
                       <p className="text-sm font-bold text-white leading-tight">{e.bestScore}</p>
-                      <p className="text-[10px] text-neutral-600 font-medium">{e.maxCombo}</p>
                     </div>
                   </motion.div>
                 ))}
