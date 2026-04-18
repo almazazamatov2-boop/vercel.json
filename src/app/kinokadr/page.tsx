@@ -134,6 +134,16 @@ function KinokadrContent() {
     setIsLoading(false);
   };
 
+  const nextMovie = () => {
+    if (currentIndex < movies.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      setState(prev => ({ ...prev, hintsUsed: 0, guessed: false, correct: false, score: 0 }));
+      setGuessInput('');
+    } else {
+      startNewGame(state.mode);
+    }
+  };
+
   const startNewGame = (mode: string) => {
     fetchMovies(mode);
     setScreen('game');
@@ -154,17 +164,20 @@ function KinokadrContent() {
     if (isCorrect) {
       const earned = SCORE_FOR_HINTS[state.hintsUsed];
       setState(prev => ({ ...prev, guessed: true, correct: true, score: earned }));
-      setShowSuggestions(false);
-      
-      // Save to Supabase if logged in
-      if (session?.user) {
-         saveScore((session.user as any).id, earned, state.mode);
-      }
+      if (session?.user) saveScore((session.user as any).id, earned, state.mode);
     } else {
       setShake(true);
       setTimeout(() => setShake(false), 500);
-      setShowSuggestions(false);
+      setState(prev => ({ ...prev, guessed: true, correct: false, score: 0 }));
+      if (session?.user) saveScore((session.user as any).id, 0, state.mode);
     }
+    setShowSuggestions(false);
+  };
+
+  const handleSkip = () => {
+    if (state.guessed) return;
+    setState(prev => ({ ...prev, guessed: true, correct: false, score: 0 }));
+    if (session?.user) saveScore((session.user as any).id, 0, state.mode);
   };
 
   const saveScore = async (userId: string, points: number, mode: string) => {
@@ -173,7 +186,8 @@ function KinokadrContent() {
         user_id: userId,
         score: points,
         mode: mode,
-        hints_used: state.hintsUsed
+        hints_used: state.hintsUsed,
+        movie_id: movies[currentIndex].id.replace('kp-', '') // Сохраняем ID фильма (опционально)
       });
     } catch (e) {}
   };
@@ -295,19 +309,6 @@ function KinokadrContent() {
                       {movies[currentIndex].type === 'movie' ? 'Фильм' : 'Сериал'}
                     </span>
                  </div>
-
-                 <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-                    <div className="space-y-1">
-                       <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">Текущий балл</p>
-                       <p className="text-3xl font-black">{SCORE_FOR_HINTS[state.hintsUsed]}</p>
-                    </div>
-                    {state.guessed && (
-                       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="text-right">
-                          <p className="text-[10px] text-emerald-400 uppercase font-black tracking-widest">Правильный ответ</p>
-                          <p className="text-2xl font-black text-white">{movies[currentIndex].title_ru}</p>
-                       </motion.div>
-                    )}
-                 </div>
               </div>
 
               {!state.guessed ? (
@@ -359,6 +360,12 @@ function KinokadrContent() {
                          <Lightbulb className="w-5 h-5" /> Открыть ({state.hintsUsed}/3)
                       </button>
                       <button 
+                        onClick={handleSkip}
+                        className="flex-1 h-14 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center gap-2 font-bold hover:bg-white/[0.1] active:scale-95 transition-all text-neutral-400 hover:text-white"
+                      >
+                         <SkipForward className="w-5 h-5" /> Пропустить
+                      </button>
+                      <button 
                         onClick={() => handleGuess()}
                         className="flex-[2] h-14 rounded-2xl bg-cyan-500 text-black flex items-center justify-center gap-2 font-black tracking-wider hover:bg-cyan-400 active:scale-95 transition-all shadow-lg shadow-cyan-500/20"
                       >
@@ -367,19 +374,39 @@ function KinokadrContent() {
                    </div>
                 </div>
               ) : (
-                <div className="flex gap-4">
-                   <Button 
-                     className="flex-1 h-16 text-xl font-black rounded-3xl bg-white/[0.05] border border-white/10 hover:bg-white/[0.1]"
-                     onClick={() => setScreen('home')}
-                   >
-                     В МЕНЮ
-                   </Button>
-                   <Button 
-                     className="flex-[2] h-16 text-xl font-black rounded-3xl bg-white text-black hover:bg-neutral-200"
-                     onClick={() => startNewGame(state.mode)}
-                   >
-                     СЛЕДУЮЩИЙ
-                   </Button>
+                <div className="flex flex-col gap-4">
+                   <div className={`p-6 rounded-3xl border ${state.correct ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20'} flex items-center justify-between`}>
+                      <div className="flex items-center gap-4">
+                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${state.correct ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
+                            {state.correct ? <Check className="w-6 h-6" /> : <X className="w-6 h-6" />}
+                         </div>
+                         <div>
+                            <p className={`text-[10px] font-black uppercase tracking-widest ${state.correct ? 'text-emerald-400' : 'text-rose-400'}`}>
+                               {state.correct ? 'Верно!' : 'Не угадали'}
+                            </p>
+                            <p className="text-xl font-black">{movies[currentIndex].title_ru}</p>
+                         </div>
+                      </div>
+                      <div className="text-right">
+                         <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">Баллы</p>
+                         <p className="text-2xl font-black">{state.score}</p>
+                      </div>
+                   </div>
+
+                   <div className="flex gap-4">
+                      <Button 
+                        className="flex-1 h-16 text-xl font-black rounded-3xl bg-white/[0.05] border border-white/10 hover:bg-white/[0.1]"
+                        onClick={() => setScreen('home')}
+                      >
+                        В МЕНЮ
+                      </Button>
+                      <Button 
+                        className="flex-[2] h-16 text-xl font-black rounded-3xl bg-white text-black hover:bg-neutral-200 shadow-xl shadow-white/10"
+                        onClick={() => startNewGame(state.mode)}
+                      >
+                        СЛЕДУЮЩИЙ
+                      </Button>
+                   </div>
                 </div>
               )}
             </motion.div>
