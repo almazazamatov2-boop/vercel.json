@@ -18,7 +18,7 @@ export async function GET(
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'ru-RU,ru;q=0.9,en;q=0.8',
       },
-      cache: 'no-store',
+      next: { revalidate: 3600 },
     })
 
     if (!res.ok) {
@@ -41,7 +41,7 @@ export async function GET(
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'X-Frame-Options': 'ALLOWALL',
-        'Cache-Control': 'no-store',
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=59',
       },
     })
   } catch (err) {

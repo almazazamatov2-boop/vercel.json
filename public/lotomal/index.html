@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Лото</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     body {
@@ -1053,48 +1054,50 @@
     let pollInterval = null;
     let wsReady = false; const chatMessagesList = []; const chatMessagesIds = new Set();
 
+    // ====== SUPABASE REALTIME ======
+    const supabaseUrl = 'https://dlybapjwphbcynfkdxyk.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRseWJhcGp3cGhiY3luZmtkeHlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NTEzMzQsImV4cCI6MjA5MjAyNzMzNH0.XVjs3XJVUR51NXjxgFKnCrW1f-Irv3AQRItonjeDDPk';
+    const supabaseClient = window.supabase ? window.supabase.createClient(supabaseUrl, supabaseKey) : null;
+
+    function subscribeToLobby(lobbyId) {
+      if (!supabaseClient || !lobbyId) return;
+      
+      supabaseClient
+        .channel('loto-lobby-' + lobbyId)
+        .on('postgres_changes', { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'loto_lobbies',
+            filter: 'id=eq.' + lobbyId 
+        }, payload => {
+            console.log('Realtime change:', payload.new);
+            const msg = {
+               type: 'state_update',
+               lobby: payload.new,
+               drawn: payload.new.drawn_numbers || []
+            };
+            handleWsMessage(msg);
+        })
+        .subscribe();
+    }
+
     function initWS() {
       wsReady = true;
       // Восстановление сессии
       const _sid   = sessionStorage.getItem('currentLobbyId');
-      const _adm   = sessionStorage.getItem('isAdmin') === 'true';
-      const _card  = sessionStorage.getItem('cardNumbers');
-      const _marks = sessionStorage.getItem('markedCells');
-      const _game  = sessionStorage.getItem('gameScreenShown') === 'true';
       if (_sid) {
         currentLobbyId = _sid;
-        isAdmin        = _adm;
-        try { if (_card)   cardNumbers = JSON.parse(_card);           } catch(e){}
-        try { if (_marks)  markedCells = new Set(JSON.parse(_marks)); } catch(e){}
-        if (_game) {
-          gameScreenShown = true;
-          document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-          const gs = document.getElementById('gameScreen');
-          if (gs) { gs.classList.add('active'); currentScreen = 'gameScreen'; }
-          if (!cardNumbers || !cardNumbers.length) cardNumbers = generateLotoCard();
-          setTimeout(() => { renderCard(); updateGameStats(); updateGameDisplay(); }, 100);
-        }
+        subscribeToLobby(_sid);
       }
+      
       // Авторизация
       setConnStatus('connecting', 'Подключение...');
       sendAPI({ action: 'auth', userId, nickname: userProfile.nickname })
         .then(msg => {
           handleWsMessage(msg);
           setConnStatus('connected', 'Онлайн');
-          setTimeout(() => { const el = document.getElementById('connStatus'); if(el) el.style.opacity='0'; }, 2000);
-        })
-        .catch(() => setConnStatus('error', 'Ошибка'));
-      // Поллинг
-      if (!pollInterval) {
-        pollInterval = setInterval(async () => {
-          if (!currentLobbyId) return;
-          try {
-            const res = await fetch(`/api/loto?action=get_state&lobbyId=${currentLobbyId}`);
-            if (res.status === 404 || res.status === 410) { clearGameSession(); showScreen('mainMenu'); return; }
-            if (res.ok) { const msg = await res.json(); handleWsMessage(msg); }
-          } catch(e) {}
-        }, 2500);
-      }
+          if (currentLobbyId) subscribeToLobby(currentLobbyId);
+        });
     }
 
     async function sendAPI(data) {
