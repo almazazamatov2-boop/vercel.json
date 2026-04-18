@@ -1,14 +1,12 @@
-'use client';
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Film, Tv, Lightbulb, SkipForward, Trophy, Home, ChevronRight, 
   Search, X, Check, Sparkles, Clapperboard, Eye, Crown, LogIn, 
-  Zap, Medal, Menu, User
+  Zap, Medal, Menu, User, Inbox
 } from 'lucide-react';
-import { Button } from '@/components/67/ui/button'; // Reusing the styled button
-import { useSession } from '@/lib/67/authHook'; // Reusing session logic
+import { Button } from '@/components/67/ui/button'; 
+import { useSession, signIn } from '@/lib/67/authHook'; 
 import { supabase } from '@/lib/supabase';
 
 // ============ TYPES ============
@@ -30,6 +28,7 @@ interface KinokadrState {
   guessed: boolean;
   correct: boolean;
   score: number;
+  mode: string;
 }
 
 type Screen = 'home' | 'game' | 'leaderboard';
@@ -53,12 +52,28 @@ export default function KinokadrPage() {
   const [movies, setMovies] = useState<KinokadrMovie[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [guessInput, setGuessInput] = useState('');
-  const [state, setState] = useState<KinokadrState>({ hintsUsed: 0, guessed: false, correct: false, score: 0 });
+  const [state, setState] = useState<KinokadrState>({ hintsUsed: 0, guessed: false, correct: false, score: 0, mode: 'combo' });
   const [isLoading, setIsLoading] = useState(false);
   const [shake, setShake] = useState(false);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [lbMode, setLbMode] = useState('combo');
 
-  // Demo data fallback if Supabase is empty
+  // Load leaderboard by mode
+  useEffect(() => {
+    if (screen === 'leaderboard') {
+      fetchLeaderboard(lbMode);
+    }
+  }, [screen, lbMode]);
+
+  const fetchLeaderboard = async (mode: string) => {
+    // Real Supabase query would go here:
+    // const { data } = await supabase.from('kinokadr_scores').select('*, user:user_id(*)').eq('mode', mode).order('score', { ascending: false }).limit(20);
+    setLeaderboard([]); // Placeholder
+  };
+
+  const twitchLogin = () => signIn('twitch', { callbackUrl: '/kinokadr' });
+
+  // Demo data fallback
   const DEMO_MOVIES: KinokadrMovie[] = [
     {
       id: 'demo-1',
@@ -72,30 +87,25 @@ export default function KinokadrPage() {
     }
   ];
 
-  const fetchMovies = async () => {
+  const fetchMovies = async (mode: string) => {
     setIsLoading(true);
-    // Real Supabase query would go here:
-    // const { data } = await supabase.from('kinokadr_movies').select('*').limit(10);
-    // For now, using demo:
     setTimeout(() => {
       setMovies(DEMO_MOVIES);
       setIsLoading(false);
     }, 800);
   };
 
-  const startNewGame = () => {
-    fetchMovies();
+  const startNewGame = (mode: string) => {
+    fetchMovies(mode);
     setScreen('game');
     setCurrentIndex(0);
-    setState({ hintsUsed: 0, guessed: false, correct: false, score: 0 });
+    setState({ hintsUsed: 0, guessed: false, correct: false, score: 0, mode });
     setGuessInput('');
   };
 
   const handleGuess = async () => {
     if (!guessInput.trim()) return;
     const current = movies[currentIndex];
-    
-    // Simple logic for demo: exact match or partial match on title/title_ru
     const isCorrect = 
       guessInput.toLowerCase() === current.title.toLowerCase() || 
       guessInput.toLowerCase() === current.title_ru.toLowerCase();
@@ -103,11 +113,6 @@ export default function KinokadrPage() {
     if (isCorrect) {
       const earned = SCORE_FOR_HINTS[state.hintsUsed];
       setState(prev => ({ ...prev, guessed: true, correct: true, score: earned }));
-      
-      // Submit score to Supabase if logged in
-      if (session?.user) {
-        // await supabase.from('kinokadr_scores').insert({ ... });
-      }
     } else {
       setShake(true);
       setTimeout(() => setShake(false), 500);
@@ -128,10 +133,7 @@ export default function KinokadrPage() {
       <header className="relative z-10 w-full border-b border-white/[0.06] backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2 group cursor-pointer" onClick={() => setScreen('home')}>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-              <Film className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-2xl font-black italic tracking-tighter bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent group-hover:from-cyan-300 group-hover:to-blue-400 transition-all">КИНОКАДР</span>
+            <span className="text-3xl font-black italic tracking-tighter bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent group-hover:from-cyan-300 group-hover:to-blue-400 transition-all">КИНОКАДР</span>
           </div>
 
           <div className="hidden sm:flex items-center gap-2">
@@ -145,7 +147,7 @@ export default function KinokadrPage() {
                   <span className="text-xs font-bold truncate max-w-[100px]">{session.user.name}</span>
                 </div>
              ) : (
-                <Button className="bg-[#9146FF] hover:bg-[#7c3aed] text-white rounded-lg h-9 px-4 text-xs">
+                <Button className="bg-[#9146FF] hover:bg-[#7c3aed] text-white rounded-lg h-9 px-4 text-xs" onClick={twitchLogin}>
                   Войти
                 </Button>
              )}
@@ -162,36 +164,48 @@ export default function KinokadrPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="text-center space-y-8 max-w-lg"
+              className="text-center space-y-12 max-w-xl w-full"
             >
-              <div className="space-y-2">
-                <h1 className="text-7xl sm:text-8xl font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none uppercase">
+              <div className="space-y-0 -mt-20">
+                <h1 className="text-8xl sm:text-9xl font-black tracking-tighter bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent leading-none uppercase">
                   Угадай <br/> Кадр
                 </h1>
-                <p className="text-cyan-400 font-bold tracking-[0.3em] text-xs uppercase opacity-80">Cinematic Challenge</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-sm">
-                  <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center mx-auto mb-2">
-                    <Eye className="w-5 h-5 text-cyan-400" />
+              <div className="grid grid-cols-1 gap-3 w-full max-w-md mx-auto">
+                <button onClick={() => startNewGame('combo')} className="group relative w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 flex items-center gap-4 hover:bg-white/[0.06] transition-all hover:scale-[1.02] active:scale-[0.98]">
+                  <div className="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Inbox className="w-7 h-7 text-cyan-400" />
                   </div>
-                  <p className="text-xs text-neutral-400">Смотри на <br/> размытый кадр</p>
-                </div>
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 backdrop-blur-sm">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mx-auto mb-2">
-                    <Trophy className="w-5 h-5 text-blue-400" />
+                  <div className="text-left flex-1">
+                    <h3 className="text-xl font-black tracking-tight uppercase">КОМБО</h3>
+                    <p className="text-xs text-neutral-500 font-medium">Фильмы и сериалы вперемешку</p>
                   </div>
-                  <p className="text-xs text-neutral-400">Получай баллы <br/> за скорость</p>
-                </div>
-              </div>
+                  <ChevronRight className="w-5 h-5 text-cyan-500/40 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+                </button>
 
-              <Button
-                className="h-16 px-16 text-2xl font-black tracking-[0.2em] rounded-3xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-300 hover:scale-[1.05] active:scale-[0.95]"
-                onClick={startNewGame}
-              >
-                ИГРАТЬ
-              </Button>
+                <button onClick={() => startNewGame('movie')} className="group relative w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 flex items-center gap-4 hover:bg-white/[0.06] transition-all hover:scale-[1.02] active:scale-[0.98]">
+                  <div className="w-14 h-14 rounded-xl bg-orange-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Film className="w-7 h-7 text-orange-400" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <h3 className="text-xl font-black tracking-tight uppercase">ФИЛЬМЫ</h3>
+                    <p className="text-xs text-neutral-500 font-medium">Только фильмы</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-orange-500/40 group-hover:text-orange-400 group-hover:translate-x-1 transition-all" />
+                </button>
+
+                <button onClick={() => startNewGame('series')} className="group relative w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 flex items-center gap-4 hover:bg-white/[0.06] transition-all hover:scale-[1.02] active:scale-[0.98]">
+                  <div className="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Tv className="w-7 h-7 text-purple-400" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <h3 className="text-xl font-black tracking-tight uppercase">СЕРИАЛЫ</h3>
+                    <p className="text-xs text-neutral-500 font-medium">Только сериалы</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-purple-500/40 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+                </button>
+              </div>
             </motion.div>
           )}
 
@@ -202,7 +216,6 @@ export default function KinokadrPage() {
               animate={{ opacity: 1, scale: 1 }}
               className="w-full max-w-2xl flex flex-col gap-6"
             >
-              {/* Game View */}
               <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-white/[0.02] backdrop-blur-xl">
                  <img 
                    src={movies[currentIndex].image_url} 
@@ -234,7 +247,6 @@ export default function KinokadrPage() {
                  </div>
               </div>
 
-              {/* Controls */}
               {!state.guessed ? (
                 <div className={`space-y-4 ${shake ? 'animate-shake' : ''}`}>
                    <div className="relative group">
@@ -276,7 +288,7 @@ export default function KinokadrPage() {
                    </Button>
                    <Button 
                      className="flex-[2] h-16 text-xl font-black rounded-3xl bg-white text-black hover:bg-neutral-200"
-                     onClick={startNewGame}
+                     onClick={() => startNewGame(state.mode)}
                    >
                      СЛЕДУЮЩИЙ
                    </Button>
@@ -292,15 +304,30 @@ export default function KinokadrPage() {
                animate={{ opacity: 1, y: 0 }}
                className="w-full max-w-xl space-y-6"
              >
-                <div className="flex items-center gap-3 mb-4">
-                  <Trophy className="w-8 h-8 text-yellow-500" />
-                  <h2 className="text-3xl font-black uppercase italic tracking-tighter">Лучшие Знатоки</h2>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <Trophy className="w-8 h-8 text-yellow-500" />
+                    <h2 className="text-3xl font-black uppercase italic tracking-tighter">Лучшие Знатоки</h2>
+                  </div>
+                  
+                  <div className="flex gap-1 bg-white/[0.03] p-1 rounded-xl border border-white/[0.06]">
+                    {['combo', 'movie', 'series'].map(m => (
+                      <button 
+                        key={m}
+                        onClick={() => setLbMode(m)}
+                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${lbMode === m ? 'bg-white/10 text-white' : 'text-neutral-500 hover:text-neutral-300'}`}
+                      >
+                        {m === 'combo' ? 'Комбо' : m === 'movie' ? 'Фильмы' : 'Сериалы'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md p-6 space-y-2">
+                <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-md p-6 min-h-[300px] flex flex-col justify-center">
                    {leaderboard.length === 0 ? (
-                      <div className="py-12 text-center text-neutral-500 uppercase font-black tracking-widest text-xs opacity-50">
-                        Пока нет данных
+                      <div className="text-center text-neutral-500 uppercase font-black tracking-widest text-xs opacity-50 flex flex-col items-center gap-4">
+                        <Inbox className="w-10 h-10 opacity-20" />
+                        Пока нет данных для этого режима
                       </div>
                    ) : (
                      leaderboard.map((p, i) => (
@@ -327,8 +354,9 @@ export default function KinokadrPage() {
         </AnimatePresence>
       </main>
 
-      <footer className="relative z-10 py-6 text-center">
-         <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Кинокадр • Powered by Paracetamolhaze</p>
+      <footer className="relative z-10 border-t border-white/[0.04] py-3 text-center flex flex-col items-center gap-1">
+        <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">КиноКадр</p>
+        <p className="text-[9px] text-neutral-600 tracking-tight">Powered by <a href="https://t.me/paracetamolhaze" className="text-orange-500 font-bold hover:text-orange-400 transition-colors">PARACETAMOLHAZE</a></p>
       </footer>
     </div>
   );
