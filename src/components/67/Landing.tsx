@@ -211,32 +211,7 @@ export function Landing() {
         </motion.div>
       </section>
 
-      {/* How it works */}
-      <section className="relative z-10 max-w-5xl mx-auto w-full px-4 pb-16">
-        <motion.div
-          className="rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-6"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="text-lg font-bold mb-5">КАК ИГРАТЬ</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { icon: LogIn, title: 'Twitch', desc: 'Войди через Twitch — так результат попадёт в рейтинг' },
-              { icon: Camera, title: 'Камера', desc: 'Разреши доступ к камере. подними руки так чтобы их было видно' },
-              { icon: Zap, title: 'Двигай!', desc: '676767676767676767' },
-            ].map((step, i) => (
-              <motion.div key={step.title} className="text-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20 flex items-center justify-center mx-auto mb-3">
-                  <step.icon className="w-5 h-5 text-orange-400" />
-                </div>
-                <h3 className="text-sm font-semibold text-neutral-200 mb-1">{step.title}</h3>
-                <p className="text-xs text-neutral-500 leading-relaxed">{step.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
+
 
       <footer className="relative z-10 border-t border-white/[0.04] py-8 text-center flex flex-col items-center gap-1">
         <p className="text-[13px] font-bold text-neutral-400 uppercase tracking-widest">67 на скорость</p>
