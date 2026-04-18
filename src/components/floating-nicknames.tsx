@@ -152,9 +152,9 @@ export default function FloatingNicknames({ nicknames }: FloatingNicknamesProps)
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseleave', onMouseLeave);
 
-    const REPEL_RADIUS = 400; // Even larger radius
-    const REPEL_FORCE = 450;   // Stronger force
-    const LERP = 0.1;         // Slightly smoother lerp
+    const REPEL_RADIUS = 30;  // Radius matching a standard cursor size
+    const REPEL_FORCE = 600;   // High force for immediate push at close range
+    const LERP = 0.15;         // Snappier lerp for immediate reaction
 
     const loop = () => {
       const mouse = mouseRef.current;
