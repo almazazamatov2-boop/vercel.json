@@ -52,6 +52,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export const useAuth = () => useContext(AuthContext);
 
+export const signIn = () => {
+  window.location.href = '/auth/twitch?source=67';
+};
+
+export const signOut = () => {
+  document.cookie = 'twitch_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+  window.location.href = '/';
+};
+
 // Backwards compatibility shim for useSession-like usage
 export const useSession = () => {
   const { user, loading } = useAuth();
