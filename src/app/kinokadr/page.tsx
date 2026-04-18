@@ -448,7 +448,7 @@ function KinokadrContent() {
                     <div className="flex gap-1 bg-white/[0.03] p-1 rounded-2xl border border-white/[0.06]">
                       {['combo', 'movie', 'series'].map(m => (
                           <button key={m} onClick={() => setLbMode(m)} className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${lbMode === m ? 'bg-white/10 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-300'}`}>
-                            {m === 'combo' ? 'Ко' : m === 'movie' ? 'Фил' : 'Сер'}
+                            {m === 'combo' ? 'КОМБО' : m === 'movie' ? 'ФИЛЬМЫ' : 'СЕРИАЛЫ'}
                           </button>
                       ))}
                     </div>
