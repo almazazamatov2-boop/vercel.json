@@ -212,7 +212,7 @@
     .real-overlay-mock {
       width: 1600px;
       height: 210px;
-      background: #101014;
+      background: linear-gradient(135deg, #2e1065 0%, #171717 100%);
       border-radius: 18px;
       position: absolute;
       top: 50%; left: 50%;
@@ -223,9 +223,9 @@
       justify-content: space-between;
       padding: 0 60px;
       font-family: 'Inter', sans-serif;
-      box-shadow: 0 14px 45px rgba(0,0,0,0.45);
+      box-shadow: 0 0 50px rgba(124, 58, 237, 0.4), 0 14px 45px rgba(0,0,0,0.6);
       transition: all 0.65s cubic-bezier(0.19, 1, 0.22, 1);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .real-overlay-mock.active { transform: translate(-50%, -50%) scale(0.24); opacity: 1; }
     .real-overlay-mock.exit { transform: translate(-50%, 280px) scale(0.24); opacity: 0; }
