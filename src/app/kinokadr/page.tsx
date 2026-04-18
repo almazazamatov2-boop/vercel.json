@@ -20,9 +20,6 @@ interface KinokadrMovie {
   year: number | null;
   title: string;
   title_ru: string;
-  hint1?: string;
-  hint2?: string;
-  hint3?: string;
 }
 
 interface KinokadrState {
@@ -59,8 +56,35 @@ function KinokadrContent() {
   const [shake, setShake] = useState(false);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [lbMode, setLbMode] = useState('combo');
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchTimeout = useRef<any>(null);
 
-  // Load leaderboard by mode
+  // Auto-complete fetch
+  useEffect(() => {
+    if (guessInput.length < 2 || state.guessed) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/kino/search?query=${encodeURIComponent(guessInput)}`);
+        const data = await res.json();
+        if (data.films) {
+          setSuggestions(data.films.slice(0, 5));
+          setShowSuggestions(true);
+        }
+      } catch (e) {}
+    }, 400);
+
+    return () => clearTimeout(searchTimeout.current);
+  }, [guessInput, state.guessed]);
+
+  // Load leaderboard
   useEffect(() => {
     if (screen === 'leaderboard') {
       fetchLeaderboard(lbMode);
@@ -68,30 +92,46 @@ function KinokadrContent() {
   }, [screen, lbMode]);
 
   const fetchLeaderboard = async (mode: string) => {
-    setLeaderboard([]); // Placeholder
+    try {
+      const { data } = await supabase
+        .from('kinokadr_scores')
+        .select('*, user:user_id(*)')
+        .eq('mode', mode)
+        .order('score', { ascending: false })
+        .limit(10);
+      setLeaderboard(data || []);
+    } catch (e) {}
   };
 
   const twitchLogin = () => signIn('kinokadr');
 
-  const DEMO_MOVIES: KinokadrMovie[] = [
-    {
-      id: 'demo-1',
-      title: 'Inception',
-      title_ru: 'Начало',
-      image_url: 'https://media.themoviedb.org/t/p/w1280/w85Z9pG9qMtw6m9QuE6PvKygEh1.jpg',
-      type: 'movie',
-      category: 'Sci-Fi',
-      year: 2010,
-      hint1: 'Режиссер Кристофер Нолан',
-    }
-  ];
-
   const fetchMovies = async (mode: string) => {
     setIsLoading(true);
-    setTimeout(() => {
-      setMovies(DEMO_MOVIES);
-      setIsLoading(false);
-    }, 800);
+    try {
+      let query = supabase.from('kinokadr_movies').select('*');
+      if (mode === 'movie') query = query.eq('type', 'movie');
+      else if (mode === 'series') query = query.eq('type', 'series');
+      
+      const { data } = await query.limit(20);
+      
+      if (data && data.length > 0) {
+        // Shuffle random sample
+        const shuffled = data.sort(() => Math.random() - 0.5);
+        setMovies(shuffled);
+      } else {
+        // Fallback demo data
+        setMovies([{
+          id: 'demo-1',
+          title: 'Inception',
+          title_ru: 'Начало',
+          image_url: 'https://media.themoviedb.org/t/p/w1280/w85Z9pG9qMtw6m9QuE6PvKygEh1.jpg',
+          type: 'movie',
+          category: 'Sci-Fi',
+          year: 2010
+        }]);
+      }
+    } catch (e) {}
+    setIsLoading(false);
   };
 
   const startNewGame = (mode: string) => {
@@ -102,26 +142,53 @@ function KinokadrContent() {
     setGuessInput('');
   };
 
-  const handleGuess = async () => {
-    if (!guessInput.trim()) return;
+  const handleGuess = (inputOverride?: string) => {
+    const input = inputOverride || guessInput;
+    if (!input.trim() || state.guessed) return;
+    
     const current = movies[currentIndex];
     const isCorrect = 
-      guessInput.toLowerCase() === current.title.toLowerCase() || 
-      guessInput.toLowerCase() === current.title_ru.toLowerCase();
+      input.toLowerCase() === current.title.toLowerCase() || 
+      input.toLowerCase() === current.title_ru.toLowerCase();
 
     if (isCorrect) {
       const earned = SCORE_FOR_HINTS[state.hintsUsed];
       setState(prev => ({ ...prev, guessed: true, correct: true, score: earned }));
+      setShowSuggestions(false);
+      
+      // Save to Supabase if logged in
+      if (session?.user) {
+         saveScore((session.user as any).id, earned, state.mode);
+      }
     } else {
       setShake(true);
       setTimeout(() => setShake(false), 500);
+      setShowSuggestions(false);
     }
+  };
+
+  const saveScore = async (userId: string, points: number, mode: string) => {
+    try {
+      await supabase.from('kinokadr_scores').insert({
+        user_id: userId,
+        score: points,
+        mode: mode,
+        hints_used: state.hintsUsed
+      });
+    } catch (e) {}
   };
 
   const useHint = () => {
     if (state.hintsUsed < 3) {
       setState(prev => ({ ...prev, hintsUsed: prev.hintsUsed + 1 }));
     }
+  };
+
+  const selectSuggestion = (s: any) => {
+    const title = s.nameRu || s.nameEn;
+    setGuessInput(title);
+    setShowSuggestions(false);
+    handleGuess(title);
   };
 
   return (
@@ -244,7 +311,7 @@ function KinokadrContent() {
               </div>
 
               {!state.guessed ? (
-                <div className={`space-y-4 ${shake ? 'animate-shake' : ''}`}>
+                <div className={`space-y-4 ${shake ? 'animate-shake' : ''} relative`}>
                    <div className="relative group">
                       <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
                         <Search className="w-5 h-5 text-white/20 group-focus-within:text-cyan-400 transition-colors" />
@@ -255,8 +322,33 @@ function KinokadrContent() {
                         value={guessInput}
                         onChange={(e) => setGuessInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleGuess()}
+                        onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                       />
                    </div>
+
+                   {/* Suggestions Dropdown */}
+                   <AnimatePresence>
+                     {showSuggestions && suggestions.length > 0 && (
+                       <motion.div 
+                         initial={{ opacity: 0, y: -10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         exit={{ opacity: 0, y: -10 }}
+                         className="absolute bottom-full mb-3 left-0 right-0 bg-[#0c0c0e] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50 p-1"
+                       >
+                         {suggestions.map((s, idx) => (
+                           <button 
+                             key={idx}
+                             onClick={() => selectSuggestion(s)}
+                             className="w-full text-left p-4 hover:bg-white/[0.05] flex flex-col transition-colors rounded-xl group"
+                           >
+                             <span className="font-bold text-white group-hover:text-cyan-400">{s.nameRu || s.nameEn}</span>
+                             <span className="text-[10px] text-white/40 uppercase font-black">{s.type === 'TV_SERIES' ? 'Сериал' : 'Фильм'} {s.year && `• ${s.year}`}</span>
+                           </button>
+                         ))}
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
 
                    <div className="flex gap-3">
                       <button 
@@ -267,7 +359,7 @@ function KinokadrContent() {
                          <Lightbulb className="w-5 h-5" /> Открыть ({state.hintsUsed}/3)
                       </button>
                       <button 
-                        onClick={handleGuess}
+                        onClick={() => handleGuess()}
                         className="flex-[2] h-14 rounded-2xl bg-cyan-500 text-black flex items-center justify-center gap-2 font-black tracking-wider hover:bg-cyan-400 active:scale-95 transition-all shadow-lg shadow-cyan-500/20"
                       >
                          <Sparkles className="w-5 h-5" /> УГАДАТЬ
@@ -329,10 +421,10 @@ function KinokadrContent() {
                      leaderboard.map((p, i) => (
                         <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.06] transition-all">
                            <div className="w-8 flex-shrink-0 text-lg font-black italic text-neutral-500">{i+1}</div>
-                           <img src={p.avatar} className="w-10 h-10 rounded-full border border-white/10" alt="" />
+                           <img src={p.user?.image || p.avatar} className="w-10 h-10 rounded-full border border-white/10" alt="" />
                            <div className="flex-1">
-                              <p className="font-bold">{p.name}</p>
-                              <p className="text-[10px] text-neutral-500 uppercase font-black">{p.games} игр</p>
+                              <p className="font-bold">{p.user?.username || p.name}</p>
+                              <p className="text-[10px] text-neutral-500 uppercase font-black">{p.hints_used || 0} подсказок</p>
                            </div>
                            <div className="text-right">
                               <p className="text-2xl font-black italic">{p.score}</p>
