@@ -75,16 +75,15 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Record insert failed:', error);
-      throw error;
+      console.error('Final record insert failed:', error);
+      return NextResponse.json({ success: false, error: error.message, details: error.details }, { status: 500 });
     }
 
     console.log('Record saved successfully:', record.id);
-
     return NextResponse.json({ success: true, record });
-  } catch (error) {
-    console.error('Game save error:', error);
-    return NextResponse.json({ error: 'Ошибка сохранения' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Critical POST error:', error);
+    return NextResponse.json({ error: error.message || 'Ошибка сохранения' }, { status: 500 });
   }
 }
 
